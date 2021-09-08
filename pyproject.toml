@@ -4,6 +4,9 @@ version = "0.1.0b"
 description = "SDK to extract drugs names and classify them from text."
 authors = ["Nick Anthony <nanthony007@gmail.com>"]
 license = "GPLv3"
+include = [
+    {path = 'src/drug_extractions/data/drug_dictionary.csv'}
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
