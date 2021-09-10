@@ -16,7 +16,7 @@ type Drugs struct {
 	Drugs []Drug `json:"drugs"`
 }
 
-func (receiver Drugs) LoadFromFile() Drugs {
+func (Drugs) LoadFromFile() Drugs {
 	// TODO: add in optional filepath param
 	var drugs Drugs
 	jsonFile, err := os.Open("./data/drug_classes.json")

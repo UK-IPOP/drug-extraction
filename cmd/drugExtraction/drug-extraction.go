@@ -6,9 +6,12 @@ import (
 )
 
 func main() {
-	fmt.Println("hi there")
-	drugList := pkg.Drugs{}.LoadFromFile()
+	var drugList = pkg.Drugs{}.LoadFromFile()
+	text := "i think cocaine and alcoho are really fun!"
 	for _, drug := range drugList.Drugs {
-		fmt.Println(drug.Name)
+		result := drug.SearchText(text)
+		if result.CloseMatch || result.ExactMatch {
+			fmt.Println(drug.Name, result)
+		}
 	}
 }
