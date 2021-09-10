@@ -62,3 +62,4 @@ __pypackages__/
 .vscode
 src/.DS_Store
 .DS_Store
+.idea
