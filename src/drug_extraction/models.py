@@ -32,9 +32,11 @@ class DrugExtractor(BaseModel):
         super().__init__(**data)
         self.load_from_file()
 
-    def load_from_file(self, file_path: Optional[str] = None) -> dict[str, Drug]:
+    def load_from_file(
+        self, file_path: str = "./data/drug_classes.yaml"
+    ) -> dict[str, Drug]:
         """Load drug classifications from file."""
-        filename = pkg_resources.resource_filename(__name__, "./data/drug_classes.yaml")
+        filename = pkg_resources.resource_filename(__name__, file_path)
         with open(filename, "r", encoding="utf-8-sig") as f:
             yml_data = yaml.load(f)
             yml_drugs = {k.lower(): Drug(**v) for k, v in yml_data.items()}
