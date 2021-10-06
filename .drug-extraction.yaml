@@ -1,0 +1,10 @@
+author: Nick Anthony <nanthony007@gmail.com>
+year: 2021
+license:
+  header: This file is part of CLI application drug-extraction.
+  text: |
+    {{ .copyright }}
+
+    This is my license. There are many like it, but this one is mine.
+    My license is my best friend. It is my life. I must master it as I must
+    master my life.

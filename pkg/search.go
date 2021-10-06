@@ -57,3 +57,20 @@ func (d *Drug) SearchText(text string) MatchResult {
 	matchResult.CloseMatch = closeMatch
 	return matchResult
 }
+
+//func ScanDrugs(texts []string) []string {
+//	var results [][]string
+//	drugList := Drugs{}.LoadFromFile()
+//	for i, row := range texts {
+//		for _, drug := range drugList.Drugs {
+//			searchResults := drug.SearchText(row)
+//			if searchResults.CloseMatch || searchResults.ExactMatch {
+//				stringCloseMatch := strconv.FormatBool(searchResults.CloseMatch)
+//				stringExactMatch := strconv.FormatBool(searchResults.ExactMatch)
+//				results = append(results, []string{drug.Name, stringExactMatch, stringCloseMatch})
+//			}
+//		}
+//	}
+//
+//	return results
+//}
