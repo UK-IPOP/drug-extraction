@@ -32,7 +32,6 @@ var fileName string
 var targetCol string
 var idCol string
 
-
 // extractCmd represents the extract command
 var extractCmd = &cobra.Command{
 	Use:   "extract",
@@ -48,7 +47,7 @@ Data is expected in '*.csv' format.'`,
 		if len(args) != 1 {
 			return errors.New("requires filename argument")
 		}
-		isCsv := strings.HasSuffix(args[0], ".csv");
+		isCsv := strings.HasSuffix(args[0], ".csv")
 		if !isCsv {
 			return errors.New("file should be of type 'csv'")
 		}
@@ -65,6 +64,8 @@ Data is expected in '*.csv' format.'`,
 		targetIndex, err2 := findColIndex(headers, targetFlag)
 		pkg.Check(err1)
 		pkg.Check(err2)
+		// replace with nice prompt saying which cols ur using
+		// add support for column case-ignoring (i.e. upper case)
 		fmt.Println(idIndex, targetIndex)
 
 		// actually process text
@@ -89,8 +90,8 @@ Data is expected in '*.csv' format.'`,
 		}
 		fmt.Println(idResults)
 		// now write to file
-		fileHeaders := []string{idFlag, "DrugName", "MatchType", "Tags"}
-		writeCSV("data/results.csv", fileHeaders, idResults)
+		fileHeaders := []string{idFlag, "DrugName", "MatchType", "WordFound", "Tags"}
+		writeCSV("data/output.csv", fileHeaders, idResults)
 	},
 }
 
@@ -110,20 +111,19 @@ func init() {
 func readCsvFile(filePath string) ([]string, [][]string) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal("Unable to read input file " + filePath, err)
+		log.Fatal("Unable to read input file "+filePath, err)
 	}
 	defer f.Close()
 
 	csvReader := csv.NewReader(f)
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		log.Fatal("Unable to parse file as CSV for " + filePath, err)
+		log.Fatal("Unable to parse file as CSV for "+filePath, err)
 	}
 	headers := records[0]
 	data := records[1:]
 	return headers, data
 }
-
 
 func writeCSV(filePath string, headers []string, data [][]string) {
 	// headers := []string{"ID", "DrugName", "MatchType", "Tags"}
@@ -142,7 +142,6 @@ func writeCSV(filePath string, headers []string, data [][]string) {
 		pkg.Check(err)
 	}
 }
-
 
 func findColIndex(headers []string, colName string) (int, error) {
 	for i, col := range headers {
