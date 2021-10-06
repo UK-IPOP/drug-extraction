@@ -1,0 +1,4 @@
+#,DrugName,MatchType,WordFound,Tags
+722,Heroin,Exact,heroin,opiate;nonfentanyl_opioid
+722,Methoxyacetyl Fentanyl,Exact,methoxyacetyl,fen_analog;fentanyl
+722,Alcohol,Close,alcoho,ethanol
