@@ -1,0 +1,4 @@
+#,DrugName,MatchType,Tags
+722,Heroin,Exact,opiate;nonfentanyl_opioid
+722,Cocaine,Exact,stimulant
+722,Alcohol,Close,ethanol

@@ -3,6 +3,7 @@ package pkg
 import (
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	"math"
+	"strconv"
 	"strings"
 )
 
@@ -49,28 +50,31 @@ func (d *Drug) containsCloseMatch(text string) bool {
 	return false
 }
 
-func (d *Drug) SearchText(text string) MatchResult {
+func (d *Drug) SearchText(text string) string {
+	// returns match TYPE
+	// TODO: can modify to return an enum for saftey
 	exactMatch := d.containsExactMatch(text)
 	closeMatch := d.containsCloseMatch(text)
-	var matchResult MatchResult
-	matchResult.ExactMatch = exactMatch
-	matchResult.CloseMatch = closeMatch
-	return matchResult
+	if exactMatch {
+		return "Exact"
+	} else if closeMatch {
+		return "Close"
+	} else {
+		return ""
+	}
 }
 
-//func ScanDrugs(texts []string) []string {
-//	var results [][]string
-//	drugList := Drugs{}.LoadFromFile()
-//	for i, row := range texts {
-//		for _, drug := range drugList.Drugs {
-//			searchResults := drug.SearchText(row)
-//			if searchResults.CloseMatch || searchResults.ExactMatch {
-//				stringCloseMatch := strconv.FormatBool(searchResults.CloseMatch)
-//				stringExactMatch := strconv.FormatBool(searchResults.ExactMatch)
-//				results = append(results, []string{drug.Name, stringExactMatch, stringCloseMatch})
-//			}
-//		}
-//	}
-//
-//	return results
-//}
+func ScanDrugs(texts []string) [][]string {
+	var results [][]string
+	drugList := Drugs{}.LoadFromFile()
+	for i, row := range texts {
+		for _, drug := range drugList.Drugs {
+			resultType := drug.SearchText(row)
+			if resultType != "" {
+				// found something so now add it
+				results = append(results, []string{strconv.Itoa(i), drug.Name, resultType, strings.Join(drug.Tags, ";")})
+			}
+		}
+	}
+	return results
+}
