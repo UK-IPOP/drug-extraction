@@ -18,10 +18,12 @@ package cmd
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/UK-IPOP/drug-extraction/pkg"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -78,7 +80,7 @@ Data is expected in '*.csv' format.'`,
 		results := pkg.ScanDrugs(targetData)
 		// the first value of targetData is the row you can lookup in the idData
 		// TODO: this data structuring can be improved
-		var idResults [][]string
+		var finalResults [][]string
 		for _, item := range results {
 			index, _ := strconv.Atoi(item[0]) // row index to lookup
 			id := idData[index]
@@ -86,12 +88,16 @@ Data is expected in '*.csv' format.'`,
 			// should be changed into a struct!
 			item[0] = id
 			// item = append(item, id)  // add ID as last value
-			idResults = append(idResults, item)
+			finalResults = append(finalResults, item)
 		}
-		fmt.Println(idResults)
+		fmt.Println(finalResults)
 		// now write to file
 		fileHeaders := []string{idFlag, "DrugName", "MatchType", "WordFound", "Tags"}
-		writeCSV("data/output.csv", fileHeaders, idResults)
+		writeCSV("data/output.csv", fileHeaders, finalResults)
+
+		jsonResults, _ := json.MarshalIndent(finalResults, "", "  ")
+		err := ioutil.WriteFile("data/output.json", jsonResults, 0644)
+		pkg.Check(err)
 	},
 }
 
