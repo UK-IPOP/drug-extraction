@@ -1,10 +1,14 @@
 package pkg
 
 import (
+	_ "embed"
 	"encoding/json"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
+
+//go:embed drug_info.yaml
+var drugInfo []byte
 
 type Drug struct {
 	Name        string   `json:"name" yaml:"Name"`
@@ -16,11 +20,9 @@ type Drugs struct {
 	Drugs []Drug `json:"drugs" yaml:"Drugs"`
 }
 
-func (Drugs) LoadFromFile() Drugs {
-	// TODO: add in optional filepath param
+func (Drugs) Load() Drugs {
 	var drugs Drugs
-	content, _ := ioutil.ReadFile("./data/drug_info.yaml")
-	unmarshalErr := yaml.Unmarshal(content, &drugs)
+	unmarshalErr := yaml.Unmarshal(drugInfo, &drugs)
 	Check(unmarshalErr)
 	return drugs
 }
