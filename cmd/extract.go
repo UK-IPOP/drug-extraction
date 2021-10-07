@@ -19,15 +19,14 @@ package cmd
 import (
 	"encoding/csv"
 	"errors"
-	"fmt"
 	"github.com/UK-IPOP/drug-extraction/pkg"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"strings"
 )
 
-var fileName string
 var targetCol string
 var idCol string
 
@@ -53,7 +52,6 @@ Data is expected in '*.csv' format.'`,
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("extract called")
 		// modularize this
 		fileName := args[0]
 		headers, data := readCsvFile(fileName)
@@ -65,7 +63,8 @@ Data is expected in '*.csv' format.'`,
 		pkg.Check(err2)
 		// replace with nice prompt saying which cols ur using
 		// add support for column case-ignoring (i.e. upper case)
-		fmt.Println(idIndex, targetIndex)
+		color.Yellow("Using ID column -> %s", headers[idIndex])
+		color.Yellow("Using TextSearch column -> %s", headers[targetIndex])
 
 		// actually process text
 		var idData []string
@@ -75,22 +74,20 @@ Data is expected in '*.csv' format.'`,
 			targetData = append(targetData, row[targetIndex])
 		}
 		results := pkg.ScanDrugs(targetData)
-		// the first value of targetData is the row you can lookup in the idData
-		// TODO: this data structuring can be improved
 		finalResults := pkg.FileResult{}
 		for _, item := range results {
-			id := idData[item.TempID] // row index to lookup
+			id := idData[item.TempID] // row index lookup
 			item.RecordID = id
 
 			finalResults.Data = append(finalResults.Data, item)
 		}
-		fmt.Println(finalResults)
-		// now write to file --> TODO: implement CSV later
+
+		// write to json
+		finalResults.ToFile("data/output.json")
+
+		// TODO: implement CSV later
 		//fileHeaders := []string{idFlag, "DrugName", "MatchType", "WordFound", "Tags"}
 		//writeCSV("data/output.csv", fileHeaders, finalResults)
-
-		// easy write to json
-		finalResults.ToFile("data/output.json")
 	},
 }
 
@@ -102,9 +99,11 @@ func init() {
 	// Cobra supports local flags which will only run when this command is called directly, e.g.:
 	// extractCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	extractCmd.Flags().StringVar(&targetCol, "target-col", "", "Target column to extract drugs from")
-	extractCmd.MarkFlagRequired("target-col")
+	targetErr := extractCmd.MarkFlagRequired("target-col")
+	pkg.Check(targetErr)
 	extractCmd.Flags().StringVar(&idCol, "id-col", "", "ID column to keep for later re-indexing/joining")
-	extractCmd.MarkFlagRequired("id-col")
+	idErr := extractCmd.MarkFlagRequired("id-col")
+	pkg.Check(idErr)
 }
 
 func readCsvFile(filePath string) ([]string, [][]string) {
@@ -112,7 +111,12 @@ func readCsvFile(filePath string) ([]string, [][]string) {
 	if err != nil {
 		log.Fatal("Unable to read input file "+filePath, err)
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+
+		}
+	}(f)
 
 	csvReader := csv.NewReader(f)
 	records, err := csvReader.ReadAll()
@@ -124,18 +128,24 @@ func readCsvFile(filePath string) ([]string, [][]string) {
 	return headers, data
 }
 
-func writeCSV(filePath string, headers []string, data [][]string) {
-	// headers := []string{"ID", "DrugName", "MatchType", "Tags"}
+// write csv func
+func _(filePath string, headers []string, data [][]string) {
 	file, err := os.Create(filePath)
 	if err != nil {
 		log.Fatal("Cannot create file", err)
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+
+		}
+	}(file)
 
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	writer.Write(headers)
+	writeErr := writer.Write(headers)
+	pkg.Check(writeErr)
 	for _, value := range data {
 		err := writer.Write(value)
 		pkg.Check(err)
@@ -144,7 +154,7 @@ func writeCSV(filePath string, headers []string, data [][]string) {
 
 func findColIndex(headers []string, colName string) (int, error) {
 	for i, col := range headers {
-		if col == colName {
+		if strings.ToLower(col) == strings.ToLower(colName) {
 			return i, nil
 		}
 	}

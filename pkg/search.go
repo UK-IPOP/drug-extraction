@@ -19,7 +19,6 @@ type SearchResult struct {
 }
 
 func (d *Drug) SearchText(text string) TextSearchResult {
-	//TODO: can modify to return a struct for safety
 	for _, word := range strings.Fields(text) {
 		for _, searchWord := range d.SearchTerms {
 			lowerWord := strings.ToLower(word)
@@ -60,7 +59,7 @@ func (d *Drug) SearchText(text string) TextSearchResult {
 
 func ScanDrugs(texts []string) []Result {
 	var results []Result
-	drugList := Drugs{}.LoadFromFile()
+	drugList := Drugs{}.Load()
 	bar := progressbar.NewOptions(len(texts),
 		progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionSetWidth(20),
