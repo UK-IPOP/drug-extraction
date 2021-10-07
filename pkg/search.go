@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"github.com/lithammer/fuzzysearch/fuzzy"
+	"github.com/schollz/progressbar/v3"
 	"math"
 	"strings"
 )
@@ -60,6 +61,17 @@ func (d *Drug) SearchText(text string) TextSearchResult {
 func ScanDrugs(texts []string) []Result {
 	var results []Result
 	drugList := Drugs{}.LoadFromFile()
+	bar := progressbar.NewOptions(len(texts),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetWidth(20),
+		progressbar.OptionSetDescription("[blue]Extracting drugs...[reset] "),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[green]=[reset]",
+			SaucerHead:    "[green]>[reset]",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}))
 	for i, row := range texts {
 		for _, drug := range drugList.Drugs {
 			searchResult := drug.SearchText(row)
@@ -76,6 +88,8 @@ func ScanDrugs(texts []string) []Result {
 				results = append(results, r)
 			}
 		}
+		err := bar.Add(1)
+		Check(err)
 	}
 	return results
 }
