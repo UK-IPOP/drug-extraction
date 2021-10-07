@@ -31,6 +31,7 @@ type Result struct {
 	MatchType string   `json:"match_type"`
 	WordFound string   `json:"word_found"`
 	Tags      []string `json:"tags"`
+	TempID    int      `json:"-"` // ignores it when writing to json
 }
 
 type FileResult struct {

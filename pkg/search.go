@@ -3,7 +3,6 @@ package pkg
 import (
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	"math"
-	"strconv"
 	"strings"
 )
 
@@ -68,8 +67,8 @@ func (d *Drug) SearchText(text string) (string, string) {
 	}
 }
 
-func ScanDrugs(texts []string) [][]string {
-	var results [][]string
+func ScanDrugs(texts []string) []Result {
+	var results []Result
 	drugList := Drugs{}.LoadFromFile()
 	for i, row := range texts {
 		for _, drug := range drugList.Drugs {
@@ -77,7 +76,14 @@ func ScanDrugs(texts []string) [][]string {
 			if resultType != "" {
 				// found something so now add it
 				// make this string array into a struct
-				results = append(results, []string{strconv.Itoa(i), drug.Name, resultType, resultWord, strings.Join(drug.Tags, ";")})
+				r := Result{
+					DrugName:  drug.Name,
+					MatchType: resultType,
+					WordFound: resultWord,
+					Tags:      drug.Tags,
+					TempID:    i,
+				}
+				results = append(results, r)
 			}
 		}
 	}

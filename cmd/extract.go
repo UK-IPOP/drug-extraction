@@ -24,7 +24,6 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -80,18 +79,10 @@ Data is expected in '*.csv' format.'`,
 		// TODO: this data structuring can be improved
 		finalResults := pkg.FileResult{}
 		for _, item := range results {
-			index, _ := strconv.Atoi(item[0]) // row index to lookup
-			id := idData[index]
+			id := idData[item.TempID] // row index to lookup
+			item.RecordID = id
 
-			result := pkg.Result{}
-			result.RecordID = id
-			result.DrugName = item[1]
-			result.MatchType = item[2]
-			result.WordFound = item[3]
-			result.Tags = strings.Split(item[4], ";")
-
-			// item = append(item, id)  // add ID as last value
-			finalResults.Data = append(finalResults.Data, result)
+			finalResults.Data = append(finalResults.Data, item)
 		}
 		fmt.Println(finalResults)
 		// now write to file --> TODO: implement CSV later
