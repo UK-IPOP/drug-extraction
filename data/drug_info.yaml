@@ -460,3 +460,18 @@ Drugs:
   Tags:
   - benzo
   - sedative
+- Name: Xylazine
+  Search Terms:
+    - Xylazine
+  Tags:
+    - stimulant
+- Name: Topiramate
+  Search Terms:
+    - Topiramate
+  Tags:
+    - stimulant
+- Name: Phentermine
+  Search Terms:
+    - Phentermine
+  Tags:
+    - stimulant
