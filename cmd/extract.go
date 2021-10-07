@@ -18,12 +18,10 @@ package cmd
 
 import (
 	"encoding/csv"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/UK-IPOP/drug-extraction/pkg"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -80,24 +78,28 @@ Data is expected in '*.csv' format.'`,
 		results := pkg.ScanDrugs(targetData)
 		// the first value of targetData is the row you can lookup in the idData
 		// TODO: this data structuring can be improved
-		var finalResults [][]string
+		finalResults := pkg.FileResult{}
 		for _, item := range results {
 			index, _ := strconv.Atoi(item[0]) // row index to lookup
 			id := idData[index]
-			// directly replace row-lookup w/ actual ID
-			// should be changed into a struct!
-			item[0] = id
+
+			result := pkg.Result{}
+			result.RecordID = id
+			result.DrugName = item[1]
+			result.MatchType = item[2]
+			result.WordFound = item[3]
+			result.Tags = strings.Split(item[4], ";")
+
 			// item = append(item, id)  // add ID as last value
-			finalResults = append(finalResults, item)
+			finalResults.Data = append(finalResults.Data, result)
 		}
 		fmt.Println(finalResults)
-		// now write to file
-		fileHeaders := []string{idFlag, "DrugName", "MatchType", "WordFound", "Tags"}
-		writeCSV("data/output.csv", fileHeaders, finalResults)
+		// now write to file --> TODO: implement CSV later
+		//fileHeaders := []string{idFlag, "DrugName", "MatchType", "WordFound", "Tags"}
+		//writeCSV("data/output.csv", fileHeaders, finalResults)
 
-		jsonResults, _ := json.MarshalIndent(finalResults, "", "  ")
-		err := ioutil.WriteFile("data/output.json", jsonResults, 0644)
-		pkg.Check(err)
+		// easy write to json
+		finalResults.ToFile("data/output.json")
 	},
 }
 

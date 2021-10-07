@@ -56,7 +56,7 @@ func (d *Drug) containsCloseMatch(text string) (bool, string) {
 
 func (d *Drug) SearchText(text string) (string, string) {
 	// returns match TYPE
-	// TODO: can modify to return an enum for saftey
+	// TODO: can modify to return an enum for safety
 	exactMatch, exactWord := d.containsExactMatch(text)
 	closeMatch, closeWord := d.containsCloseMatch(text)
 	if exactMatch {
