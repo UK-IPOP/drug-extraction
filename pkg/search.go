@@ -17,53 +17,43 @@ type SearchResult struct {
 	Target   string
 }
 
-func (d *Drug) containsExactMatch(text string) (bool, string) {
-	// would like this to take a single string OR array of strings
+func (d *Drug) SearchText(text string) TextSearchResult {
+	//TODO: can modify to return a struct for safety
 	for _, word := range strings.Fields(text) {
-		for _, searchWord := range d.SearchTerms {
-			if strings.ToLower(searchWord) == strings.ToLower(word) {
-				return true, strings.ToLower(word)
-			}
-		}
-	}
-	return false, ""
-}
-
-func (d *Drug) containsCloseMatch(text string) (bool, string) {
-	words := strings.Fields(text)
-	for _, word := range words {
 		for _, searchWord := range d.SearchTerms {
 			lowerWord := strings.ToLower(word)
 			lowerDrug := strings.ToLower(searchWord)
-			// might need custom implementation of distance
-			// would need to rely on ratio -> actual distance / max distance gives range 0-1
-			distance := fuzzy.LevenshteinDistance(lowerWord, lowerDrug)
-			var maxDistance int
-			if len(lowerDrug) > len(lowerWord) {
-				maxDistance = len(lowerDrug)
+			// search for exact match
+			if lowerDrug == lowerWord {
+				return TextSearchResult{
+					hasMatch:  true,
+					wordFound: lowerWord,
+					matchType: "Exact",
+				}
 			} else {
-				maxDistance = len(lowerWord)
-			}
-			var distanceRatio = float64(distance) / float64(maxDistance)
-			if absRatio := math.Abs(distanceRatio); absRatio <= 0.20 {
-				return true, lowerWord
+				// search for close match
+				distance := fuzzy.LevenshteinDistance(lowerWord, lowerDrug)
+				var maxDistance int
+				if len(lowerDrug) > len(lowerWord) {
+					maxDistance = len(lowerDrug)
+				} else {
+					maxDistance = len(lowerWord)
+				}
+				var distanceRatio = float64(distance) / float64(maxDistance)
+				if absRatio := math.Abs(distanceRatio); absRatio <= 0.20 {
+					return TextSearchResult{
+						hasMatch:  true,
+						wordFound: lowerWord,
+						matchType: "Close",
+					}
+				}
 			}
 		}
 	}
-	return false, ""
-}
-
-func (d *Drug) SearchText(text string) (string, string) {
-	// returns match TYPE
-	// TODO: can modify to return an enum for safety
-	exactMatch, exactWord := d.containsExactMatch(text)
-	closeMatch, closeWord := d.containsCloseMatch(text)
-	if exactMatch {
-		return "Exact", exactWord
-	} else if closeMatch {
-		return "Close", closeWord
-	} else {
-		return "", ""
+	return TextSearchResult{
+		hasMatch:  false,
+		wordFound: "",
+		matchType: "",
 	}
 }
 
@@ -72,14 +62,14 @@ func ScanDrugs(texts []string) []Result {
 	drugList := Drugs{}.LoadFromFile()
 	for i, row := range texts {
 		for _, drug := range drugList.Drugs {
-			resultType, resultWord := drug.SearchText(row)
-			if resultType != "" {
+			searchResult := drug.SearchText(row)
+			if searchResult.hasMatch {
 				// found something so now add it
 				// make this string array into a struct
 				r := Result{
 					DrugName:  drug.Name,
-					MatchType: resultType,
-					WordFound: resultWord,
+					MatchType: searchResult.matchType,
+					WordFound: searchResult.wordFound,
 					Tags:      drug.Tags,
 					TempID:    i,
 				}

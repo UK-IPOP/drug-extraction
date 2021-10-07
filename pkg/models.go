@@ -44,3 +44,9 @@ func (r FileResult) ToFile(path string) {
 	writeErr := ioutil.WriteFile(path, jsonData, 0644)
 	Check(writeErr)
 }
+
+type TextSearchResult struct {
+	hasMatch  bool
+	wordFound string
+	matchType string // should be either "Close" or "Exact" or ""... find a way to enforce?
+}
