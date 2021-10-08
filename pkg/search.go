@@ -1,10 +1,11 @@
 package pkg
 
 import (
-	"github.com/lithammer/fuzzysearch/fuzzy"
-	"github.com/schollz/progressbar/v3"
-	"math"
+	"github.com/adrg/strutil"
+	"github.com/adrg/strutil/metrics"
 	"strings"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 type MatchResult struct {
@@ -21,39 +22,23 @@ type SearchResult struct {
 func (d *Drug) SearchText(text string) TextSearchResult {
 	for _, word := range strings.Fields(text) {
 		for _, searchWord := range d.SearchTerms {
-			lowerWord := strings.ToLower(word)
 			lowerDrug := strings.ToLower(searchWord)
-			// search for exact match
-			if lowerDrug == lowerWord {
+			// get similarity ratio
+			// use levenshtein distance
+			sim := strutil.Similarity(lowerDrug, word, metrics.NewLevenshtein())
+			if sim >= 0.75 {
 				return TextSearchResult{
-					hasMatch:  true,
-					wordFound: lowerWord,
-					matchType: "Exact",
-				}
-			} else {
-				// search for close match
-				distance := fuzzy.LevenshteinDistance(lowerWord, lowerDrug)
-				var maxDistance int
-				if len(lowerDrug) > len(lowerWord) {
-					maxDistance = len(lowerDrug)
-				} else {
-					maxDistance = len(lowerWord)
-				}
-				var distanceRatio = float64(distance) / float64(maxDistance)
-				if absRatio := math.Abs(distanceRatio); absRatio <= 0.20 {
-					return TextSearchResult{
-						hasMatch:  true,
-						wordFound: lowerWord,
-						matchType: "Close",
-					}
+					hasMatch:        true,
+					wordFound:       word,
+					similarityRatio: sim,
 				}
 			}
 		}
 	}
 	return TextSearchResult{
-		hasMatch:  false,
-		wordFound: "",
-		matchType: "",
+		hasMatch:        false,
+		wordFound:       "",
+		similarityRatio: 0.0,
 	}
 }
 
@@ -71,18 +56,20 @@ func ScanDrugs(texts []string) []Result {
 			BarStart:      "[",
 			BarEnd:        "]",
 		}))
-	for i, row := range texts {
+	for i, text := range texts {
+		t := strip(strings.ToLower(text))
+
 		for _, drug := range drugList.Drugs {
-			searchResult := drug.SearchText(row)
+			searchResult := drug.SearchText(t)
 			if searchResult.hasMatch {
 				// found something so now add it
 				// make this string array into a struct
 				r := Result{
-					DrugName:  drug.Name,
-					MatchType: searchResult.matchType,
-					WordFound: searchResult.wordFound,
-					Tags:      drug.Tags,
-					TempID:    i,
+					DrugName:        drug.Name,
+					SimilarityRatio: searchResult.similarityRatio,
+					WordFound:       searchResult.wordFound,
+					Tags:            drug.Tags,
+					TempID:          i,
 				}
 				results = append(results, r)
 			}

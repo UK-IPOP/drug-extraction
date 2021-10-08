@@ -28,12 +28,12 @@ func (Drugs) Load() Drugs {
 }
 
 type Result struct {
-	RecordID  string   `json:"record_id"`
-	DrugName  string   `json:"drug_name"`
-	MatchType string   `json:"match_type"`
-	WordFound string   `json:"word_found"`
-	Tags      []string `json:"tags"`
-	TempID    int      `json:"-"` // ignores it when writing to json
+	RecordID        string   `json:"record_id"`
+	DrugName        string   `json:"drug_name"`
+	SimilarityRatio float64  `json:"similarity_ratio"`
+	WordFound       string   `json:"word_found"`
+	Tags            []string `json:"tags"`
+	TempID          int      `json:"-"` // ignores it when writing to json
 }
 
 type FileResult struct {
@@ -48,7 +48,7 @@ func (r FileResult) ToFile(path string) {
 }
 
 type TextSearchResult struct {
-	hasMatch  bool
-	wordFound string
-	matchType string // should be either "Close" or "Exact" or ""... find a way to enforce?
+	hasMatch        bool
+	wordFound       string
+	similarityRatio float64 // should be either "Close" or "Exact" or ""... find a way to enforce?
 }
