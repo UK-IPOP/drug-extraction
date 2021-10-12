@@ -1,19 +1,11 @@
-TODO: add strict flag to extract to only extract 1.0 matches of search terms
+TODOs:
 
-- **OR** should this be to only be 1.0 matches to drug names??
-
-TODO: refactor code out of cobra into pkg.utils
- 
-TODO: Add support for slang (street names)
-
-TODO: add windows support (file paths)
-
-TODO: add go-docs
-
-TODO: add info on how to install and how to use
-
-TODO: add command to format data?
-
-TODO: add more architecture support
-
-- USE goreleaser
+- [ ] Refactor code out of cobra cmds into pkg
+- [ ] Handle all ignored errors
+- [ ] Add support for slang (street names)
+- [ ] Add go-docs
+  - [ ] Add info on how to install and use
+  - [ ] Create mkdocs site w/ quickstart and tutorial
+- [ ] Add more architecture support
+  - [ ] Use goreleaser
+  - [ ] Windows requires FilePath standardization
