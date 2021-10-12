@@ -60,8 +60,8 @@ Data is expected in '*.csv' format.'`,
 		pkg.Check(err2)
 		// replace with nice prompt saying which cols ur using
 		// add support for column case-ignoring (i.e. upper case)
-		color.Yellow("Using ID column -> %s", headers[idIndex])
-		color.Yellow("Using TextSearch column -> %s", headers[targetIndex])
+		color.Yellow("Using ID column -> %s (index=%v)", headers[idIndex], idIndex)
+		color.Yellow("Using TextSearch column -> %s (index=%v)", headers[targetIndex], targetIndex)
 
 		// actually process text
 		var idData []string
