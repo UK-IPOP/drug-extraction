@@ -43,6 +43,7 @@ func init() {
 
 	// not required flags with defaults
 	pipelineCmd.Flags().BoolVar(&cleanStatus, "clean", false, "Remove existing output files for a clean run")
+	pipelineCmd.Flags().BoolVar(&strictStatus, "strict", false, "Whether to perform strict-matching")
 
 	// required file flags for extraction
 	pipelineCmd.Flags().StringVar(&targetCol, "target-col", "", "Target column to extract drugs from")

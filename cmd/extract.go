@@ -70,7 +70,7 @@ Data is expected in '*.csv' format.'`,
 			idData = append(idData, row[idIndex])
 			targetData = append(targetData, row[targetIndex])
 		}
-		results := pkg.ScanDrugs(targetData)
+		results := pkg.ScanDrugs(targetData, strictStatus)
 		finalResults := pkg.MultipleResults{}
 		for _, item := range results {
 			id := idData[item.TempID] // row index lookup
@@ -90,14 +90,15 @@ Data is expected in '*.csv' format.'`,
 
 var targetCol string
 var idCol string
+var strictStatus bool
 
 func init() {
 	rootCmd.AddCommand(extractCmd)
 
-	// Here you will define your flags and configuration settings.
+	// optional flags w/ defaults
+	extractCmd.Flags().BoolVar(&strictStatus, "strict", false, "Whether to perform strict-matching")
 
-	// Cobra supports local flags which will only run when this command is called directly, e.g.:
-	// extractCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// required flags
 	extractCmd.Flags().StringVar(&targetCol, "target-col", "", "Target column to extract drugs from")
 	targetErr := extractCmd.MarkFlagRequired("target-col")
 	pkg.Check(targetErr)

@@ -44,7 +44,30 @@ func (d *Drug) SearchText(text string) TextSearchResult {
 	}
 }
 
-func ScanDrugs(texts []string) []Result {
+func (d *Drug) SearchTextStrict(text string) TextSearchResult {
+	for _, word := range strings.Fields(text) {
+		for _, searchWord := range d.SearchTerms {
+			lowerDrug := strings.ToLower(searchWord)
+			// get similarity ratio
+			// use jaro-winkler distance to identify typos
+			sim := strutil.Similarity(lowerDrug, word, metrics.NewJaroWinkler())
+			if sim == 1.0 {
+				return TextSearchResult{
+					hasMatch:        true,
+					wordFound:       word,
+					similarityRatio: sim,
+				}
+			}
+		}
+	}
+	return TextSearchResult{
+		hasMatch:        false,
+		wordFound:       "",
+		similarityRatio: 0.0,
+	}
+}
+
+func ScanDrugs(texts []string, strict bool) []Result {
 	var results []Result
 	drugList := Drugs{}.Load()
 	bar := progressbar.NewOptions(len(texts),
@@ -58,27 +81,53 @@ func ScanDrugs(texts []string) []Result {
 			BarStart:      "[",
 			BarEnd:        "]",
 		}))
-	for i, text := range texts {
-		t := strip(strings.ToLower(text))
+	if strict {
+		for i, text := range texts {
+			t := strip(strings.ToLower(text))
 
-		for _, drug := range drugList.Drugs {
-			searchResult := drug.SearchText(t)
-			if searchResult.hasMatch {
-				// found something so now add it
-				// make this string array into a struct
-				r := Result{
-					DrugName:        drug.Name,
-					SimilarityRatio: searchResult.similarityRatio,
-					WordFound:       searchResult.wordFound,
-					Tags:            drug.Tags,
-					TempID:          i,
+			for _, drug := range drugList.Drugs {
+				searchResult := drug.SearchTextStrict(t)
+				if searchResult.hasMatch {
+					// found something so now add it
+					// make this string array into a struct
+					r := Result{
+						DrugName:        drug.Name,
+						SimilarityRatio: searchResult.similarityRatio,
+						WordFound:       searchResult.wordFound,
+						Tags:            drug.Tags,
+						TempID:          i,
+					}
+					results = append(results, r)
 				}
-				results = append(results, r)
 			}
+			err := bar.Add(1)
+			Check(err)
 		}
-		err := bar.Add(1)
-		Check(err)
+		fmt.Println()
+		return results
+	} else {
+		for i, text := range texts {
+			t := strip(strings.ToLower(text))
+
+			for _, drug := range drugList.Drugs {
+				searchResult := drug.SearchText(t)
+				if searchResult.hasMatch {
+					// found something so now add it
+					// make this string array into a struct
+					r := Result{
+						DrugName:        drug.Name,
+						SimilarityRatio: searchResult.similarityRatio,
+						WordFound:       searchResult.wordFound,
+						Tags:            drug.Tags,
+						TempID:          i,
+					}
+					results = append(results, r)
+				}
+			}
+			err := bar.Add(1)
+			Check(err)
+		}
+		fmt.Println()
+		return results
 	}
-	fmt.Println()
-	return results
 }
