@@ -33,10 +33,15 @@ It can optionally call the 'clean' command prior to 'extract' if the '--clean' f
 			cleanCmd.Run(cmd, args)
 		}
 		extractCmd.Run(cmd, args)
+		if formatStatus {
+			convertFileData(formatType)
+		}
 	},
 }
 
 var cleanStatus bool
+var formatStatus bool
+var formatType string
 
 func init() {
 	rootCmd.AddCommand(pipelineCmd)
@@ -44,6 +49,8 @@ func init() {
 	// not required flags with defaults
 	pipelineCmd.Flags().BoolVar(&cleanStatus, "clean", false, "Remove existing output files for a clean run")
 	pipelineCmd.Flags().BoolVar(&strictStatus, "strict", false, "Whether to perform strict-matching")
+	pipelineCmd.Flags().BoolVar(&formatStatus, "format", false, "Whether to format the data")
+	pipelineCmd.Flags().StringVar(&formatType, "format-type", "csv", "The new data format")
 
 	// required file flags for extraction
 	pipelineCmd.Flags().StringVar(&targetCol, "target-col", "", "Target column to extract drugs from")
