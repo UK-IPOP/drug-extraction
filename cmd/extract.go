@@ -83,7 +83,7 @@ Data is expected in '*.csv' format.'`,
 		}
 
 		// write to json
-		finalResults.ToFile("data/output.json")
+		finalResults.ToFile("data/output.jsonl")
 
 		// TODO: implement CSV later
 		//fileHeaders := []string{idFlag, "DrugName", "MatchType", "WordFound", "Tags"}

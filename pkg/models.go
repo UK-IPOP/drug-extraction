@@ -3,8 +3,9 @@ package pkg
 import (
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"os"
 )
 
 //go:embed drug_info.yaml
@@ -41,10 +42,19 @@ type FileResult struct {
 }
 
 func (r FileResult) ToFile(path string) {
-	jsonData, convertErr := json.MarshalIndent(r, "", "  ")
-	Check(convertErr)
-	writeErr := ioutil.WriteFile(path, jsonData, 0644)
-	Check(writeErr)
+	for _, info := range r.Data {
+		fmt.Println(info)
+		jsonified, _ := json.Marshal(info)
+		fmt.Println(string(jsonified))
+		f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		if _, err = f.Write(append(jsonified, "\n"...)); err != nil {
+			panic(err)
+		}
+	}
 }
 
 type TextSearchResult struct {
