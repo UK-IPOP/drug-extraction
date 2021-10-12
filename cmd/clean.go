@@ -38,7 +38,7 @@ var cleanCmd = &cobra.Command{
 				pkg.Check(err)
 			}
 		}
-		color.Blue("Done removing old output files.")
+		color.Blue("Removed old output files.")
 	},
 }
 
