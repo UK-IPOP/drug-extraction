@@ -74,7 +74,7 @@ Data is expected in '*.csv' format.'`,
 			targetData = append(targetData, row[targetIndex])
 		}
 		results := pkg.ScanDrugs(targetData)
-		finalResults := pkg.FileResult{}
+		finalResults := pkg.MultipleResults{}
 		for _, item := range results {
 			id := idData[item.TempID] // row index lookup
 			item.RecordID = id

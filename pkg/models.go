@@ -3,7 +3,6 @@ package pkg
 import (
 	_ "embed"
 	"encoding/json"
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"os"
 )
@@ -37,20 +36,18 @@ type Result struct {
 	TempID          int      `json:"-"` // ignores it when writing to json
 }
 
-type FileResult struct {
+type MultipleResults struct {
 	Data []Result `json:"data"`
 }
 
-func (r FileResult) ToFile(path string) {
+func (r MultipleResults) ToFile(path string) {
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
 	for _, info := range r.Data {
-		fmt.Println(info)
 		jsonified, _ := json.Marshal(info)
-		fmt.Println(string(jsonified))
-		f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
 		if _, err = f.Write(append(jsonified, "\n"...)); err != nil {
 			panic(err)
 		}
