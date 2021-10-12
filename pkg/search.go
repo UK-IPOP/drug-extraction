@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/adrg/strutil"
@@ -27,7 +28,7 @@ func (d *Drug) SearchText(text string) TextSearchResult {
 			// get similarity ratio
 			// use jaro-winkler distance to identify typos
 			sim := strutil.Similarity(lowerDrug, word, metrics.NewJaroWinkler())
-			if sim >= 0.75 {
+			if sim >= 0.90 {
 				return TextSearchResult{
 					hasMatch:        true,
 					wordFound:       word,
@@ -78,5 +79,6 @@ func ScanDrugs(texts []string) []Result {
 		err := bar.Add(1)
 		Check(err)
 	}
+	fmt.Println()
 	return results
 }
