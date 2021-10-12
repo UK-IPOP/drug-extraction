@@ -63,3 +63,4 @@ __pypackages__/
 src/.DS_Store
 .DS_Store
 .idea/*
+data/*
