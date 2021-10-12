@@ -31,6 +31,7 @@ var cleanCmd = &cobra.Command{
 		files := []string{
 			"data/output.json",
 			"data/output.csv",
+			"data/output.jsonl",
 		}
 		for _, file := range files {
 			if _, err := os.Stat(file); err == nil {
