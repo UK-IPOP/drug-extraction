@@ -27,9 +27,6 @@ import (
 	"strings"
 )
 
-var targetCol string
-var idCol string
-
 // extractCmd represents the extract command
 var extractCmd = &cobra.Command{
 	Use:   "extract",
@@ -90,6 +87,9 @@ Data is expected in '*.csv' format.'`,
 		//writeCSV("data/output.csv", fileHeaders, finalResults)
 	},
 }
+
+var targetCol string
+var idCol string
 
 func init() {
 	rootCmd.AddCommand(extractCmd)
