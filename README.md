@@ -9,4 +9,5 @@ TODO: add go-docs
 
 TODO: add info on how to install and how to use
 
-TODO: add command to clean up data into csv 😃
+TODO: add command to format data?
+
