@@ -15,3 +15,5 @@ TODO: add info on how to install and how to use
 TODO: add command to format data?
 
 TODO: add more architecture support
+
+- USE goreleaser
