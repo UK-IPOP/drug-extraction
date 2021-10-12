@@ -1,9 +1,10 @@
 package pkg
 
 import (
+	"strings"
+
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
-	"strings"
 
 	"github.com/schollz/progressbar/v3"
 )
@@ -24,8 +25,8 @@ func (d *Drug) SearchText(text string) TextSearchResult {
 		for _, searchWord := range d.SearchTerms {
 			lowerDrug := strings.ToLower(searchWord)
 			// get similarity ratio
-			// use levenshtein distance
-			sim := strutil.Similarity(lowerDrug, word, metrics.NewLevenshtein())
+			// use jaro-winkler distance to identify typos
+			sim := strutil.Similarity(lowerDrug, word, metrics.NewJaroWinkler())
 			if sim >= 0.75 {
 				return TextSearchResult{
 					hasMatch:        true,
