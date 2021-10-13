@@ -7,5 +7,5 @@ TODOs:
   - [ ] Add info on how to install and use
   - [ ] Create mkdocs site w/ quickstart and tutorial
 - [ ] Add more architecture support
-  - [ ] Use goreleaser
+  - [x] Use goreleaser
   - [ ] Windows requires FilePath standardization
