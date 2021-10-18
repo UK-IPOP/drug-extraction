@@ -64,4 +64,4 @@ src/.DS_Store
 .DS_Store
 .idea/*
 data/*
-dist/
+/web/site/

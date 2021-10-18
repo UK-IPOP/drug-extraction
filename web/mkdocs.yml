@@ -1,0 +1,4 @@
+site_name: Drug Extraction
+site_url: https://uk-ipop.github.io/drug-extraction/
+theme:
+  name: material
