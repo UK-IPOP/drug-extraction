@@ -2,8 +2,8 @@
 
 echo "Initializing new release..."
 
-read -p -r "Tag: " tag
-read -p -r "Message: " msg
+read -p "Tag: " tag
+read -p "Message: " msg
 
 echo "Releasing $tag"
 
@@ -11,5 +11,5 @@ git tag -a "$tag" -m "$msg"
 git push origin "$tag"
 
 goreleaser check
-goreleaser release
+goreleaser release --rm-dist
 
