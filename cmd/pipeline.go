@@ -16,10 +16,20 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/UK-IPOP/drug-extraction/pkg"
-
+	"github.com/UK-IPOP/drug-extraction/pkg/models"
 	"github.com/spf13/cobra"
 )
+
+// flag variables
+
+// cleanStatus is a flag for whether to clean the output files
+var cleanStatus bool
+
+// formatStatus is a flag for whether to format the data
+var formatStatus bool
+
+// formatType is a flag for the new data format
+var formatType string
 
 // pipelineCmd represents the pipeline command
 var pipelineCmd = &cobra.Command{
@@ -34,14 +44,10 @@ It can optionally call the 'clean' command prior to 'extract' if the '--clean' f
 		}
 		extractCmd.Run(cmd, args)
 		if formatStatus {
-			convertFileData(formatType)
+			ConvertFileData(formatType)
 		}
 	},
 }
-
-var cleanStatus bool
-var formatStatus bool
-var formatType string
 
 func init() {
 	rootCmd.AddCommand(pipelineCmd)
@@ -55,8 +61,8 @@ func init() {
 	// required file flags for extraction
 	pipelineCmd.Flags().StringVar(&targetCol, "target-col", "", "Target column to extract drugs from")
 	targetErr := pipelineCmd.MarkFlagRequired("target-col")
-	pkg.Check(targetErr)
+	models.Check(targetErr)
 	pipelineCmd.Flags().StringVar(&idCol, "id-col", "", "ID column to keep for later re-indexing/joining")
 	idErr := pipelineCmd.MarkFlagRequired("id-col")
-	pkg.Check(idErr)
+	models.Check(idErr)
 }

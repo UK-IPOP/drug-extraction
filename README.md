@@ -1,11 +1,12 @@
-TODOs:
+## TODOs:
 
-- [ ] Refactor code out of cobra cmds into pkg
-- [ ] Handle all ignored errors
 - [ ] Add support for slang (street names)
+- [ ] Handle all ignored errors
+- [ ] Adjust drug_info.yaml config
+- [ ] Refactor code out of cobra cmds into pkg
 - [ ] Add go-docs
   - [ ] Add info on how to install and use
   - [ ] Create mkdocs site w/ quickstart and tutorial
-- [ ] Add more architecture support
+- [x] Add more architecture support
   - [x] Use goreleaser
-  - [ ] Windows requires FilePath standardization
+  - [x] Windows requires FilePath standardization

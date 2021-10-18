@@ -1,16 +1,18 @@
-package pkg
+package models
 
 import (
 	"log"
 	"strings"
 )
 
+// Check quickly handles the checking of errors and logs if the error is not nil.
 func Check(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+// strip removes punctuation from the string provided.
 func strip(s string) string {
 	var result strings.Builder
 	for i := 0; i < len(s); i++ {
