@@ -20,6 +20,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
+	"path"
 )
 
 // cleanCmd represents the clean command
@@ -29,13 +30,14 @@ var cleanCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO: add output files to remove, whatever they are
 		files := []string{
-			"data/output.json",
-			"data/output.csv",
-			"data/output.jsonl",
+			"output.json",
+			"output.csv",
+			"output.jsonl",
 		}
 		for _, file := range files {
-			if _, err := os.Stat(file); err == nil {
-				err = os.Remove(file)
+			fpath := path.Join("data", file)
+			if _, err := os.Stat(fpath); err == nil {
+				err = os.Remove(fpath)
 				pkg.Check(err)
 			}
 		}

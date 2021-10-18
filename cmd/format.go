@@ -52,8 +52,8 @@ func convertFileData(newFileType string) {
 	case "json":
 		// this loads the whole thing into memory which defeats the purpose of jsonlines
 		// TODO: fix mentioned above
-		old, err := os.OpenFile("data/output.jsonl", os.O_RDONLY, 0644)
-		new, err := os.OpenFile("data/output.json", os.O_CREATE|os.O_WRONLY, 0644)
+		old, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
+		new, err := os.OpenFile("output.json", os.O_CREATE|os.O_WRONLY, 0644)
 		pkg.Check(err)
 		// read outputted jsonlines
 		var results pkg.MultipleResults
@@ -72,8 +72,8 @@ func convertFileData(newFileType string) {
 		jsonResult, _ := json.MarshalIndent(results, "", "    ")
 		new.Write(jsonResult)
 	case "csv":
-		old, err := os.OpenFile("data/output.jsonl", os.O_RDONLY, 0644)
-		new, err := os.OpenFile("data/output.csv", os.O_CREATE|os.O_WRONLY, 0644)
+		old, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
+		new, err := os.OpenFile("output.csv", os.O_CREATE|os.O_WRONLY, 0644)
 		pkg.Check(err)
 		// read outputted jsonlines
 		headers := []string{"record_id", "drug_name", "word_found", "similarity_ratio", "tags"}
