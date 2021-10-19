@@ -133,6 +133,8 @@ Drugs:
     Tags:
       - opiate
       - nonfentanyl_opioid
+      - fentanyl
+      - fen_analog
   - Name: U-49900
     Search Terms:
       - U-49900
@@ -140,17 +142,21 @@ Drugs:
     Tags:
       - opiate
       - nonfentanyl_opioid
+      - fentanyl
+      - fen_analog
   - Name: Fentanyl
     Search Terms:
       - Fentanyl
     Tags:
       - fentanyl
+      - opioid
   - Name: Acetylfentanyl
     Search Terms:
       - Acetyl
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: 4-ANPP
     Search Terms:
       - Despropionyl
@@ -159,6 +165,7 @@ Drugs:
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: Butyryl Fentanyl
     Search Terms:
       - Butyryl
@@ -166,6 +173,7 @@ Drugs:
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: Carfentanyl
     Search Terms:
       - Carfentanyl
@@ -173,12 +181,14 @@ Drugs:
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: Cyclopropyl Fentanyl
     Search Terms:
       - Cyclopropyl
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: 4-Fluoroisobutyryl Fentanyl (4-FIBF)
     Search Terms:
       - Fibf
@@ -188,24 +198,28 @@ Drugs:
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: 2-Furanyl Fentanyl
     Search Terms:
       - Furanyl
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: Methoxyacetyl Fentanyl
     Search Terms:
       - Methoxyacetyl
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: Norfentanyl
     Search Terms:
       - Norfentanyl
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: Para-Fluorobutyryl Fentanyl (4-FBF)
     Search Terms:
       - Para-Fluorobutyryl
@@ -214,12 +228,14 @@ Drugs:
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: Valerylfentanyl
     Search Terms:
       - Valerylfentanyl
     Tags:
       - fen_analog
       - fentanyl
+      - opioid
   - Name: Cannabis
     Search Terms:
       - Cannabis
