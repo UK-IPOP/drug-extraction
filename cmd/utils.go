@@ -112,39 +112,41 @@ func ConvertFileData(newFileType string) {
 	case "json":
 		// this loads the whole thing into memory which defeats the purpose of jsonlines
 		// TODO: fix mentioned above
-		old, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
-		new, err := os.OpenFile("output.json", os.O_CREATE|os.O_WRONLY, 0644)
+		oldFile, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
+		newFile, err := os.OpenFile("output.json", os.O_CREATE|os.O_WRONLY, 0644)
 		models.Check(err)
 		// read outputted jsonlines
 		var results models.MultipleResults
-		decoder := json.NewDecoder(old)
+		decoder := json.NewDecoder(oldFile)
 		for decoder.More() {
 			// for each line
 			var result models.Result
 			// parse into struct
 			if err := decoder.Decode(&result); err != nil {
-				fmt.Errorf("parse result: %w", err)
+				fmt.Println("parse result: %w", err)
 			}
 			// append to struct
 			results.Data = append(results.Data, result)
 		}
 		// write to file
 		jsonResult, _ := json.MarshalIndent(results, "", "    ")
-		new.Write(jsonResult)
+		_, err = newFile.Write(jsonResult)
+		models.Check(err)
 	case "csv":
-		old, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
-		new, err := os.OpenFile("output.csv", os.O_CREATE|os.O_WRONLY, 0644)
+		oldFile, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
+		newFile, err := os.OpenFile("output.csv", os.O_CREATE|os.O_WRONLY, 0644)
 		models.Check(err)
 		// read outputted jsonlines
 		headers := []string{"record_id", "drug_name", "word_found", "similarity_ratio", "tags"}
-		new.WriteString(strings.Join(headers, ",") + "\n")
-		decoder := json.NewDecoder(old)
+		_, err = newFile.WriteString(strings.Join(headers, ",") + "\n")
+		models.Check(err)
+		decoder := json.NewDecoder(oldFile)
 		for decoder.More() {
 			// for each line
 			var result models.Result
 			// parse into struct
 			if err := decoder.Decode(&result); err != nil {
-				fmt.Errorf("parse result: %w", err)
+				fmt.Println("parse result: %w", err)
 			}
 			// write to file
 			var row = make([]string, 5)
@@ -154,7 +156,8 @@ func ConvertFileData(newFileType string) {
 			row[3] = strconv.FormatFloat(result.SimilarityRatio, 'f', -1, 64)
 			row[4] = strings.Join(result.Tags, ";")
 			rowString := strings.Join(row, ",")
-			new.WriteString(rowString + "\n")
+			_, err = newFile.WriteString(rowString + "\n")
+			models.Check(err)
 		}
 	default:
 		color.Red("Unexpected file format, expected `csv` or `json`")

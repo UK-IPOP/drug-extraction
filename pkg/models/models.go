@@ -54,7 +54,12 @@ func (r MultipleResults) ToFile(path string) {
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+
+		}
+	}(f)
 	for _, info := range r.Data {
 		jsonified, _ := json.Marshal(info)
 		if _, err = f.Write(append(jsonified, "\n"...)); err != nil {
