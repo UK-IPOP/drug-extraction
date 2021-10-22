@@ -1,6 +1,9 @@
 package models
 
 import (
+	"encoding/json"
+	"io"
+	"io/ioutil"
 	"log"
 	"strings"
 )
@@ -25,4 +28,23 @@ func strip(s string) string {
 		}
 	}
 	return result.String()
+}
+
+func readJsonLines(fpath string) []Result {
+	contents, err := ioutil.ReadFile(fpath)
+	Check(err)
+	dec := json.NewDecoder(strings.NewReader(string(contents)))
+	var results []Result
+	for {
+		var result Result
+		err := dec.Decode(&result)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Fatal(err)
+		}
+		results = append(results, result)
+	}
+	return results
 }

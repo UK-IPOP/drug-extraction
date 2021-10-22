@@ -68,6 +68,12 @@ func (r MultipleResults) ToFile(path string) {
 	}
 }
 
+// LoadFromFile reads MultipleResults from the specified filepath.
+func (r *MultipleResults) LoadFromFile(path string) {
+	results := readJsonLines(path)
+	r.Data = results
+}
+
 // TextSearchResult contains the specific results of search functionality and is used to create a full Result item.
 type TextSearchResult struct {
 	hasMatch        bool
