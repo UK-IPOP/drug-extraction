@@ -5,14 +5,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
+	"log"
+	"math"
+	"net/http"
+	"os"
+	"os/exec"
+	"path"
+	"runtime"
+	"sort"
+	"strconv"
+	"strings"
+
 	"github.com/UK-IPOP/drug-extraction/pkg/models"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"log"
-	"os"
-	"path"
-	"strconv"
-	"strings"
 )
 
 // CleanRunner executes on the 'clean' command, it removes all the files specified.
@@ -103,6 +110,38 @@ func ExtractRunner(cmd *cobra.Command, fName string, strictStatus bool) {
 	finalResults.ToFile("output.jsonl")
 }
 
+func ExtractServerRunner(fName string, idCol string, targetCol string, strictStatus bool) {
+	fileName := fName
+	headers, data := ReadCsvFile(fileName)
+	idIndex, err1 := FindColIndex(headers, idCol)
+	targetIndex, err2 := FindColIndex(headers, targetCol)
+	models.Check(err1)
+	models.Check(err2)
+
+	color.Yellow("Using ID column -> %s (index=%v)", headers[idIndex], idIndex)
+	color.Yellow("Using TextSearch column -> %s (index=%v)", headers[targetIndex], targetIndex)
+
+	// actually process text
+	var idData []string
+	var targetData []string
+	for _, row := range data {
+		idData = append(idData, row[idIndex])
+		targetData = append(targetData, row[targetIndex])
+	}
+	results := models.ScanDrugs(targetData, strictStatus)
+	finalResults := models.MultipleResults{}
+	for _, item := range results {
+		id := idData[item.TempID] // row index lookup
+		item.RecordID = id
+
+		finalResults.Data = append(finalResults.Data, item)
+	}
+
+	// write to json
+	finalResults.ToFile("output.jsonl")
+}
+
+
 // ConvertFileData converts the ".jsonl" output to either ".json" or ".csv" output.
 func ConvertFileData(newFileType string) {
 
@@ -163,4 +202,123 @@ func ConvertFileData(newFileType string) {
 		color.Red("Unexpected file format, expected `csv` or `json`")
 
 	}
+}
+
+// open opens the specified URL in the default browser of the user.
+func open(url string) error {
+	var cmd string
+	var args []string
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd = "cmd"
+		args = []string{"/c", "start"}
+	case "darwin":
+		cmd = "open"
+	default: // "linux", "freebsd", "openbsd", "netbsd"
+		cmd = "xdg-open"
+	}
+	args = append(args, url)
+	return exec.Command(cmd, args...).Start()
+}
+
+type wordMatch struct {
+	Word  string  `json:"word"`
+	Ratio float64 `json:"ratio"`
+}
+
+type drugAnalysis struct {
+	DrugName     string      `json:"drug_name"`
+	MatchedWords []wordMatch `json:"matched_words"`
+	TotalRecords int         `json:"total_records"`
+}
+
+type tagAnalysis struct {
+	TagName string  `json:"tag_name"`
+	Ratio   float64 `json:"ratio"`
+}
+
+func calculateDrugWordRatios(records []models.Result, threshold float64) []drugAnalysis {
+	// get unique drugs
+	uniqueDrugNames := map[string]bool{}
+	for _, record := range records {
+		uniqueDrugNames[record.DrugName] = true
+	}
+
+	// for each drug get its matched words and their ratios
+	var drugData []drugAnalysis
+	for drugName, _ := range uniqueDrugNames {
+		var totalDrugRecords int
+		drugWordCounts := map[string]int{}
+		for _, record := range records {
+			if record.DrugName == drugName {
+				drugWordCounts[record.WordFound] += 1
+				totalDrugRecords += 1
+			}
+		}
+		var totalMatchesFound int
+		for _, v := range drugWordCounts {
+			totalMatchesFound += v
+		}
+		var matchedWords []wordMatch
+		for k, v := range drugWordCounts {
+			// v is count found, normalize using total count of words found related to this drug
+			ratio := math.Round((float64(v)/float64(totalMatchesFound))*100) / 100
+			if ratio > threshold {
+				match := wordMatch{
+					Word:  k,
+					Ratio: ratio,
+				}
+				matchedWords = append(matchedWords, match)
+			}
+		}
+		sort.Slice(matchedWords, func(i, j int) bool {
+			return matchedWords[i].Ratio > matchedWords[j].Ratio
+		})
+		drugData = append(drugData, drugAnalysis{
+			DrugName:     drugName,
+			MatchedWords: matchedWords,
+			TotalRecords: totalDrugRecords,
+		})
+	}
+
+	return drugData
+}
+
+func calculateTags(records []models.Result) []tagAnalysis {
+	totalRecords := len(records)
+	var tagData []tagAnalysis
+	tagCounts := map[string]int{}
+	for _, record := range records {
+		for _, tag := range record.Tags {
+			tagCounts[tag] += 1
+		}
+	}
+	for tag, count := range tagCounts {
+		ratio := math.Round((float64(count))/float64(totalRecords)) * 100
+		tagData = append(tagData, tagAnalysis{
+			TagName: tag,
+			Ratio:   ratio,
+		})
+	}
+	return tagData
+}
+
+func runAnalysis(records models.MultipleResults, threshold float64) ([]drugAnalysis, []tagAnalysis) {
+	analysis1 := calculateDrugWordRatios(records.Data, threshold)
+	analysis2 := calculateTags(records.Data)
+	return analysis1, analysis2
+}
+
+func reportHandler(w http.ResponseWriter, r *http.Request) {
+	results := models.MultipleResults{}
+	results.LoadFromFile("output.jsonl")
+	pathPath := path.Join("web", "report.html")
+	t, _ := template.ParseFiles(pathPath)
+	drugAnalytics, tagAnalytics := runAnalysis(results, 0.01)
+	analytics := make(map[string]interface{})
+	analytics["drugs"] = drugAnalytics
+	analytics["tags"] = tagAnalytics
+	t.Execute(w, analytics)
+	fmt.Println("report generated")
 }

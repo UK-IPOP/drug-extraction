@@ -27,7 +27,7 @@ Drugs are then classified based on the data configuration file.
 	Version: "v0.1.1",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) { serverCmd.Run(cmd, args) },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

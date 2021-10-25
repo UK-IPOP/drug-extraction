@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<!-- Font Awesome -->
+		<link
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+			rel="stylesheet"
+		/>
+		<!-- Google Fonts -->
+		<link
+			href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- MDB -->
+		<link
+			href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.6.0/mdb.min.css"
+			rel="stylesheet"
+		/>
+
+		<title>Drug Extraction Server</title>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Drug Extraction</h1>
+			<!-- add text here explaining this is still on ur computer, not sending to another server and
+            is only a GUI wrapper around the core CLI utility  -->
+
+			<p>The expected file type is `*.csv` and the program will not accept other formats.</p>
+			<form action="/extract" method="post" enctype="multipart/form-data" id="formFile">
+				<label for="formFile" class="form-label">Upload your file:</label>
+				<input class="form-control form-control" name="formFile" type="file" />
+
+				<div class="form-outline m-5">
+					<input type="text" id="idCol" class="form-control" name="idCol" />
+					<label class="form-label" for="idCol">ID column...</label>
+					<div class="form-helper">Example helper</div>
+				</div>
+
+				<div class="form-outline m-5">
+					<input type="text" id="targetCol" class="form-control" name="targetCol" />
+					<label class="form-label" for="targetCol">Target text column...</label>
+					<div class="form-helper">Example helper</div>
+				</div>
+
+				<p>
+					Clean runs remove previous output files, toggle this off to append to previous records.
+				</p>
+				<div class="form-check form-switch">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						id="cleanStatus"
+						name="cleanStatus"
+						checked
+					/>
+					<label class="form-check-label" for="cleanStatus">Execute a clean run?</label>
+				</div>
+
+				<div>
+					<p>Select an output type:</p>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="inlineOutputOptions"
+							id="output1"
+							value="json"
+						/>
+						<label class="form-check-label" for="output1">json</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="inlineOutputOptions"
+							id="output2"
+							value="jsonlines"
+							checked
+						/>
+						<label class="form-check-label" for="output2">jsonlines</label>
+					</div>
+					<div class="form-check form-check-inline">
+						<input
+							class="form-check-input"
+							type="radio"
+							name="inlineOutputOptions"
+							id="output3"
+							value="csv"
+						/>
+						<label class="form-check-label" for="output3">csv</label>
+					</div>
+				</div>
+
+				<div class="form-check form-switch">
+					<input class="form-check-input" type="checkbox" id="reportGenerator" disabled />
+					<label class="form-check-label" for="reportGenerator">Generate report?</label>
+				</div>
+				<button type="submit" class="btn btn-primary">Submit</button>
+			</form>
+		</div>
+
+		<!-- MDB -->
+		<script
+			type="text/javascript"
+			src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.6.0/mdb.min.js"
+		></script>
+	</body>
+</html>
+
+<script></script>
