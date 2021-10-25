@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -33,6 +34,7 @@ same background logic.`,
 			}
 			filename := filepath.Base(file.Filename)
 			// Upload the file to specific dst.
+			os.Mkdir("./uploads", 0777)
 			filepath := path.Join("./uploads", filename)
 			c.SaveUploadedFile(file, filepath)
 
