@@ -14,3 +14,6 @@
   - [x] Use goreleaser
   - [x] Windows requires FilePath standardization
 - [ ] Add tests
+- [ ] Think of data structure for tags themselves
+  - ie. tree structure
+- [ ] Refactor util functions into their command files, makes more sense than separation
