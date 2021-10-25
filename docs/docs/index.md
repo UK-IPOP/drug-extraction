@@ -1,19 +1,25 @@
+---
+hide:
+  - navigation
+---
+
 # Welcome
 
-This is a CLI (command-line-interface) tool designed for 
-people wanting to extract drugs from free-text.   
+This is a CLI (command-line-interface) tool designed for
+people wanting to extract drugs from free-text.
 
-## Quickstart
+## Quick Start
 
-Typical usage pattern is something like:
+Simplest usage:
 
 ```bash
-drug-extraction extract <filename>.csv --id-col "id" --target-col "text"
+drug-extraction
 ```
 
 More advanced usage:
+
 ```bash
-drug-extraction pipeline <filename>.csv --id-col "#" --target-col "Name" --format --format-type=csv
+drug-extraction pipeline pokemon.csv --id-col "#" --target-col "Name" --format --format-type=csv
 ```
 
 ## Installation
@@ -30,20 +36,3 @@ Retrieve the package code from GitHub.
 ```bash
 go get github.com/UK-IPOP/drug-extraction
 ```
-
-## Getting Started
-
-### Possible Configurations
-
-Commands:
-- extract
-- clean
-- format
-- pipeline
-- --target-col
-- --id-col
-- --format
-- --format-type
-- --strict
-- --clean
-
