@@ -382,7 +382,7 @@ Drugs:
       - Hypoxic
       - Ischemic
     Tags:
-      - Hypoxic
+      - hypoxic
   - Name: Benzodiazepine
     Search Terms:
       - Benzodia
