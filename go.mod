@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/adrg/strutil v0.2.3
 	github.com/fatih/color v1.13.0
+	github.com/gin-gonic/gin v1.7.4
 	github.com/schollz/progressbar/v3 v3.8.3
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
@@ -14,7 +15,6 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.7.4 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
