@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
@@ -38,9 +37,21 @@ same background logic.`,
 			filepath := path.Join("./uploads", filename)
 			c.SaveUploadedFile(file, filepath)
 
-			strict := c.PostForm("strictStatus")
-			strictStatus, _ := strconv.ParseBool(strict)
-			ExtractServerRunner(filepath, c.PostForm("idCol"), c.PostForm("targetCol"), strictStatus)
+			// clean := c.PostForm("cleanStatus")
+			// var cleanStatus bool
+			// if clean =="on" { 
+			// 	strictStatus = true
+			// } else {
+			// 	strictStatus = false
+			// }
+
+			// TODO: add strict status field
+			// TODO: add clean runner
+
+			// CleanRunner()
+			
+
+			ExtractServerRunner(filepath, c.PostForm("idCol"), c.PostForm("targetCol"), false)
 
 			outputType := c.PostForm("inlineOutputOptions")
 			if outputType != "jsonlines" {
