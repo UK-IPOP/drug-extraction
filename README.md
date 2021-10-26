@@ -6,7 +6,9 @@ This is a CLI (command-line-interface) tool designed for
 people wanting to extract drugs from free-text. It also supports a web-driven
 UI for less technical users, although the web capabilities are more limited.
 
-## [API Docs](https://uk-ipop.github.io/drug-extraction/)
+## [Web Docs](https://uk-ipop.github.io/drug-extraction/)
+
+## [API Docs / GoDoc](https://pkg.go.dev/github.com/UK-IPOP/drug-extraction@v0.2.0)
 
 ## Quick Start
 
