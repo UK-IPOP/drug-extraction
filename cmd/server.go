@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"embed"
 	"net/http"
 	"os"
 	"path"
@@ -12,6 +13,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// homePage holds the server pages.
+//go:embed web
+var web embed.FS
+
 // serverCmd represents the report command
 var serverCmd = &cobra.Command{
 	Use:   "server",
@@ -21,16 +26,15 @@ and a more user-friendly front-end interface for engaging with the
 same background logic.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		router := gin.Default()
-		router.LoadHTMLGlob("./web/*")
 		router.MaxMultipartMemory = 8 << 20 // 8 MiB
-
+		webFS := http.FS(web)
 		router.GET("/", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "index.html", nil)
+			c.FileFromFS(path.Join("web", "home.html"), webFS)
 		})
 		router.POST("/extract", func(c *gin.Context) {
 			file, err := c.FormFile("formFile")
 			if err != nil {
-				c.HTML(http.StatusBadRequest, "error.html", err)
+				c.FileFromFS(path.Join("web", "error.html"), webFS)
 			}
 			filename := filepath.Base(file.Filename)
 			// Upload the file to specific dst.
@@ -59,7 +63,7 @@ same background logic.`,
 				ConvertFileData(outputType)
 			}
 
-			c.HTML(http.StatusOK, "success.html", nil)
+			c.FileFromFS(path.Join("web", "success.html"), webFS)
 		})
 
 		go open("http://localhost:8080")
