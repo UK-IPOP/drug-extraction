@@ -30,9 +30,8 @@ func CleanRunner() {
 		"output.jsonl",
 	}
 	for _, file := range files {
-		fpath := path.Join("data", file)
-		if _, err := os.Stat(fpath); err == nil {
-			err = os.Remove(fpath)
+		if _, err := os.Stat(file); err == nil {
+			err = os.Remove(file)
 			models.Check(err)
 		}
 	}
@@ -149,8 +148,7 @@ func ConvertFileData(newFileType string) {
 	// lets do json first quickly since its easier
 	switch newFileType {
 	case "json":
-		// this loads the whole thing into memory which defeats the purpose of jsonlines
-		// TODO: fix mentioned above
+		// TODO: this loads the whole thing into memory which defeats the purpose of jsonlines
 		oldFile, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
 		newFile, err := os.OpenFile("output.json", os.O_CREATE|os.O_WRONLY, 0644)
 		models.Check(err)
