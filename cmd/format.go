@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -28,7 +29,7 @@ func init() {
 }
 
 // ConvertFileData converts the ".jsonl" output to either ".json" or ".csv" output.
-func ConvertFileData(newFileType string) {
+func ConvertFileData(newFileType string) error {
 
 	// run formatting
 	// lets do json first quickly since its easier
@@ -36,8 +37,13 @@ func ConvertFileData(newFileType string) {
 	case "json":
 		// TODO: this loads the whole thing into memory which defeats the purpose of jsonlines
 		oldFile, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
+		if err != nil {
+			return err
+		}
 		newFile, err := os.OpenFile("output.json", os.O_CREATE|os.O_WRONLY, 0644)
-		models.Check(err)
+		if err != nil {
+			return err
+		}
 		// read outputted jsonlines
 		var results models.MultipleResults
 		decoder := json.NewDecoder(oldFile)
@@ -47,22 +53,35 @@ func ConvertFileData(newFileType string) {
 			// parse into struct
 			if err := decoder.Decode(&result); err != nil {
 				fmt.Println("parse result: %w", err)
+				return err
 			}
 			// append to struct
 			results.Data = append(results.Data, result)
 		}
 		// write to file
-		jsonResult, _ := json.MarshalIndent(results, "", "    ")
+		jsonResult, err := json.MarshalIndent(results, "", "    ")
+		if err != nil {
+			return err
+		}
 		_, err = newFile.Write(jsonResult)
-		models.Check(err)
+		if err != nil {
+			return err
+		}
 	case "csv":
 		oldFile, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
+		if err != nil {
+			return err
+		}
 		newFile, err := os.OpenFile("output.csv", os.O_CREATE|os.O_WRONLY, 0644)
-		models.Check(err)
+		if err != nil {
+			return err
+		}
 		// read outputted jsonlines
 		headers := []string{"record_id", "drug_name", "word_found", "similarity_ratio", "tags"}
 		_, err = newFile.WriteString(strings.Join(headers, ",") + "\n")
-		models.Check(err)
+		if err != nil {
+			return err
+		}
 		decoder := json.NewDecoder(oldFile)
 		for decoder.More() {
 			// for each line
@@ -70,6 +89,7 @@ func ConvertFileData(newFileType string) {
 			// parse into struct
 			if err := decoder.Decode(&result); err != nil {
 				fmt.Println("parse result: %w", err)
+				return err
 			}
 			// write to file
 			var row = make([]string, 5)
@@ -80,10 +100,13 @@ func ConvertFileData(newFileType string) {
 			row[4] = strings.Join(result.Tags, ";")
 			rowString := strings.Join(row, ",")
 			_, err = newFile.WriteString(rowString + "\n")
-			models.Check(err)
+			if err != nil {
+				return err
+			}
 		}
 	default:
 		color.Red("Unexpected file format, expected `csv` or `json`")
-
+		return errors.New("unexpected file format, expected `csv` or `json`")
 	}
+	return nil
 }

@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 
-	"github.com/UK-IPOP/drug-extraction/pkg/models"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +21,7 @@ func init() {
 }
 
 // CleanRunner executes on the 'clean' command, it removes all the files specified.
-func CleanRunner() {
+func CleanRunner() error {
 	files := []string{
 		"output.json",
 		"output.csv",
@@ -31,8 +30,11 @@ func CleanRunner() {
 	for _, file := range files {
 		if _, err := os.Stat(file); err == nil {
 			err = os.Remove(file)
-			models.Check(err)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	color.Blue("Removed old output files.")
+	return nil
 }

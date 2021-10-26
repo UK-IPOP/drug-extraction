@@ -44,7 +44,10 @@ same background logic.`,
 
 			clean := c.PostForm("cleanStatus")
 			if clean == "on" {
-				CleanRunner()
+				err := CleanRunner()
+				if err != nil {
+					c.FileFromFS(path.Join("web", "error.html"), webFS)
+				}
 			}
 
 			strict := c.PostForm("strictStatus")
@@ -56,11 +59,17 @@ same background logic.`,
 			}
 
 			// make this return error so we can go to error page
-			ExtractServerRunner(filepath, c.PostForm("idCol"), c.PostForm("targetCol"), strictStatus)
+			err = ExtractServerRunner(filepath, c.PostForm("idCol"), c.PostForm("targetCol"), strictStatus)
+			if err != nil {
+				c.FileFromFS(path.Join("web", "error.html"), webFS)
+			}
 
 			outputType := c.PostForm("inlineOutputOptions")
 			if outputType != "jsonlines" {
-				ConvertFileData(outputType)
+				err := ConvertFileData(outputType)
+				if err != nil {
+					c.FileFromFS(path.Join("web", "error.html"), webFS)
+				}
 			}
 
 			c.FileFromFS(path.Join("web", "success.html"), webFS)
@@ -76,13 +85,17 @@ func init() {
 }
 
 // ExtractServerRunner runs the extract command in server mode.
-func ExtractServerRunner(fName string, idCol string, targetCol string, strictStatus bool) {
+func ExtractServerRunner(fName string, idCol string, targetCol string, strictStatus bool) error {
 	fileName := fName
 	headers, data := ReadCsvFile(fileName)
 	idIndex, err1 := FindColIndex(headers, idCol)
+	if err1 != nil {
+		return err1
+	}
 	targetIndex, err2 := FindColIndex(headers, targetCol)
-	models.Check(err1)
-	models.Check(err2)
+	if err2 != nil {
+		return err2
+	}
 
 	color.Yellow("Using ID column -> %s (index=%v)", headers[idIndex], idIndex)
 	color.Yellow("Using TextSearch column -> %s (index=%v)", headers[targetIndex], targetIndex)
@@ -105,4 +118,5 @@ func ExtractServerRunner(fName string, idCol string, targetCol string, strictSta
 
 	// write to json
 	finalResults.ToFile("output.jsonl")
+	return nil
 }
