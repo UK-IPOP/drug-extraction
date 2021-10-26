@@ -47,7 +47,8 @@
 				</div>
 
 				<p>
-					Clean runs remove previous output files, toggle this off to append to previous records.
+					Clean runs remove the existing output files from previous runs, toggle this off to append
+					to previous records.
 				</p>
 				<div class="form-check form-switch">
 					<input
@@ -57,7 +58,13 @@
 						name="cleanStatus"
 						checked
 					/>
-					<label class="form-check-label" for="cleanStatus">Execute a clean run?</label>
+					<label class="form-check-label" for="cleanStatus">Clean Run</label>
+				</div>
+
+				<p>Strict restricts matches to only exact matches (similarity=1.0).</p>
+				<div class="form-check form-switch">
+					<input class="form-check-input" type="checkbox" id="strictStatus" name="strictStatus" />
+					<label class="form-check-label" for="strictStatus">Strict Matching</label>
 				</div>
 
 				<div>
@@ -95,10 +102,10 @@
 					</div>
 				</div>
 
-				<div class="form-check form-switch">
+				<!-- <div class="form-check form-switch">
 					<input class="form-check-input" type="checkbox" id="reportGenerator" disabled />
 					<label class="form-check-label" for="reportGenerator">Generate report?</label>
-				</div>
+				</div> -->
 				<button type="submit" class="btn btn-primary">Submit</button>
 			</form>
 		</div>

@@ -37,21 +37,21 @@ same background logic.`,
 			filepath := path.Join("./uploads", filename)
 			c.SaveUploadedFile(file, filepath)
 
-			// clean := c.PostForm("cleanStatus")
-			// var cleanStatus bool
-			// if clean =="on" { 
-			// 	strictStatus = true
-			// } else {
-			// 	strictStatus = false
-			// }
+			clean := c.PostForm("cleanStatus")
+			if clean == "on" { 
+				CleanRunner()
+			}
 
-			// TODO: add strict status field
-			// TODO: add clean runner
+			strict := c.PostForm("strictStatus")
+			var strictStatus bool
+			if strict =="on" { 
+				strictStatus = true
+			} else {
+				strictStatus = false
+			}
 
-			// CleanRunner()
-			
-
-			ExtractServerRunner(filepath, c.PostForm("idCol"), c.PostForm("targetCol"), false)
+			// make this return error so we can go to error page
+			ExtractServerRunner(filepath, c.PostForm("idCol"), c.PostForm("targetCol"), strictStatus)
 
 			outputType := c.PostForm("inlineOutputOptions")
 			if outputType != "jsonlines" {
