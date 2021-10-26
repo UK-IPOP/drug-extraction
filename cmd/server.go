@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 
+	"github.com/UK-IPOP/drug-extraction/pkg/models"
+	"github.com/fatih/color"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +22,7 @@ same background logic.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		router := gin.Default()
 		router.LoadHTMLGlob("./web/*")
-		router.MaxMultipartMemory = 8 << 20  // 8 MiB
+		router.MaxMultipartMemory = 8 << 20 // 8 MiB
 
 		router.GET("/", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "index.html", nil)
@@ -38,13 +39,13 @@ same background logic.`,
 			c.SaveUploadedFile(file, filepath)
 
 			clean := c.PostForm("cleanStatus")
-			if clean == "on" { 
+			if clean == "on" {
 				CleanRunner()
 			}
 
 			strict := c.PostForm("strictStatus")
 			var strictStatus bool
-			if strict =="on" { 
+			if strict == "on" {
 				strictStatus = true
 			} else {
 				strictStatus = false
@@ -70,16 +71,34 @@ func init() {
 	rootCmd.AddCommand(serverCmd)
 }
 
-func fileSubmitHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(32 << 20) // limit your max input length!
+// ExtractServerRunner runs the extract command in server mode.
+func ExtractServerRunner(fName string, idCol string, targetCol string, strictStatus bool) {
+	fileName := fName
+	headers, data := ReadCsvFile(fileName)
+	idIndex, err1 := FindColIndex(headers, idCol)
+	targetIndex, err2 := FindColIndex(headers, targetCol)
+	models.Check(err1)
+	models.Check(err2)
 
-	_, header, err := r.FormFile("file")
-	if err != nil {
-		fmt.Println(err)
+	color.Yellow("Using ID column -> %s (index=%v)", headers[idIndex], idIndex)
+	color.Yellow("Using TextSearch column -> %s (index=%v)", headers[targetIndex], targetIndex)
+
+	// actually process text
+	var idData []string
+	var targetData []string
+	for _, row := range data {
+		idData = append(idData, row[idIndex])
+		targetData = append(targetData, row[targetIndex])
 	}
-	fmt.Println("further")
-	headers, _ := ReadCsvFile(header.Filename)
-	fmt.Println("further")
-	fmt.Println(headers)
+	results := models.ScanDrugs(targetData, strictStatus)
+	finalResults := models.MultipleResults{}
+	for _, item := range results {
+		id := idData[item.TempID] // row index lookup
+		item.RecordID = id
 
+		finalResults.Data = append(finalResults.Data, item)
+	}
+
+	// write to json
+	finalResults.ToFile("output.jsonl")
 }

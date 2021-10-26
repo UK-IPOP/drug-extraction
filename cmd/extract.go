@@ -1,9 +1,14 @@
 package cmd
 
 import (
+	"encoding/csv"
 	"errors"
-	"github.com/UK-IPOP/drug-extraction/pkg/models"
+	"log"
+	"os"
 	"strings"
+
+	"github.com/UK-IPOP/drug-extraction/pkg/models"
+	"github.com/fatih/color"
 
 	"github.com/spf13/cobra"
 )
@@ -58,4 +63,58 @@ func init() {
 	extractCmd.Flags().StringVar(&idCol, "id-col", "", "ID column to keep for later re-indexing/joining")
 	idErr := extractCmd.MarkFlagRequired("id-col")
 	models.Check(idErr)
+}
+
+// ReadCsvFile reads the user-provided csv input file.
+// Returns the headers of the file and the data contained in the file.
+func ReadCsvFile(filePath string) ([]string, [][]string) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		log.Fatal("Unable to open input file "+filePath, err)
+	}
+	defer f.Close()
+	csvReader := csv.NewReader(f)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal("Unable to parse file as CSV for "+filePath, err)
+	}
+	headers := records[0]
+	data := records[1:]
+	return headers, data
+}
+
+// ExtractRunner executes on the `extract` command.
+// This function reads the specified csv file, and checks the target-column for Drug
+// instances using ScanDrugs.
+func ExtractRunner(cmd *cobra.Command, fName string, strictStatus bool) {
+	fileName := fName
+	headers, data := ReadCsvFile(fileName)
+	idFlag, _ := cmd.Flags().GetString("id-col")
+	targetFlag, _ := cmd.Flags().GetString("target-col")
+	idIndex, err1 := FindColIndex(headers, idFlag)
+	targetIndex, err2 := FindColIndex(headers, targetFlag)
+	models.Check(err1)
+	models.Check(err2)
+
+	color.Yellow("Using ID column -> %s (index=%v)", headers[idIndex], idIndex)
+	color.Yellow("Using TextSearch column -> %s (index=%v)", headers[targetIndex], targetIndex)
+
+	// actually process text
+	var idData []string
+	var targetData []string
+	for _, row := range data {
+		idData = append(idData, row[idIndex])
+		targetData = append(targetData, row[targetIndex])
+	}
+	results := models.ScanDrugs(targetData, strictStatus)
+	finalResults := models.MultipleResults{}
+	for _, item := range results {
+		id := idData[item.TempID] // row index lookup
+		item.RecordID = id
+
+		finalResults.Data = append(finalResults.Data, item)
+	}
+
+	// write to json
+	finalResults.ToFile("output.jsonl")
 }

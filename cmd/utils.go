@@ -1,205 +1,29 @@
 package cmd
 
 import (
-	"encoding/csv"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
-	"log"
 	"math"
 	"net/http"
-	"os"
 	"os/exec"
 	"path"
 	"runtime"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/UK-IPOP/drug-extraction/pkg/models"
-	"github.com/fatih/color"
-	"github.com/spf13/cobra"
 )
-
-// CleanRunner executes on the 'clean' command, it removes all the files specified.
-func CleanRunner() {
-	files := []string{
-		"output.json",
-		"output.csv",
-		"output.jsonl",
-	}
-	for _, file := range files {
-		if _, err := os.Stat(file); err == nil {
-			err = os.Remove(file)
-			models.Check(err)
-		}
-	}
-	color.Blue("Removed old output files.")
-}
-
-// ReadCsvFile reads the user-provided csv input file.
-// Returns the headers of the file and the data contained in the file.
-func ReadCsvFile(filePath string) ([]string, [][]string) {
-	f, err := os.Open(filePath)
-	if err != nil {
-		log.Fatal("Unable to open input file "+filePath, err)
-	}
-	defer func(f *os.File) {
-		err := f.Close()
-		if err != nil {
-
-		}
-	}(f)
-
-	csvReader := csv.NewReader(f)
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		log.Fatal("Unable to parse file as CSV for "+filePath, err)
-	}
-	headers := records[0]
-	data := records[1:]
-	return headers, data
-}
 
 // FindColIndex finds the index of the targeted column amongst the headers.
 // Returns the integer index of the column.
 func FindColIndex(headers []string, colName string) (int, error) {
 	for i, col := range headers {
-		if strings.ToLower(col) == strings.ToLower(colName) {
+		if strings.EqualFold(col, colName) {
 			return i, nil
 		}
 	}
 	return -1, errors.New("could not find column: " + colName)
-}
-
-// ExtractRunner executes on the `extract` command.
-// This function reads the specified csv file, and checks the target-column for Drug
-// instances using ScanDrugs.
-func ExtractRunner(cmd *cobra.Command, fName string, strictStatus bool) {
-	fileName := fName
-	headers, data := ReadCsvFile(fileName)
-	idFlag, _ := cmd.Flags().GetString("id-col")
-	targetFlag, _ := cmd.Flags().GetString("target-col")
-	idIndex, err1 := FindColIndex(headers, idFlag)
-	targetIndex, err2 := FindColIndex(headers, targetFlag)
-	models.Check(err1)
-	models.Check(err2)
-
-	color.Yellow("Using ID column -> %s (index=%v)", headers[idIndex], idIndex)
-	color.Yellow("Using TextSearch column -> %s (index=%v)", headers[targetIndex], targetIndex)
-
-	// actually process text
-	var idData []string
-	var targetData []string
-	for _, row := range data {
-		idData = append(idData, row[idIndex])
-		targetData = append(targetData, row[targetIndex])
-	}
-	results := models.ScanDrugs(targetData, strictStatus)
-	finalResults := models.MultipleResults{}
-	for _, item := range results {
-		id := idData[item.TempID] // row index lookup
-		item.RecordID = id
-
-		finalResults.Data = append(finalResults.Data, item)
-	}
-
-	// write to json
-	finalResults.ToFile("output.jsonl")
-}
-
-func ExtractServerRunner(fName string, idCol string, targetCol string, strictStatus bool) {
-	fileName := fName
-	headers, data := ReadCsvFile(fileName)
-	idIndex, err1 := FindColIndex(headers, idCol)
-	targetIndex, err2 := FindColIndex(headers, targetCol)
-	models.Check(err1)
-	models.Check(err2)
-
-	color.Yellow("Using ID column -> %s (index=%v)", headers[idIndex], idIndex)
-	color.Yellow("Using TextSearch column -> %s (index=%v)", headers[targetIndex], targetIndex)
-
-	// actually process text
-	var idData []string
-	var targetData []string
-	for _, row := range data {
-		idData = append(idData, row[idIndex])
-		targetData = append(targetData, row[targetIndex])
-	}
-	results := models.ScanDrugs(targetData, strictStatus)
-	finalResults := models.MultipleResults{}
-	for _, item := range results {
-		id := idData[item.TempID] // row index lookup
-		item.RecordID = id
-
-		finalResults.Data = append(finalResults.Data, item)
-	}
-
-	// write to json
-	finalResults.ToFile("output.jsonl")
-}
-
-
-// ConvertFileData converts the ".jsonl" output to either ".json" or ".csv" output.
-func ConvertFileData(newFileType string) {
-
-	// run formatting
-	// lets do json first quickly since its easier
-	switch newFileType {
-	case "json":
-		// TODO: this loads the whole thing into memory which defeats the purpose of jsonlines
-		oldFile, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
-		newFile, err := os.OpenFile("output.json", os.O_CREATE|os.O_WRONLY, 0644)
-		models.Check(err)
-		// read outputted jsonlines
-		var results models.MultipleResults
-		decoder := json.NewDecoder(oldFile)
-		for decoder.More() {
-			// for each line
-			var result models.Result
-			// parse into struct
-			if err := decoder.Decode(&result); err != nil {
-				fmt.Println("parse result: %w", err)
-			}
-			// append to struct
-			results.Data = append(results.Data, result)
-		}
-		// write to file
-		jsonResult, _ := json.MarshalIndent(results, "", "    ")
-		_, err = newFile.Write(jsonResult)
-		models.Check(err)
-	case "csv":
-		oldFile, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
-		newFile, err := os.OpenFile("output.csv", os.O_CREATE|os.O_WRONLY, 0644)
-		models.Check(err)
-		// read outputted jsonlines
-		headers := []string{"record_id", "drug_name", "word_found", "similarity_ratio", "tags"}
-		_, err = newFile.WriteString(strings.Join(headers, ",") + "\n")
-		models.Check(err)
-		decoder := json.NewDecoder(oldFile)
-		for decoder.More() {
-			// for each line
-			var result models.Result
-			// parse into struct
-			if err := decoder.Decode(&result); err != nil {
-				fmt.Println("parse result: %w", err)
-			}
-			// write to file
-			var row = make([]string, 5)
-			row[0] = result.RecordID
-			row[1] = result.DrugName
-			row[2] = result.WordFound
-			row[3] = strconv.FormatFloat(result.SimilarityRatio, 'f', -1, 64)
-			row[4] = strings.Join(result.Tags, ";")
-			rowString := strings.Join(row, ",")
-			_, err = newFile.WriteString(rowString + "\n")
-			models.Check(err)
-		}
-	default:
-		color.Red("Unexpected file format, expected `csv` or `json`")
-
-	}
 }
 
 // open opens the specified URL in the default browser of the user.
