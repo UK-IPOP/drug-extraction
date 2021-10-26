@@ -1,8 +1,5 @@
 # Drug Extraction Tool
 
-![MIT License](https://shields.io/badge/MIT-LICENSE-green])
-![Version](https://shields.io/github/go-mod/go-version/UK-IPOP/drug-extraction)
-
 ## Welcome
 
 This is a CLI (command-line-interface) tool designed for
