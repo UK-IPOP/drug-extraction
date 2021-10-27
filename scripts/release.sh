@@ -4,11 +4,7 @@ echo "Initializing new release..."
 
 # export .env file
 
-if [ ! -f .env ]
-then
-    export $(cat ../.env | xargs)
-fi
-
+export $(cat .env | xargs)
 
 git stash 
 
