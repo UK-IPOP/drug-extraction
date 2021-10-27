@@ -5,7 +5,6 @@ echo "Initializing new release..."
 # export .env file
 
 export $(cat .env | xargs)
-export GIN_MODE=release
 
 git stash 
 
@@ -21,4 +20,3 @@ goreleaser check
 goreleaser release --rm-dist
 
 git stash pop
-export GIN_MODE=debug
