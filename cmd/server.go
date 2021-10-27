@@ -117,6 +117,11 @@ func ExtractServerRunner(fName string, idCol string, targetCol string, strictSta
 	}
 
 	// write to json
-	finalResults.ToFile("output.jsonl")
+	e, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	outPath := path.Join(path.Dir(e), "output.jsonl")
+	finalResults.ToFile(outPath)
 	return nil
 }

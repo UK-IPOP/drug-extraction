@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 
@@ -33,14 +34,20 @@ func ConvertFileData(newFileType string) error {
 
 	// run formatting
 	// lets do json first quickly since its easier
+	// TODO: this loads the whole thing into memory which defeats the purpose of jsonlines
+	e, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	inPath := path.Join(path.Dir(e), "output.jsonl")
+	oldFile, err := os.OpenFile(inPath, os.O_RDONLY, 0644)
+	if err != nil {
+		return err
+	}
 	switch newFileType {
 	case "json":
-		// TODO: this loads the whole thing into memory which defeats the purpose of jsonlines
-		oldFile, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
-		if err != nil {
-			return err
-		}
-		newFile, err := os.OpenFile("output.json", os.O_CREATE|os.O_WRONLY, 0644)
+		outPath := path.Join(path.Dir(e), "output.json")
+		newFile, err := os.OpenFile(outPath, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
@@ -68,11 +75,8 @@ func ConvertFileData(newFileType string) error {
 			return err
 		}
 	case "csv":
-		oldFile, err := os.OpenFile("output.jsonl", os.O_RDONLY, 0644)
-		if err != nil {
-			return err
-		}
-		newFile, err := os.OpenFile("output.csv", os.O_CREATE|os.O_WRONLY, 0644)
+		outPath := path.Join(path.Dir(e), "output.csv")
+		newFile, err := os.OpenFile(outPath, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
