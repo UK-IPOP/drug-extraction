@@ -25,10 +25,7 @@ var serverCmd = &cobra.Command{
 and a more user-friendly front-end interface for engaging with the
 same background logic.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		mode := os.Getenv("GIN_MODE")
-		if mode == "release" {
-			gin.SetMode(gin.ReleaseMode)
-		}
+		gin.SetMode(gin.ReleaseMode)
 		router := gin.Default()
 		router.MaxMultipartMemory = 8 << 20 // 8 MiB
 		webFS := http.FS(web)
