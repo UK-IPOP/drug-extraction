@@ -2,6 +2,8 @@
 
 echo "Initializing new release..."
 
+git stash 
+
 read -p "Tag: " tag
 read -p "Message: " msg
 
@@ -13,3 +15,4 @@ git push origin "$tag"
 goreleaser check
 goreleaser release --rm-dist
 
+git stash pop
