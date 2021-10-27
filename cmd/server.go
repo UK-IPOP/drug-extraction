@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"embed"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -10,6 +11,7 @@ import (
 	"github.com/UK-IPOP/drug-extraction/pkg/models"
 	"github.com/fatih/color"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +27,15 @@ var serverCmd = &cobra.Command{
 and a more user-friendly front-end interface for engaging with the
 same background logic.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// load .env file
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatalf("Error loading .env file")
+		}
+		mode := os.Getenv("GIN_MODE")
+		if mode == "release" {
+			gin.SetMode(gin.ReleaseMode)
+		}
 		router := gin.Default()
 		router.MaxMultipartMemory = 8 << 20 // 8 MiB
 		webFS := http.FS(web)
