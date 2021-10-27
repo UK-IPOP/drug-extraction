@@ -6,7 +6,6 @@ require (
 	github.com/adrg/strutil v0.2.3
 	github.com/fatih/color v1.13.0
 	github.com/gin-gonic/gin v1.7.4
-	github.com/joho/godotenv v1.4.0
 	github.com/schollz/progressbar/v3 v3.8.3
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
