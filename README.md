@@ -29,7 +29,8 @@ drug-extraction pipeline pokemon.csv --id-col "#" --target-col "Name" --format -
 ### Tool Installation
 
 Download the command line tool from GitHub [Releases](https://github.com/UK-IPOP/drug-extraction/releases)
-for your corresponding operating system and architecture.
+for your corresponding operating system and architecture. If using Windows, I recommend [7zip](https://www.7-zip.org)
+to extract the `tar.gz` archive.
 
 ### Package Installation
 
