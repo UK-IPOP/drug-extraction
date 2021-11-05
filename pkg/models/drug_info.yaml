@@ -443,12 +443,14 @@ Drugs:
       - Covid
       - Coronavirus
       - Novel corona
-    Tags: []
+    Tags:
+      - covid
   - Name: Hypoxic-Ischemic
     Search Terms:
       - Hypoxic
       - Ischemic
-    Tags: []
+    Tags:
+      - hypoxia
   - Name: Benzodiazepine
     Search Terms:
       - Benzodia
