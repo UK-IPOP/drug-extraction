@@ -1,298 +1,352 @@
 Drugs:
-  - Name: Opium
+  - Name: Op-Name
     Search Terms:
       - Opioid
       - Opiate
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Heroin
     Search Terms:
       - Heroin
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Methadone
     Search Terms:
       - Methadone
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Hydromorphone
     Search Terms:
       - Hydromorphone
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Morphine
     Search Terms:
       - Morphine
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Oxymorphone
     Search Terms:
       - Oxymorphone
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Oxycodone
     Search Terms:
       - Oxycodone
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Hydrocodone
     Search Terms:
       - Hydrocodone
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Butorphanol
     Search Terms:
       - Butorphanol
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Propoxyphene
     Search Terms:
       - Propoxyphene
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Codeine
     Search Terms:
       - Codeine
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Buprenorphine
     Search Terms:
       - Buprenorphine
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Meperidine
     Search Terms:
       - Meperidine
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Nalbuphine
     Search Terms:
       - Nalbuphine
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Tramadol
     Search Terms:
       - Tramadol
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Tarpentadol
     Search Terms:
       - Tarpentadol
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Pentazocine
     Search Terms:
       - Pentazocine
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Dihydrocodeine
     Search Terms:
       - Dihydrocodeine
       - Hydrocodol
       - Dihyrocodeine
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Levomethorphan
     Search Terms:
       - Dextromethorphan
       - Levomethorphan
       - Methorphan
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: Levorphanol
     Search Terms:
       - Dextrorphan
       - Levorphanol
     Tags:
-      - opiate
+      - drug
       - nonfentanyl_opioid
+      - opiate
   - Name: U-47700
     Search Terms:
       - U-47700
       - U47700
       - '47700'
     Tags:
-      - opiate
-      - nonfentanyl_opioid
-      - fentanyl
+      - drug
       - fen_analog
+      - fentanyl
+      - nonfentanyl_opioid
+      - opiate
   - Name: U-49900
     Search Terms:
       - U-49900
       - U49900
     Tags:
-      - opiate
-      - nonfentanyl_opioid
-      - fentanyl
+      - drug
       - fen_analog
-  - Name: Fentanyl
+      - fentanyl
+      - nonfentanyl_opioid
+      - opiate
+  - Name: Fentanyl-Name
     Search Terms:
       - Fentanyl
+      - Fentanil
     Tags:
+      - drug
       - fentanyl
-      - opioid
+      - opiate
   - Name: Acetylfentanyl
     Search Terms:
-      - Acetyl
+      - Acetylfentanyl
+      - Acetylfentanil
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
-  - Name: 4-ANPP
+      - opiate
+  - Name: ACETYLSALICYLIC ACID
+    Search Terms:
+      - Acetylsalicylic
+      - Aspirin
+    Tags:
+      - drug
+  - Name: ANPP
     Search Terms:
       - Despropionyl
       - Anpp
       - Desproprionyl
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
-  - Name: Butyryl Fentanyl
+      - opiate
+  - Name: Butyryl_Fentanyl
     Search Terms:
       - Butyryl
       - Isobutyryl
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
+      - opiate
   - Name: Carfentanyl
     Search Terms:
       - Carfentanyl
       - Carfentanil
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
+      - opiate
   - Name: Cyclopropyl Fentanyl
     Search Terms:
       - Cyclopropyl
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
-  - Name: 4-Fluoroisobutyryl Fentanyl (4-FIBF)
+      - opiate
+  - Name: FIBF
     Search Terms:
       - Fibf
       - Fluoroisobutyryl
       - Fluroisobutyryl
       - 4-Fibf
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
-  - Name: 2-Furanyl Fentanyl
+      - opiate
+  - Name: Furanyl_Fentanyl
     Search Terms:
       - Furanyl
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
-  - Name: Methoxyacetyl Fentanyl
+      - opiate
+  - Name: Methoxyacetyl_Fentanyl
     Search Terms:
       - Methoxyacetyl
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
+      - opiate
   - Name: Norfentanyl
     Search Terms:
       - Norfentanyl
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
-  - Name: Para-Fluorobutyryl Fentanyl (4-FBF)
+      - opiate
+  - Name: FBF
     Search Terms:
       - Para-Fluorobutyryl
       - 4-Fbf
       - Fluorobutyryl
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
+      - opiate
   - Name: Valerylfentanyl
     Search Terms:
-      - Valerylfentanyl
+      - Valeryl
     Tags:
+      - drug
       - fen_analog
       - fentanyl
-      - opioid
+      - opiate
   - Name: Cannabis
     Search Terms:
       - Cannabis
     Tags:
       - cannabis
+      - drug
   - Name: Marijuana
     Search Terms:
       - Marijuana
     Tags:
       - cannabis
+      - drug
   - Name: Cocaine
     Search Terms:
       - Cocaine
     Tags:
+      - drug
       - stimulant
   - Name: Amphetamine
     Search Terms:
       - Amphe
+      - Dextroamphetamine
     Tags:
+      - drug
       - stimulant
   - Name: Methamphetamine
     Search Terms:
       - Methamphetamine
     Tags:
+      - drug
       - stimulant
   - Name: Methylphenidate
     Search Terms:
       - Methylph
     Tags:
+      - drug
       - stimulant
-  - Name: Cathinone stimulant
+  - Name: Cathinone_stimulant
     Search Terms:
       - Cathinone
     Tags:
+      - drug
       - stimulant
   - Name: Mitragynine
     Search Terms:
       - Mitragy
     Tags:
+      - drug
       - stimulant
   - Name: Ethanol
     Search Terms:
       - Ethanol
     Tags:
-      - ethanol
+      - drug
+      - eth_alc
   - Name: Alcohol
     Search Terms:
       - Alcohol
     Tags:
-      - ethanol
-  - Name: Amphetamine based
+      - drug
+      - eth_alc
+  - Name: Amphetamine_based
     Search Terms:
       - Mda
       - Methylenedioxymethamphetamine
       - Methylen
       - Mdma
     Tags:
+      - drug
       - hallucinogen
   - Name: PCP
     Search Terms:
@@ -300,74 +354,88 @@ Drugs:
       - Pcp
       - Phencycl
     Tags:
+      - drug
       - hallucinogen
   - Name: Ketamine
     Search Terms:
       - Ketamine
     Tags:
+      - drug
       - hallucinogen
   - Name: LSD
     Search Terms:
       - Lysergic
       - Lsd
     Tags:
+      - drug
       - hallucinogen
   - Name: Tryptamines
     Search Terms:
       - Tryptamines
     Tags:
+      - drug
       - hallucinogen
   - Name: Barbiturates
     Search Terms:
       - Barbitu
     Tags:
+      - drug
       - sedative
   - Name: Anxiolytics
     Search Terms:
       - Anxiolytics
     Tags:
+      - drug
       - sedative
   - Name: Inhalant
     Search Terms:
       - Inhalant
     Tags:
+      - drug
       - inhalant
   - Name: Cyclobenzaprine
     Search Terms:
       - Cyclobenzap
     Tags:
+      - drug
       - toxic
   - Name: Metaxalone
     Search Terms:
       - Metaxal
     Tags:
+      - drug
       - toxic
   - Name: Methocarbamol
     Search Terms:
       - Methocarbamol
     Tags:
+      - drug
       - toxic
   - Name: Carisoprodol
     Search Terms:
       - Carisopr
     Tags:
+      - drug
       - toxic
   - Name: Tizanidine
     Search Terms:
       - Tizanidine
     Tags:
+      - drug
       - toxic
   - Name: Nicotine
     Search Terms:
       - Nicotine
     Tags:
+      - drug
       - nicotine
   - Name: Polysubstance
     Search Terms:
       - Polysubstance
-      - Multiple
+      - Multiple Drug
       - Variations
     Tags:
+      - drug
       - nicotine
       - polysubstance
   - Name: Covid
@@ -375,14 +443,12 @@ Drugs:
       - Covid
       - Coronavirus
       - Novel corona
-    Tags:
-      - Covid
-  - Name: Hypoxic/Ischemic
+    Tags: []
+  - Name: Hypoxic-Ischemic
     Search Terms:
       - Hypoxic
       - Ischemic
-    Tags:
-      - hypoxic
+    Tags: []
   - Name: Benzodiazepine
     Search Terms:
       - Benzodia
@@ -399,99 +465,116 @@ Drugs:
       - clorazepate
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Alprazolam
     Search Terms:
       - Alprazolam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Chlordiazepoxide
     Search Terms:
       - Chlordiazepoxide
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Clorazepate
     Search Terms:
       - Clorazepate
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Diazepam
     Search Terms:
       - Diazepam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Halazepam
     Search Terms:
       - Halazepam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Lorazepam
     Search Terms:
       - Lorazepam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Oxazepam
     Search Terms:
       - Oxazepam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Quazepam
     Search Terms:
       - Quazepam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Clonazepam
     Search Terms:
       - Clonazepam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Temazepam
     Search Terms:
       - Temazepam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Triazolam
     Search Terms:
       - Triazolam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Estazolam
     Search Terms:
       - Estazolam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Flurazepam
     Search Terms:
       - Flurazepam
     Tags:
       - benzo
+      - drug
       - sedative
   - Name: Xylazine
     Search Terms:
       - Xylazine
     Tags:
+      - drug
       - stimulant
   - Name: Topiramate
     Search Terms:
       - Topiramate
     Tags:
+      - drug
       - stimulant
   - Name: Phentermine
     Search Terms:
       - Phentermine
     Tags:
+      - drug
       - stimulant
   - Name: Narcan
     Search Terms:
