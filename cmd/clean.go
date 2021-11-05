@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"path"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -22,14 +23,19 @@ func init() {
 
 // CleanRunner executes on the 'clean' command, it removes all the files specified.
 func CleanRunner() error {
+	e, err := os.Executable()
+	if err != nil {
+		return err
+	}
 	files := []string{
 		"output.json",
 		"output.csv",
 		"output.jsonl",
 	}
 	for _, file := range files {
-		if _, err := os.Stat(file); err == nil {
-			err = os.Remove(file)
+		fpathDir := path.Join(path.Dir(e), file)
+		if _, err := os.Stat(fpathDir); err == nil {
+			err = os.Remove(fpathDir)
 			if err != nil {
 				return err
 			}
