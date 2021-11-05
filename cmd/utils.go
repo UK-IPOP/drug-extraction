@@ -19,7 +19,8 @@ import (
 // Returns the integer index of the column.
 func FindColIndex(headers []string, colName string) (int, error) {
 	for i, col := range headers {
-		if strings.EqualFold(col, colName) {
+		cleanCol := strings.TrimSpace(col)
+		if strings.EqualFold(cleanCol, strings.TrimSpace(colName)) {
 			return i, nil
 		}
 	}
