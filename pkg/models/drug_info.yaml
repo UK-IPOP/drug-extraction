@@ -493,3 +493,9 @@ Drugs:
       - Phentermine
     Tags:
       - stimulant
+  - Name: Narcan
+    Search Terms:
+      - narcan
+      - naloxone
+    Tags:
+      - stimulant
