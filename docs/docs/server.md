@@ -50,3 +50,10 @@ relate to CLI flags or commands.
 |  Strict Run   |                 Whether to only return exact matches. Default=False.                 |          None          |
 |  Output Type  |    Whether to generate a specific output. Default=jsonlines. Can be csv or json.     |          None          |
 |    Report     |          Whether to generate a brief statistical report of the output data.          |     In progress...     |
+
+## Known Issues
+
+You can rerun the server with many different configurations without restarting it completely. _However_,
+if your _source_ data file changes, you may need to restart the server/program for the changes to be available.
+This is due to the server caching mechanism which stores cashes previously uploaded files for you (as a performance enhancement).
+Do not worry, these caches files are still on your local file system.
