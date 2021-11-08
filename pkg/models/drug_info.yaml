@@ -269,15 +269,10 @@ Drugs:
       - fen_analog
       - fentanyl
       - opiate
-  - Name: Cannabis
-    Search Terms:
-      - Cannabis
-    Tags:
-      - cannabis
-      - drug
   - Name: Marijuana
     Search Terms:
       - Marijuana
+      - Cannabis
     Tags:
       - cannabis
       - drug
