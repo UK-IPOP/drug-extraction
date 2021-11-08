@@ -123,7 +123,6 @@ Drugs:
     Search Terms:
       - Dihydrocodeine
       - Hydrocodol
-      - Dihyrocodeine
     Tags:
       - drug
       - nonfentanyl_opioid
@@ -148,8 +147,6 @@ Drugs:
   - Name: U-47700
     Search Terms:
       - U-47700
-      - U47700
-      - '47700'
     Tags:
       - drug
       - fen_analog
@@ -159,7 +156,6 @@ Drugs:
   - Name: U-49900
     Search Terms:
       - U-49900
-      - U49900
     Tags:
       - drug
       - fen_analog
@@ -169,7 +165,6 @@ Drugs:
   - Name: Fentanyl-Name
     Search Terms:
       - Fentanyl
-      - Fentanil
     Tags:
       - drug
       - fentanyl
@@ -177,7 +172,6 @@ Drugs:
   - Name: Acetylfentanyl
     Search Terms:
       - Acetylfentanyl
-      - Acetylfentanil
     Tags:
       - drug
       - fen_analog
@@ -193,7 +187,6 @@ Drugs:
     Search Terms:
       - Despropionyl
       - Anpp
-      - Desproprionyl
     Tags:
       - drug
       - fen_analog
@@ -211,13 +204,12 @@ Drugs:
   - Name: Carfentanyl
     Search Terms:
       - Carfentanyl
-      - Carfentanil
     Tags:
       - drug
       - fen_analog
       - fentanyl
       - opiate
-  - Name: Cyclopropyl Fentanyl
+  - Name: Cyclopropyl_Fentanyl
     Search Terms:
       - Cyclopropyl
     Tags:
@@ -229,7 +221,6 @@ Drugs:
     Search Terms:
       - Fibf
       - Fluoroisobutyryl
-      - Fluroisobutyryl
       - 4-Fibf
     Tags:
       - drug
@@ -352,7 +343,6 @@ Drugs:
     Search Terms:
       - Phencyclidine
       - Pcp
-      - Phencycl
     Tags:
       - drug
       - hallucinogen
@@ -401,7 +391,7 @@ Drugs:
       - toxic
   - Name: Metaxalone
     Search Terms:
-      - Metaxal
+      - Metaxalone
     Tags:
       - drug
       - toxic
@@ -413,7 +403,7 @@ Drugs:
       - toxic
   - Name: Carisoprodol
     Search Terms:
-      - Carisopr
+      - Carisoprodol
     Tags:
       - drug
       - toxic
@@ -453,7 +443,7 @@ Drugs:
       - hypoxia
   - Name: Benzodiazepine
     Search Terms:
-      - Benzodia
+      - Benzodiazepine
       - alprazolam
       - clonazepam
       - lorazepam
