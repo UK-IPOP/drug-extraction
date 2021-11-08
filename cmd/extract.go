@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/UK-IPOP/drug-extraction/pkg/models"
-	"github.com/fatih/color"
 
 	"github.com/spf13/cobra"
 )
@@ -46,7 +45,18 @@ Data is expected in '*.csv' format.'`,
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		ExtractRunner(cmd, args[0], strictStatus)
+		fileName := args[0]
+		idCol, idErr := cmd.Flags().GetString("id-col")
+		targetCol, targetErr := cmd.Flags().GetString("target-col")
+		if idErr != nil || targetErr != nil {
+			log.Fatal("Missing required flags `--id-col` and `--target-col`")
+		}
+		ExtractServerRunner(
+			fileName,
+			idCol,
+			targetCol,
+			strictStatus,
+		)
 	},
 }
 
@@ -81,40 +91,4 @@ func ReadCsvFile(filePath string) ([]string, [][]string) {
 	headers := records[0]
 	data := records[1:]
 	return headers, data
-}
-
-// ExtractRunner executes on the `extract` command.
-// This function reads the specified csv file, and checks the target-column for Drug
-// instances using ScanDrugs.
-func ExtractRunner(cmd *cobra.Command, fName string, strictStatus bool) {
-	fileName := fName
-	headers, data := ReadCsvFile(fileName)
-	idFlag, _ := cmd.Flags().GetString("id-col")
-	targetFlag, _ := cmd.Flags().GetString("target-col")
-	idIndex, err1 := FindColIndex(headers, idFlag)
-	targetIndex, err2 := FindColIndex(headers, targetFlag)
-	models.Check(err1)
-	models.Check(err2)
-
-	color.Yellow("Using ID column -> %s (index=%v)", headers[idIndex], idIndex)
-	color.Yellow("Using TextSearch column -> %s (index=%v)", headers[targetIndex], targetIndex)
-
-	// actually process text
-	var idData []string
-	var targetData []string
-	for _, row := range data {
-		idData = append(idData, row[idIndex])
-		targetData = append(targetData, row[targetIndex])
-	}
-	results := models.ScanDrugs(targetData, strictStatus)
-	finalResults := models.MultipleResults{}
-	for _, item := range results {
-		id := idData[item.TempID] // row index lookup
-		item.RecordID = id
-
-		finalResults.Data = append(finalResults.Data, item)
-	}
-
-	// write to json
-	finalResults.ToFile("output.jsonl")
 }
