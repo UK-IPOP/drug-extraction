@@ -313,15 +313,10 @@ Drugs:
     Tags:
       - drug
       - stimulant
-  - Name: Ethanol
-    Search Terms:
-      - Ethanol
-    Tags:
-      - drug
-      - eth_alc
   - Name: Alcohol
     Search Terms:
       - Alcohol
+      - Ethanol
     Tags:
       - drug
       - eth_alc
