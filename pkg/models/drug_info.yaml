@@ -329,6 +329,7 @@ Drugs:
     Tags:
       - drug
       - hallucinogen
+      - stimulant
   - Name: PCP
     Search Terms:
       - Phencyclidine
@@ -412,8 +413,6 @@ Drugs:
   - Name: Polysubstance
     Search Terms:
       - Polysubstance
-      - Multiple Drug
-      - Variations
     Tags:
       - drug
       - polysubstance
