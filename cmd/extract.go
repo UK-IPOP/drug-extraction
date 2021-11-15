@@ -51,12 +51,15 @@ Data is expected in '*.csv' format.'`,
 		if idErr != nil || targetErr != nil {
 			log.Fatal("Missing required flags `--id-col` and `--target-col`")
 		}
-		ExtractServerRunner(
+		extractErr := ExtractServerRunner(
 			fileName,
 			idCol,
 			targetCol,
 			strictStatus,
 		)
+		if extractErr != nil {
+			log.Fatal("Unable to properly extract from file.")
+		}
 	},
 }
 

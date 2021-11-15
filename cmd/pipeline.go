@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/UK-IPOP/drug-extraction/pkg/models"
 	"github.com/spf13/cobra"
+	"log"
 )
 
 // flag variables
@@ -29,7 +30,10 @@ It can optionally call the 'clean' command prior to 'extract' if the '--clean' f
 		}
 		extractCmd.Run(cmd, args)
 		if formatStatus {
-			ConvertFileData(formatType)
+			conversionErr := ConvertFileData(formatType)
+			if conversionErr != nil {
+				log.Fatalln("Could not convert file data.")
+			}
 		}
 	},
 }
