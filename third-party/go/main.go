@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
+	"github.com/schollz/progressbar/v3"
 	"log"
 	"os"
 	"strings"
@@ -41,6 +42,7 @@ func runLevenshtein(file *os.File) {
 		log.Fatalln(err)
 	}
 	defer outFile.Close()
+	bar := progressbar.Default(-1, "Searching text...")
 	for scanner.Scan() {
 		var record map[string]string
 		json.Unmarshal(scanner.Bytes(), &record)
@@ -66,6 +68,7 @@ func runLevenshtein(file *os.File) {
 				}
 			}
 		}
+		bar.Add(1)
 	}
 }
 
@@ -77,6 +80,7 @@ func runJaroWinkler(file *os.File) {
 		log.Fatalln(err)
 	}
 	defer outFile.Close()
+	bar := progressbar.Default(-1, "Searching text...")
 	for scanner.Scan() {
 		var record map[string]string
 		json.Unmarshal(scanner.Bytes(), &record)
@@ -102,6 +106,7 @@ func runJaroWinkler(file *os.File) {
 				}
 			}
 		}
+		bar.Add(1)
 	}
 }
 
