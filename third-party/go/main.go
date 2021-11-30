@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/adrg/strutil"
-	"github.com/adrg/strutil/metrics"
-	"github.com/schollz/progressbar/v3"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/adrg/strutil"
+	"github.com/adrg/strutil/metrics"
+	"github.com/schollz/progressbar/v3"
 )
 
 func main() {
@@ -47,24 +48,23 @@ func runLevenshtein(file *os.File) {
 		var record map[string]string
 		json.Unmarshal(scanner.Bytes(), &record)
 		record["primary_combined"] = joinCols(record)
-		for _, level := range []string{"combined_primary", "secondarycause"} {
+		for _, level := range []string{"primary_combined", "secondarycause"} {
 			if recordText, ok := record[level]; ok {
 				results := searchRecordLevenshtein(recordText, level, l)
 				if recordID, ok := record["casenumber"]; ok {
-					for _, result := range results {
-						fileData, err := json.Marshal(map[string]interface{}{
-							"casenumber": recordID,
-							"results":    result,
-						})
-						if err != nil {
-							log.Fatalln(err)
-						}
-						_, err = outFile.Write(append(fileData, []byte("\n")...))
-						if err != nil {
-							fmt.Println("could not write to file")
-							log.Fatalln(err)
-						}
+					fileData, err := json.Marshal(map[string]interface{}{
+						"casenumber": recordID,
+						"results":    results,
+					})
+					if err != nil {
+						log.Fatalln(err)
 					}
+					_, err = outFile.Write(append(fileData, []byte("\n")...))
+					if err != nil {
+						fmt.Println("could not write to file")
+						log.Fatalln(err)
+					}
+
 				}
 			}
 		}
@@ -85,23 +85,21 @@ func runJaroWinkler(file *os.File) {
 		var record map[string]string
 		json.Unmarshal(scanner.Bytes(), &record)
 		record["primary_combined"] = joinCols(record)
-		for _, level := range []string{"combined_primary", "secondarycause"} {
+		for _, level := range []string{"primary_combined", "secondarycause"} {
 			if recordText, ok := record[level]; ok {
 				results := searchRecordJaroWinkler(recordText, level, j)
 				if recordID, ok := record["casenumber"]; ok {
-					for _, result := range results {
-						fileData, err := json.Marshal(map[string]interface{}{
-							"casenumber": recordID,
-							"results":    result,
-						})
-						if err != nil {
-							log.Fatalln(err)
-						}
-						_, err = outFile.Write(append(fileData, []byte("\n")...))
-						if err != nil {
-							fmt.Println("could not write to file")
-							log.Fatalln(err)
-						}
+					fileData, err := json.Marshal(map[string]interface{}{
+						"casenumber": recordID,
+						"results":    results,
+					})
+					if err != nil {
+						log.Fatalln(err)
+					}
+					_, err = outFile.Write(append(fileData, []byte("\n")...))
+					if err != nil {
+						fmt.Println("could not write to file")
+						log.Fatalln(err)
 					}
 				}
 			}
@@ -151,15 +149,15 @@ func searchRecordLevenshtein(text string, level string, searcher *metrics.Levens
 	y := strip(text)
 	var data []map[string]interface{}
 	for _, word := range strings.Split(y, " ") {
-		sTime := time.Time{}
+		sTime := time.Now()
 		data = append(data,
 			map[string]interface{}{
-			"word": word,
-			"distance": strutil.Similarity(word, "heroin", searcher),
-			"level": level,
-			"metric": "Normalized Levenshtein",
-			"time": time.Since(sTime),
-		})
+				"word":     word,
+				"distance": strutil.Similarity(word, "heroin", searcher),
+				"level":    level,
+				"metric":   "Normalized Levenshtein",
+				"time":     time.Since(sTime).Seconds(),
+			})
 	}
 	return data
 }
@@ -168,14 +166,14 @@ func searchRecordJaroWinkler(text string, level string, searcher *metrics.JaroWi
 	y := strip(text)
 	var data []map[string]interface{}
 	for _, word := range strings.Split(y, " ") {
-		sTime := time.Time{}
+		sTime := time.Now()
 		data = append(data,
 			map[string]interface{}{
-				"word": word,
+				"word":     word,
 				"distance": strutil.Similarity(word, "heroin", searcher),
-				"level": level,
-				"metric": "Jaro-Winkler",
-				"time": time.Since(sTime),
+				"level":    level,
+				"metric":   "Jaro-Winkler",
+				"time":     time.Since(sTime).Seconds(),
 			})
 	}
 	return data
