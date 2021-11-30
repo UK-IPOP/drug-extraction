@@ -34,11 +34,11 @@ def search_record(
         }
 
 
-with open("data/records.jsonl", "r") as f:
+with open("../../data/records.jsonl", "r") as f:
     json_list = list(f)
 
 
-with open("data/third-party/python-jaro.jsonl", "w") as f:
+with open("../../data/third-party/python-jaro.jsonl", "w") as f:
     for json_str in track(json_list, description="Comparing strings: "):
         result = json.loads(json_str)
         result["primary_combined"] = join_cols(result)
@@ -49,14 +49,15 @@ with open("data/third-party/python-jaro.jsonl", "w") as f:
             if not result.get(level):
                 continue
 
-            for string_search_result in search_record(
-                text=result[level], level=level, searcher=jaro_winkler
-            ):
+            results = list(
+                search_record(text=result[level], level=level, searcher=jaro_winkler)
+            )
+            if results:
                 f.write(
                     json.dumps(
                         {
                             "casenumber": result["casenumber"],
-                            "results": string_search_result,
+                            "results": results,
                         }
                     )
                     + "\n"
