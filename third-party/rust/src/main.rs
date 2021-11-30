@@ -27,7 +27,7 @@ fn main() {
 #[derive(Serialize)]
 struct RowData {
     casenumber: String,
-    records: Vec<HashMap<String, String>>,
+    results: Vec<HashMap<String, String>>,
 }
 
 const ENDLINE_BYTE: &[u8] = "\n".as_bytes();
@@ -67,7 +67,7 @@ fn run_levenshtein() {
                         search_record_levenshtein(text.to_string(), level.to_string());
                     let row_data = RowData {
                         casenumber: case_id,
-                        records: leven_result,
+                        results: leven_result,
                     };
                     let json_data = serde_json::to_string(&row_data).expect("could not serialize");
                     out_file
@@ -84,7 +84,7 @@ fn run_levenshtein() {
 fn run_jaro_winkler() {
     let file = File::open("../../data/records.jsonl").expect("couldn't open file");
     let reader = BufReader::new(file);
-    let mut out_file = File::create("../../data/third-party/rust-leven.jsonl")
+    let mut out_file = File::create("../../data/third-party/rust-jaro.jsonl")
         .expect("couldn't create output file.");
     let pb = ProgressBar::new_spinner();
     for line in reader.lines() {
@@ -97,11 +97,11 @@ fn run_jaro_winkler() {
             let text = words.trim();
             if text != "\"\"" {
                 if text != "null" {
-                    let leven_result =
+                    let jaro_result =
                         search_record_jaro_winkler(text.to_string(), level.to_string());
                     let row_data = RowData {
                         casenumber: case_id,
-                        records: leven_result,
+                        results: jaro_result,
                     };
                     let json_data = serde_json::to_string(&row_data).expect("could not serialize");
                     out_file
@@ -146,10 +146,7 @@ fn search_record_jaro_winkler(text: String, level: String) -> Vec<HashMap<String
         word_data.insert(String::from("word"), word.to_string());
         word_data.insert(String::from("distance"), ratio.to_string());
         word_data.insert(String::from("level"), level.to_string());
-        word_data.insert(
-            String::from("metric"),
-            String::from("Normalized Levenshtein"),
-        );
+        word_data.insert(String::from("metric"), String::from("Jaro-Winkler"));
         word_data.insert(
             String::from("time"),
             now.elapsed().as_secs_f64().to_string(),
