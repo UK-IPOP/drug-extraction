@@ -118,6 +118,9 @@ func searchRecord(text string, level string, searchType string) []map[string]int
 	case "L":
 		searcher := metrics.NewLevenshtein()
 		for _, word := range strings.Fields(cleanText) {
+			if word == "" {
+				continue
+			}
 			sTime := time.Now()
 			d := searcher.Distance(word, "heroin")
 			eTime := time.Since(sTime).Seconds()
@@ -134,6 +137,9 @@ func searchRecord(text string, level string, searchType string) []map[string]int
 	case "J":
 		searcher := metrics.NewJaroWinkler()
 		for _, word := range strings.Fields(cleanText) {
+			if word == "" {
+				continue
+			}
 			sTime := time.Now()
 			distance := searcher.Compare(word, "heroin")
 			eTime := time.Since(sTime).Seconds()
@@ -201,6 +207,9 @@ func Runner(searchMetric string, fileData *bufio.Scanner, fileLines int) error {
 		for _, col := range []string{"primary_combined", "secondarycause"} {
 			if recordText, ok := record[col]; ok {
 				searchResults := searchRecord(fmt.Sprintf("%s", recordText), col, searchMetric)
+				if len(searchResults) == 0 {
+					continue
+				}
 				if recordID, ok2 := record["casenumber"]; ok2 {
 					outData, jsonMarshalErr := json.Marshal(map[string]interface{}{
 						"casenumber": recordID,
