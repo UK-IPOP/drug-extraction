@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Generator, Any
+from typing import Generator, Any, TextIO
 
 from strsimpy.normalized_levenshtein import NormalizedLevenshtein
 from strsimpy.jaro_winkler import JaroWinkler
@@ -12,10 +12,10 @@ from rich import pretty, print
 pretty.install()
 
 
-def load_data() -> list[str]:
-    with open("../../data/records.jsonl", "r") as f:
-        json_list = list(f)
-        return json_list
+def load_data() -> tuple[TextIO, int]:
+    num_lines = sum(1 for _ in open("../../data/records.jsonl"))
+    f = open("../../data/records.jsonl", "r")
+    return f, num_lines
 
 
 def get_user_input() -> str:
@@ -55,7 +55,7 @@ def search_record(
         }
 
 
-def runner(search_metric: str, data: list[str]):
+def runner(search_metric: str, input_file: TextIO, line_count: int):
     if search_metric.upper() == "J":
         metric = JaroWinkler()
         fpath_ending = "python-jarowinkler"
@@ -64,8 +64,8 @@ def runner(search_metric: str, data: list[str]):
         fpath_ending = "python-levenshtein"
 
     with open(f"../../data/third-party/{fpath_ending}.jsonl", "w") as out_file:
-        for json_str in track(data, description="Comparing strings..."):
-            data = json.loads(json_str)
+        for line in track(input_file, description="Comparing strings...", total=line_count):
+            data = json.loads(line)
             data["primary_combined"] = join_cols(data)
             # run the searcher for each col
             for col in ("primary_combined", "secondarycause"):
