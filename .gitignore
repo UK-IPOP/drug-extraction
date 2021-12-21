@@ -8,3 +8,5 @@ data/
 third-party/rust/target/
 
 .vscode/
+
+third-party/python/__pycache__/
