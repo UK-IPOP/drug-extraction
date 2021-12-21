@@ -43,11 +43,10 @@ def search_record(
         start_time = time.time()
         d = searcher.distance(s0=word, s1="heroin")
         time_elapsed = time.time() - start_time
+        distance = d if type(searcher) == JaroWinkler else 1 - (d / max(len(word), len("heroin")))  # normalizes
         yield {
             "word": word,
-            "distance": d
-            if type(searcher) == JaroWinkler
-            else d / max(len(word), len("heroin")),  # normalizes
+            "distance": distance,
             "col": level,
             "metric": "JaroWinkler"
             if type(searcher) == JaroWinkler
