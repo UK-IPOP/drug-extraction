@@ -73,12 +73,13 @@ def runner(search_metric: str, data: list[str]):
                     search_results = search_record(
                         text=row_text, level=col, searcher=metric
                     )
-                    if search_results:
+                    results = list(search_results)
+                    if results:
                         json_data = (
                             json.dumps(
                                 {
                                     "casenumber": data["casenumber"],
-                                    "results": list(search_results),
+                                    "results": results,
                                 }
                             )
                             + "\n"
