@@ -130,7 +130,7 @@ func searchRecord(text string, level string, searchType string) []map[string]int
 					"word":     word,
 					"distance": distance,
 					"level":    level,
-					"metric":   "Normalized Levenshtein",
+					"metric":   "NormalizedLevenshtein",
 					"time":     eTime,
 				})
 		}
