@@ -123,7 +123,7 @@ fn search_record_levenshtein(text: String, level: &str) -> Vec<HashMap<String, V
         let distance: f64 = 1.0 - (d as f64 / max(word.len(), "heroin".len()) as f64);
         word_data.insert(String::from("word"), Value::from(word));
         word_data.insert(String::from("distance"), Value::from(distance));
-        word_data.insert(String::from("col"), Value::from(level));
+        word_data.insert(String::from("level"), Value::from(level));
         word_data.insert(String::from("metric"), Value::from("NormalizedLevenshtein"));
         word_data.insert(String::from("time"), Value::from(elapsed_time));
         data.push(word_data);
@@ -189,7 +189,7 @@ fn search_record_jarowinkler(text: String, level: &str) -> Vec<HashMap<String, V
         let distance: f64 = 1.0 - (d as f64 / max(word.len(), "heroin".len()) as f64);
         word_data.insert(String::from("word"), Value::from(word));
         word_data.insert(String::from("distance"), Value::from(distance));
-        word_data.insert(String::from("col"), Value::from(level));
+        word_data.insert(String::from("level"), Value::from(level));
         word_data.insert(String::from("metric"), Value::from("JaroWinkler"));
         word_data.insert(String::from("time"), Value::from(elapsed_time));
         data.push(word_data);
