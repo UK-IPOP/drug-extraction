@@ -43,11 +43,15 @@ def search_record(
         start_time = time.time()
         d = searcher.distance(s0=word, s1="heroin")
         time_elapsed = time.time() - start_time
-        distance = d if type(searcher) == JaroWinkler else 1 - (d / max(len(word), len("heroin")))  # normalizes
+        distance = (
+            d
+            if type(searcher) == JaroWinkler
+            else 1 - (d / max(len(word), len("heroin")))
+        )  # normalizes
         yield {
             "word": word,
             "distance": distance,
-            "col": level,
+            "level": level,
             "metric": "JaroWinkler"
             if type(searcher) == JaroWinkler
             else "NormalizedLevenshtein",
@@ -64,7 +68,9 @@ def runner(search_metric: str, input_file: TextIO, line_count: int):
         fpath_ending = "python-levenshtein"
 
     with open(f"../../data/third-party/{fpath_ending}.jsonl", "w") as out_file:
-        for line in track(input_file, description="Comparing strings...", total=line_count):
+        for line in track(
+            input_file, description="Comparing strings...", total=line_count
+        ):
             data = json.loads(line)
             data["primary_combined"] = join_cols(data)
             # run the searcher for each col
