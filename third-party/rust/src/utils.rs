@@ -65,13 +65,13 @@ struct ResultData {
 
 const ENDLINE_BYTE: &[u8] = "\n".as_bytes();
 
-pub fn levenshtein_runner(reader: BufReader<File>, metric: &str, line_count: u64) {
+pub fn levenshtein_runner(reader: BufReader<File>, line_count: u64) {
     let mut out_file = File::create("../../data/third-party/rust-levenshtein.jsonl")
         .expect("could not create output file.");
     let progress_bar = ProgressBar::new(line_count);
     progress_bar.set_style(
         ProgressStyle::default_bar()
-            .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] ({eta})")
+            .template("{spinner:.green} [{elapsed_precise}] [{bar:.cyan/blue}] ({eta})")
             .progress_chars("#>-"),
     );
     for line in reader.lines() {
@@ -131,13 +131,13 @@ fn search_record_levenshtein(text: String, level: &str) -> Vec<HashMap<String, V
     data
 }
 
-pub fn jarowinkler_runner(reader: BufReader<File>, metric: &str, line_count: u64) {
+pub fn jarowinkler_runner(reader: BufReader<File>, line_count: u64) {
     let mut out_file = File::create("../../data/third-party/rust-jarowinkler.jsonl")
         .expect("could not create output file.");
     let progress_bar = ProgressBar::new(line_count);
     progress_bar.set_style(
         ProgressStyle::default_bar()
-            .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] ({eta})")
+            .template("{spinner:.green} [{elapsed_precise}] [{bar:.cyan/blue}] ({eta})")
             .progress_chars("#>-"),
     );
     for line in reader.lines() {
