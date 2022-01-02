@@ -1,9 +1,7 @@
-use indicatif::{ProgressBar, ProgressStyle};
 use serde::Serialize;
 use serde_json::Value;
 use std::cmp::max;
 use std::collections::HashMap;
-use std::fmt;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -16,16 +14,6 @@ pub fn load_data() -> BufReader<File> {
     let file = File::open("../../data/records.jsonl").expect("could not open input file");
     let reader = BufReader::new(file);
     reader
-}
-
-pub fn get_file_lines() -> u64 {
-    let file = File::open("../../data/records.jsonl").expect("could not open input file");
-    let reader = BufReader::new(file);
-    let mut count = 0;
-    for _ in reader.lines() {
-        count += 1
-    }
-    count
 }
 
 pub fn get_user_input() -> String {
@@ -65,15 +53,9 @@ struct ResultData {
 
 const ENDLINE_BYTE: &[u8] = "\n".as_bytes();
 
-pub fn levenshtein_runner(reader: BufReader<File>, line_count: u64) {
+pub fn levenshtein_runner(reader: BufReader<File>) {
     let mut out_file = File::create("../../data/third-party/rust-levenshtein.jsonl")
         .expect("could not create output file.");
-    let progress_bar = ProgressBar::new(line_count);
-    progress_bar.set_style(
-        ProgressStyle::default_bar()
-            .template("{spinner:.green} [{elapsed_precise}] [{bar:.cyan/blue}] ({eta})")
-            .progress_chars("#>-"),
-    );
     for line in reader.lines() {
         let line = line.expect("no valid line when reading file");
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");
@@ -105,9 +87,7 @@ pub fn levenshtein_runner(reader: BufReader<File>, line_count: u64) {
                 .write(&[json_data.as_bytes(), ENDLINE_BYTE].concat())
                 .expect("could not write jsonline");
         }
-        progress_bar.inc(1);
     }
-    progress_bar.finish_with_message("Done.")
 }
 
 fn search_record_levenshtein(text: String, level: &str) -> Vec<HashMap<String, Value>> {
@@ -131,15 +111,9 @@ fn search_record_levenshtein(text: String, level: &str) -> Vec<HashMap<String, V
     data
 }
 
-pub fn jarowinkler_runner(reader: BufReader<File>, line_count: u64) {
+pub fn jarowinkler_runner(reader: BufReader<File>) {
     let mut out_file = File::create("../../data/third-party/rust-jarowinkler.jsonl")
         .expect("could not create output file.");
-    let progress_bar = ProgressBar::new(line_count);
-    progress_bar.set_style(
-        ProgressStyle::default_bar()
-            .template("{spinner:.green} [{elapsed_precise}] [{bar:.cyan/blue}] ({eta})")
-            .progress_chars("#>-"),
-    );
     for line in reader.lines() {
         let line = line.expect("no valid line when reading file");
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");
@@ -171,9 +145,7 @@ pub fn jarowinkler_runner(reader: BufReader<File>, line_count: u64) {
                 .write(&[json_data.as_bytes(), ENDLINE_BYTE].concat())
                 .expect("could not write jsonline");
         }
-        progress_bar.inc(1);
     }
-    progress_bar.finish_with_message("Done.")
 }
 
 fn search_record_jarowinkler(text: String, level: &str) -> Vec<HashMap<String, Value>> {

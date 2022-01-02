@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	scanner, lines, fileErr := LoadFileStream()
+	scanner, fileErr := LoadFileStream()
 	if fileErr != nil {
 		log.Println("Unable to load data from file")
 		log.Fatalln(fileErr)
@@ -15,7 +15,7 @@ func main() {
 		log.Println("Unable to get user input")
 		log.Fatalln(inputErr)
 	}
-	runErr := Runner(algorithm, scanner, lines)
+	runErr := Runner(algorithm, scanner)
 	if runErr != nil {
 		log.Println("Unable to load data from file")
 		log.Fatalln(runErr)

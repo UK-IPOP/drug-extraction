@@ -2,11 +2,9 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"math"
 	"os"
@@ -14,49 +12,22 @@ import (
 	"time"
 
 	"github.com/adrg/strutil/metrics"
-	"github.com/schollz/progressbar/v3"
 )
 
-func lineCounter(r io.Reader) (int, error) {
-	buf := make([]byte, 32*1024)
-	count := 0
-	lineSep := []byte{'\n'}
-	for {
-		c, err := r.Read(buf)
-		count += bytes.Count(buf[:c], lineSep)
-		switch {
-		case err == io.EOF:
-			return count, nil
-		case err != nil:
-			return count, err
-		}
-	}
-}
-
-func LoadFileStream() (*bufio.Scanner, int, error) {
+func LoadFileStream() (*bufio.Scanner, error) {
 	file, fileErr := os.Open("../../data/records.jsonl")
 	if fileErr != nil {
 		log.Fatalln("could not open file", fileErr)
-		return nil, -1, fileErr
+		return nil, fileErr
 	}
-	lines, lineCountErr := lineCounter(file)
-	if lineCountErr != nil {
-		log.Fatalln("could not count lines in input file")
-		return nil, -1, lineCountErr
-	}
-	file2, fileErr2 := os.Open("../../data/records.jsonl")
-	if fileErr != nil {
-		log.Fatalln("could not open file", fileErr2)
-		return nil, -1, fileErr2
-	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			log.Fatalln("could not close input file", err)
-		}
-	}(file)
-	scanner := bufio.NewScanner(file2)
-	return scanner, lines, nil
+	// defer func(file *os.File) {
+	// 	err := file.Close()
+	// 	if err != nil {
+	// 		log.Fatalln("could not close input file", err)
+	// 	}
+	// }(file)
+	scanner := bufio.NewScanner(file)
+	return scanner, nil
 }
 
 func GetUserInput() (string, error) {
@@ -70,7 +41,7 @@ func GetUserInput() (string, error) {
 	if choice == "J" || choice == "L" {
 		return choice, nil
 	} else {
-		return "", errors.New(fmt.Sprintf("expected 'J' or 'L', got %s", choice))
+		return "", fmt.Errorf("expected 'J' or 'L', got %s", choice)
 	}
 }
 
@@ -156,22 +127,7 @@ func searchRecord(text string, level string, searchType string) []map[string]int
 	return data
 }
 
-func initializeProgress(length int) *progressbar.ProgressBar {
-	bar := progressbar.NewOptions(length,
-		progressbar.OptionEnableColorCodes(true),
-		progressbar.OptionSetWidth(20),
-		progressbar.OptionSetDescription("[blue]Comparing strings...[reset] "),
-		progressbar.OptionSetTheme(progressbar.Theme{
-			Saucer:        "[green]=[reset]",
-			SaucerHead:    "[green]>[reset]",
-			SaucerPadding: " ",
-			BarStart:      "[",
-			BarEnd:        "]",
-		}))
-	return bar
-}
-
-func Runner(searchMetric string, fileData *bufio.Scanner, fileLines int) error {
+func Runner(searchMetric string, fileData *bufio.Scanner) error {
 	// prepare search params
 	var fpathEnding string
 	switch searchMetric {
@@ -196,7 +152,6 @@ func Runner(searchMetric string, fileData *bufio.Scanner, fileLines int) error {
 		}
 	}(outFile)
 
-	bar := initializeProgress(fileLines)
 	for fileData.Scan() {
 		var record map[string]interface{}
 		jsonErr := json.Unmarshal(fileData.Bytes(), &record)
@@ -224,10 +179,6 @@ func Runner(searchMetric string, fileData *bufio.Scanner, fileLines int) error {
 					}
 				}
 			}
-		}
-		progressBarErr := bar.Add(1)
-		if progressBarErr != nil {
-			return progressBarErr
 		}
 	}
 	return nil

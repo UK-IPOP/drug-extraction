@@ -12,10 +12,9 @@ from rich import pretty, print
 pretty.install()
 
 
-def load_data() -> tuple[TextIO, int]:
-    num_lines = sum(1 for _ in open("../../data/records.jsonl"))
+def load_data() -> TextIO:
     f = open("../../data/records.jsonl", "r")
-    return f, num_lines
+    return f
 
 
 def get_user_input() -> str:
@@ -59,7 +58,7 @@ def search_record(
         }
 
 
-def runner(search_metric: str, input_file: TextIO, line_count: int):
+def runner(search_metric: str, input_file: TextIO):
     if search_metric.upper() == "J":
         metric = JaroWinkler()
         fpath_ending = "python-jarowinkler"
@@ -68,9 +67,7 @@ def runner(search_metric: str, input_file: TextIO, line_count: int):
         fpath_ending = "python-levenshtein"
 
     with open(f"../../data/third-party/{fpath_ending}.jsonl", "w") as out_file:
-        for line in track(
-            input_file, description="Comparing strings...", total=line_count
-        ):
+        for line in input_file:
             data = json.loads(line)
             data["primary_combined"] = join_cols(data)
             # run the searcher for each col

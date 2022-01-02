@@ -5,8 +5,8 @@ import utils
 
 def main():
     algorithm = utils.get_user_input()
-    input_file, lines = utils.load_data()
-    utils.runner(search_metric=algorithm, input_file=input_file, line_count=lines)
+    input_file = utils.load_data()
+    utils.runner(search_metric=algorithm, input_file=input_file)
 
 
 if __name__ == "__main__":
