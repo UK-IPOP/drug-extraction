@@ -38,10 +38,11 @@ fn combine_cols(mut row: Value) -> Value {
     let mut combined_primary = String::new();
     for col in cols.iter().cloned() {
         if let Some(value) = row.get(col) {
-            combined_primary.push_str(value.as_str().unwrap_or_default())
+            combined_primary.push_str(value.as_str().unwrap_or_default());
+            combined_primary.push_str(" ");
         }
     }
-    row["primary_combined"] = Value::String(combined_primary);
+    row["primary_combined"] = Value::String(combined_primary.trim().to_string());
     row
 }
 
@@ -92,9 +93,13 @@ pub fn levenshtein_runner(reader: BufReader<File>) {
 
 fn search_record_levenshtein(text: String, level: &str) -> Vec<HashMap<String, Value>> {
     let mut data: Vec<HashMap<String, Value>> = Vec::new();
-    let clean_text = text
-        .to_lowercase()
-        .replace(|c: char| !c.is_alphanumeric(), "");
+    let clean_text = text.to_ascii_uppercase().replace(
+        &[
+            '(', ')', ',', ';', ':', '@', '#', '$', '%', '^', '&', '*', '_', '+', '=', '{', '}',
+            '[', ']', '|', '<', '>', '/',
+        ][..],
+        "",
+    );
     for word in clean_text.split_whitespace() {
         let mut word_data: HashMap<String, Value> = HashMap::new();
         let start_time = Instant::now();
@@ -150,9 +155,13 @@ pub fn jarowinkler_runner(reader: BufReader<File>) {
 
 fn search_record_jarowinkler(text: String, level: &str) -> Vec<HashMap<String, Value>> {
     let mut data: Vec<HashMap<String, Value>> = Vec::new();
-    let clean_text = text
-        .to_lowercase()
-        .replace(|c: char| !c.is_alphanumeric(), "");
+    let clean_text = text.to_ascii_uppercase().replace(
+        &[
+            '(', ')', ',', ';', ':', '@', '#', '$', '%', '^', '&', '*', '_', '+', '=', '{', '}',
+            '[', ']', '|', '<', '>', '/',
+        ][..],
+        "",
+    );
     for word in clean_text.split_whitespace() {
         let mut word_data: HashMap<String, Value> = HashMap::new();
         let start_time = Instant::now();

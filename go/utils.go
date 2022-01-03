@@ -76,23 +76,23 @@ func joinCols(record map[string]interface{}) string {
 	three, ok3 := record["primarycause_lineb"]
 	four, ok4 := record["primarycause_linec"]
 	if ok1 {
-		result += fmt.Sprintf("%v", one)
+		result += fmt.Sprintf(" %s", one)
 	}
 	if ok2 {
-		result += fmt.Sprintf("%v", two)
+		result += fmt.Sprintf(" %s", two)
 	}
 	if ok3 {
-		result += fmt.Sprintf("%v", three)
+		result += fmt.Sprintf(" %s", three)
 	}
 	if ok4 {
-		result += fmt.Sprintf("%v", four)
+		result += fmt.Sprintf(" %s", four)
 	}
-	return result
+	return strings.TrimSpace(result)
 }
 
 func searchRecord(text string, level string, searchType string) []map[string]interface{} {
 	var data []map[string]interface{}
-	cleanText := strip(text)
+	cleanText := clean(text)
 	switch searchType {
 	case "L":
 		searcher := metrics.NewLevenshtein()

@@ -26,17 +26,18 @@ def get_user_input() -> str:
 
 def join_cols(record: dict[str, Any]) -> str:
     """Joins various column values."""
-    return f"{record.get('primarycause', '')}\
-        {record.get('primarycause_linea', '')}\
-            {record.get('primarycause_lineb', '')}\
-                {record.get('primarycause_linec', '')}"
+    cause1 = record.get("primarycause", "")
+    cause2 = record.get("primarycause_linea", "")
+    cause3 = record.get("primarycause_lineb", "")
+    cause4 = record.get("primarycause_linec", "")
+    return f"{cause1} {cause2} {cause3} {cause4}".strip()
 
 
 def search_record(
     text: str, level: str, searcher: NormalizedLevenshtein | JaroWinkler
 ) -> Generator[dict[str, str | float], None, None]:
     """Searches a single text record"""
-    y = text.translate(str.maketrans("", "", "!@#$%^&*()'\";:,.?{}[]")).lower()
+    y = text.translate(str.maketrans("", "", "(),;:@#$%^&*_+={}[]|<>/")).upper()
     for word in y.split():  # default splits on space
         start_time = time.time()
         d = searcher.distance(s0=word, s1="heroin")
