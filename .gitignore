@@ -10,3 +10,11 @@ third-party/rust/target/
 .vscode/
 
 third-party/python/__pycache__/
+
+rust/target/
+
+python/__pycache__/
+
+go/go.sum
+
+go/searcher
