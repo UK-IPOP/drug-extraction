@@ -103,9 +103,9 @@ fn search_record_levenshtein(text: String, level: &str) -> Vec<HashMap<String, V
     for word in clean_text.split_whitespace() {
         let mut word_data: HashMap<String, Value> = HashMap::new();
         let start_time = Instant::now();
-        let d = levenshtein(word, "heroin");
+        let d = levenshtein(word, "HEROIN");
         let elapsed_time = start_time.elapsed().as_secs_f64();
-        let distance: f64 = 1.0 - (d as f64 / max(word.len(), "heroin".len()) as f64);
+        let distance: f64 = 1.0 - (d as f64 / max(word.len(), "HEROIN".len()) as f64);
         word_data.insert(String::from("word"), Value::from(word));
         word_data.insert(String::from("distance"), Value::from(distance));
         word_data.insert(String::from("level"), Value::from(level));
@@ -165,9 +165,9 @@ fn search_record_jarowinkler(text: String, level: &str) -> Vec<HashMap<String, V
     for word in clean_text.split_whitespace() {
         let mut word_data: HashMap<String, Value> = HashMap::new();
         let start_time = Instant::now();
-        let d = jaro_winkler(word, "heroin");
+        let d = jaro_winkler(word, "HEROIN");
         let elapsed_time = start_time.elapsed().as_secs_f64();
-        let distance: f64 = 1.0 - (d as f64 / max(word.len(), "heroin".len()) as f64);
+        let distance: f64 = 1.0 - (d as f64 / max(word.len(), "HEROIN".len()) as f64);
         word_data.insert(String::from("word"), Value::from(word));
         word_data.insert(String::from("distance"), Value::from(distance));
         word_data.insert(String::from("level"), Value::from(level));

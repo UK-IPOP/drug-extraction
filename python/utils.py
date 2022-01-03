@@ -40,12 +40,12 @@ def search_record(
     y = text.translate(str.maketrans("", "", "(),;:@#$%^&*_+={}[]|<>/")).upper()
     for word in y.split():  # default splits on space
         start_time = time.time()
-        d = searcher.distance(s0=word, s1="heroin")
+        d = searcher.distance(s0=word, s1="HEROIN")
         time_elapsed = time.time() - start_time
         distance = (
             d
             if type(searcher) == JaroWinkler
-            else 1 - (d / max(len(word), len("heroin")))
+            else 1 - (d / max(len(word), len("HEROIN")))
         )  # normalizes
         yield {
             "word": word,

@@ -101,9 +101,9 @@ func searchRecord(text string, level string, searchType string) []map[string]int
 				continue
 			}
 			sTime := time.Now()
-			d := searcher.Distance(word, "heroin")
+			d := searcher.Distance(word, "HEROIN")
 			eTime := time.Since(sTime).Seconds()
-			distance := 1 - (float64(d) / math.Max(float64(len(word)), float64(len("heroin"))))
+			distance := 1 - (float64(d) / math.Max(float64(len(word)), float64(len("HEROIN"))))
 			data = append(data,
 				map[string]interface{}{
 					"word":     word,
