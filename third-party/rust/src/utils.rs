@@ -61,13 +61,13 @@ pub fn levenshtein_runner(reader: BufReader<File>) {
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");
         let row = combine_cols(json_value);
         for col in ["primary_combined", "secondarycause"].iter().cloned() {
-            let mut case_id = row
+            let case_id = row
                 .get("casenumber")
                 .expect("row did not have case number")
                 .as_str()
                 .expect("could not convert case_id Value to str");
             let possible_text = row.get(col);
-            let mut text = match possible_text {
+            let text = match possible_text {
                 Some(t) => t.as_str().expect("could not convert text Value to str"),
                 _ => {
                     let v = "";
@@ -119,13 +119,13 @@ pub fn jarowinkler_runner(reader: BufReader<File>) {
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");
         let row = combine_cols(json_value);
         for col in ["primary_combined", "secondarycause"].iter().cloned() {
-            let mut case_id = row
+            let case_id = row
                 .get("casenumber")
                 .expect("row did not have case number")
                 .as_str()
                 .expect("could not convert case_id Value to str");
             let possible_text = row.get(col);
-            let mut text = match possible_text {
+            let text = match possible_text {
                 Some(t) => t.as_str().expect("could not convert text Value to str"),
                 _ => {
                     let v = "";
