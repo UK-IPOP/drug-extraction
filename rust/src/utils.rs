@@ -11,7 +11,7 @@ use std::time::Instant;
 use strsim::{jaro_winkler, levenshtein};
 
 pub fn load_data() -> BufReader<File> {
-    let file = File::open("../../data/records.jsonl").expect("could not open input file");
+    let file = File::open("../data/records.jsonl").expect("could not open input file");
     let reader = BufReader::new(file);
     reader
 }
@@ -54,8 +54,8 @@ struct ResultData {
 const ENDLINE_BYTE: &[u8] = "\n".as_bytes();
 
 pub fn levenshtein_runner(reader: BufReader<File>) {
-    let mut out_file = File::create("../../data/third-party/rust-levenshtein.jsonl")
-        .expect("could not create output file.");
+    let mut out_file =
+        File::create("../data/rust-levenshtein.jsonl").expect("could not create output file.");
     for line in reader.lines() {
         let line = line.expect("no valid line when reading file");
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");
@@ -112,8 +112,8 @@ fn search_record_levenshtein(text: String, level: &str) -> Vec<HashMap<String, V
 }
 
 pub fn jarowinkler_runner(reader: BufReader<File>) {
-    let mut out_file = File::create("../../data/third-party/rust-jarowinkler.jsonl")
-        .expect("could not create output file.");
+    let mut out_file =
+        File::create("../data/rust-jarowinkler.jsonl").expect("could not create output file.");
     for line in reader.lines() {
         let line = line.expect("no valid line when reading file");
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");

@@ -15,7 +15,7 @@ import (
 )
 
 func LoadFileStream() (*bufio.Scanner, error) {
-	file, fileErr := os.Open("../../data/records.jsonl")
+	file, fileErr := os.Open("../data/records.jsonl")
 	if fileErr != nil {
 		log.Fatalln("could not open file", fileErr)
 		return nil, fileErr
@@ -39,19 +39,33 @@ func GetUserInput() (string, error) {
 	}
 }
 
-// strip makes alpha num
-func strip(s string) string {
-	var result strings.Builder
-	text := strings.ToLower(s)
-	for i := 0; i < len(text); i++ {
-		b := text[i]
-		if ('a' <= b && b <= 'z') ||
-			('0' <= b && b <= '9') ||
-			b == ' ' {
-			result.WriteByte(b)
-		}
-	}
-	return result.String()
+// clean makes alpha num
+func clean(s string) string {
+	text := strings.ToUpper(s)
+	text = strings.ReplaceAll(text, "(", "")
+	text = strings.ReplaceAll(text, ")", "")
+	text = strings.ReplaceAll(text, ",", "")
+	text = strings.ReplaceAll(text, ";", "")
+	text = strings.ReplaceAll(text, ":", "")
+	text = strings.ReplaceAll(text, "@", "")
+	text = strings.ReplaceAll(text, "#", "")
+	text = strings.ReplaceAll(text, "$", "")
+	text = strings.ReplaceAll(text, "%", "")
+	text = strings.ReplaceAll(text, "^", "")
+	text = strings.ReplaceAll(text, "&", "")
+	text = strings.ReplaceAll(text, "*", "")
+	text = strings.ReplaceAll(text, "_", "")
+	text = strings.ReplaceAll(text, "+", "")
+	text = strings.ReplaceAll(text, "=", "")
+	text = strings.ReplaceAll(text, "{", "")
+	text = strings.ReplaceAll(text, "}", "")
+	text = strings.ReplaceAll(text, "[", "")
+	text = strings.ReplaceAll(text, "]", "")
+	text = strings.ReplaceAll(text, "|", "")
+	text = strings.ReplaceAll(text, "<", "")
+	text = strings.ReplaceAll(text, ">", "")
+	text = strings.ReplaceAll(text, "/", "")
+	return text
 }
 
 // joins column values
@@ -133,7 +147,7 @@ func Runner(searchMetric string, fileData *bufio.Scanner) error {
 		return errors.New("invalid search metric")
 	}
 
-	outFilePath := fmt.Sprintf("../../data/third-party/%s.jsonl", fpathEnding)
+	outFilePath := fmt.Sprintf("../data/%s.jsonl", fpathEnding)
 	outFile, outFileCreationErr := os.Create(outFilePath)
 	if outFileCreationErr != nil {
 		log.Fatalln(outFileCreationErr)

@@ -6,14 +6,13 @@ from typing import Generator, Any, TextIO
 
 from strsimpy.normalized_levenshtein import NormalizedLevenshtein
 from strsimpy.jaro_winkler import JaroWinkler
-from rich.progress import track
 from rich import pretty, print
 
 pretty.install()
 
 
 def load_data() -> TextIO:
-    f = open("../../data/records.jsonl", "r")
+    f = open("../data/records.jsonl", "r")
     return f
 
 
@@ -62,11 +61,14 @@ def runner(search_metric: str, input_file: TextIO):
     if search_metric.upper() == "J":
         metric = JaroWinkler()
         fpath_ending = "python-jarowinkler"
-    else:
+    elif search_metric.upper() == "L":
         metric = NormalizedLevenshtein()
         fpath_ending = "python-levenshtein"
+    else:
+        print("Invalid search metric.")
+        return
 
-    with open(f"../../data/third-party/{fpath_ending}.jsonl", "w") as out_file:
+    with open(f"../data/{fpath_ending}.jsonl", "w") as out_file:
         for line in input_file:
             data = json.loads(line)
             data["primary_combined"] = join_cols(data)
