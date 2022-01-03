@@ -20,12 +20,6 @@ func LoadFileStream() (*bufio.Scanner, error) {
 		log.Fatalln("could not open file", fileErr)
 		return nil, fileErr
 	}
-	// defer func(file *os.File) {
-	// 	err := file.Close()
-	// 	if err != nil {
-	// 		log.Fatalln("could not close input file", err)
-	// 	}
-	// }(file)
 	scanner := bufio.NewScanner(file)
 	return scanner, nil
 }
