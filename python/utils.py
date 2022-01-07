@@ -33,29 +33,52 @@ def join_cols(record: dict[str, Any]) -> str:
     return f"{cause1} {cause2} {cause3} {cause4}".strip()
 
 
+def load_drugs() -> list[dict[str, str]]:
+    """This loads the drugs from file.
+
+    It does not need to stream the file because in production it
+    will be loading from the API not from a file.
+    """
+    data = []
+    with open("../data/drugs.jsonl", "r") as file:
+        for line in file:
+            json_line = json.loads(line)
+            data.append(json_line)
+    return data
+
+
 def search_record(
-    text: str, level: str, searcher: NormalizedLevenshtein | JaroWinkler
+    text: str,
+    level: str,
+    searcher: NormalizedLevenshtein | JaroWinkler,
+    drug_list: list[dict[str, str]],
 ) -> Generator[dict[str, str | float], None, None]:
     """Searches a single text record"""
     y = text.translate(str.maketrans("", "", "(),;:@#$%^&*_+={}[]|<>/")).upper()
-    for word in y.split():  # default splits on space
-        start_time = time.time()
-        d = searcher.distance(s0=word, s1="HEROIN")
-        time_elapsed = time.time() - start_time
-        distance = (
-            d
-            if type(searcher) == JaroWinkler
-            else 1 - (d / max(len(word), len("HEROIN")))
-        )  # normalizes
-        yield {
-            "word": word,
-            "distance": distance,
-            "level": level,
-            "metric": "JaroWinkler"
-            if type(searcher) == JaroWinkler
-            else "NormalizedLevenshtein",
-            "time": time_elapsed,
-        }
+    for drug_info in drug_list:
+        drug_names = [d.strip().upper() for d in drug_info["name"].split("/")]
+        id_ = drug_info["rx_id"]
+        for name in drug_names:
+            for word in y.split():  # default splits on space
+                start_time = time.time()
+                d = searcher.distance(s0=word, s1=name)
+                time_elapsed = time.time() - start_time
+                distance = (
+                    d
+                    if type(searcher) == JaroWinkler
+                    else 1 - (d / max(len(word), len(name)))
+                )  # normalizes
+                yield {
+                    "word": word,
+                    "similarity": distance,
+                    "level": level,
+                    "metric": "JaroWinkler"
+                    if type(searcher) == JaroWinkler
+                    else "NormalizedLevenshtein",
+                    "time": time_elapsed,
+                    "drug_name": name,
+                    "drug_id": id_,
+                }
 
 
 def runner(search_metric: str, input_file: TextIO):
@@ -69,6 +92,7 @@ def runner(search_metric: str, input_file: TextIO):
         print("Invalid search metric.")
         return
 
+    drugs = load_drugs()
     with open(f"../data/{fpath_ending}.jsonl", "w") as out_file:
         for line in input_file:
             data = json.loads(line)
@@ -77,17 +101,12 @@ def runner(search_metric: str, input_file: TextIO):
             for col in ("primary_combined", "secondarycause"):
                 if row_text := data.get(col):
                     search_results = search_record(
-                        text=row_text, level=col, searcher=metric
+                        text=row_text, level=col, searcher=metric, drug_list=drugs
                     )
-                    results = list(search_results)
-                    if results:
-                        json_data = (
-                            json.dumps(
-                                {
-                                    "casenumber": data["casenumber"],
-                                    "results": results,
-                                }
+                    if search_results:
+                        for result in search_results:
+                            json_data = (
+                                json.dumps({"casenumber": data["casenumber"], **result})
+                                + "\n"
                             )
-                            + "\n"
-                        )
-                        out_file.write(json_data)
+                            out_file.write(json_data)

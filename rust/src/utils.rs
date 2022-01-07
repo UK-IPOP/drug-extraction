@@ -1,4 +1,3 @@
-use serde::Serialize;
 use serde_json::Value;
 use std::cmp::max;
 use std::collections::HashMap;
@@ -46,15 +45,22 @@ fn combine_cols(mut row: Value) -> Value {
     row
 }
 
-#[derive(Serialize, Debug)]
-struct ResultData {
-    casenumber: String,
-    results: Vec<HashMap<String, Value>>,
+pub fn load_drugs() -> Vec<Value> {
+    let file = File::open("../data/drugs.jsonl").expect("could not open drug file");
+    let reader = BufReader::new(file);
+    let mut data: Vec<Value> = Vec::new();
+    for line in reader.lines() {
+        let line = line.expect("no valid line when reading file");
+        let drug_json: Value = serde_json::from_str(&line).expect("could not convert drug to json");
+        data.push(drug_json);
+    }
+    data
 }
 
 const ENDLINE_BYTE: &[u8] = "\n".as_bytes();
 
 pub fn levenshtein_runner(reader: BufReader<File>) {
+    let drugs = load_drugs();
     let mut out_file =
         File::create("../data/rust-levenshtein.jsonl").expect("could not create output file.");
     for line in reader.lines() {
@@ -75,23 +81,26 @@ pub fn levenshtein_runner(reader: BufReader<File>) {
                     v
                 }
             };
-            let search_results = search_record_levenshtein(text.to_string(), col);
+            let search_results = search_record_levenshtein(text.to_string(), col, &drugs);
             if search_results.len() == 0 {
                 continue;
             }
-            let data = ResultData {
-                casenumber: case_id.to_string(),
-                results: search_results,
-            };
-            let json_data = serde_json::to_string(&data).expect("could not create json data");
-            out_file
-                .write(&[json_data.as_bytes(), ENDLINE_BYTE].concat())
-                .expect("could not write jsonline");
+            for mut result in search_results {
+                result.insert(String::from("casenumber"), Value::from(case_id.to_string()));
+                let json_data = serde_json::to_string(&result).expect("could not create json data");
+                out_file
+                    .write(&[json_data.as_bytes(), ENDLINE_BYTE].concat())
+                    .expect("could not write jsonline");
+            }
         }
     }
 }
 
-fn search_record_levenshtein(text: String, level: &str) -> Vec<HashMap<String, Value>> {
+fn search_record_levenshtein(
+    text: String,
+    level: &str,
+    drug_list: &Vec<Value>,
+) -> Vec<HashMap<String, Value>> {
     let mut data: Vec<HashMap<String, Value>> = Vec::new();
     let clean_text = text.to_ascii_uppercase().replace(
         &[
@@ -100,23 +109,36 @@ fn search_record_levenshtein(text: String, level: &str) -> Vec<HashMap<String, V
         ][..],
         "",
     );
-    for word in clean_text.split_whitespace() {
-        let mut word_data: HashMap<String, Value> = HashMap::new();
-        let start_time = Instant::now();
-        let d = levenshtein(word, "HEROIN");
-        let elapsed_time = start_time.elapsed().as_secs_f64();
-        let distance: f64 = 1.0 - (d as f64 / max(word.len(), "HEROIN".len()) as f64);
-        word_data.insert(String::from("word"), Value::from(word));
-        word_data.insert(String::from("distance"), Value::from(distance));
-        word_data.insert(String::from("level"), Value::from(level));
-        word_data.insert(String::from("metric"), Value::from("NormalizedLevenshtein"));
-        word_data.insert(String::from("time"), Value::from(elapsed_time));
-        data.push(word_data);
+    for drug in drug_list {
+        let drug_id = drug.get("rx_id").unwrap().as_str().unwrap();
+        let drug_words = drug.get("name").unwrap().to_string().to_ascii_uppercase();
+        let drug_names = drug_words.split('/');
+        for name in drug_names {
+            for word in clean_text.split_whitespace() {
+                let mut word_data: HashMap<String, Value> = HashMap::new();
+                let start_time = Instant::now();
+                let d = levenshtein(word, name);
+                let elapsed_time = start_time.elapsed().as_secs_f64();
+                let distance: f64 = 1.0 - (d as f64 / max(word.len(), name.len()) as f64);
+                word_data.insert(String::from("word"), Value::from(word));
+                word_data.insert(String::from("similarity"), Value::from(distance));
+                word_data.insert(String::from("level"), Value::from(level));
+                word_data.insert(String::from("metric"), Value::from("NormalizedLevenshtein"));
+                word_data.insert(String::from("time"), Value::from(elapsed_time));
+                word_data.insert(
+                    String::from("drug_name"),
+                    Value::from(name.trim_matches('"')),
+                );
+                word_data.insert(String::from("drug_id"), Value::from(drug_id));
+                data.push(word_data);
+            }
+        }
     }
     data
 }
 
 pub fn jarowinkler_runner(reader: BufReader<File>) {
+    let drugs = load_drugs();
     let mut out_file =
         File::create("../data/rust-jarowinkler.jsonl").expect("could not create output file.");
     for line in reader.lines() {
@@ -137,23 +159,26 @@ pub fn jarowinkler_runner(reader: BufReader<File>) {
                     v
                 }
             };
-            let search_results = search_record_jarowinkler(text.to_string(), col);
+            let search_results = search_record_jarowinkler(text.to_string(), col, &drugs);
             if search_results.len() == 0 {
                 continue;
             }
-            let data = ResultData {
-                casenumber: case_id.to_string(),
-                results: search_results,
-            };
-            let json_data = serde_json::to_string(&data).expect("could not create json data");
-            out_file
-                .write(&[json_data.as_bytes(), ENDLINE_BYTE].concat())
-                .expect("could not write jsonline");
+            for mut result in search_results {
+                result.insert(String::from("casenumber"), Value::from(case_id.to_string()));
+                let json_data = serde_json::to_string(&result).expect("could not create json data");
+                out_file
+                    .write(&[json_data.as_bytes(), ENDLINE_BYTE].concat())
+                    .expect("could not write jsonline");
+            }
         }
     }
 }
 
-fn search_record_jarowinkler(text: String, level: &str) -> Vec<HashMap<String, Value>> {
+fn search_record_jarowinkler(
+    text: String,
+    level: &str,
+    drug_list: &Vec<Value>,
+) -> Vec<HashMap<String, Value>> {
     let mut data: Vec<HashMap<String, Value>> = Vec::new();
     let clean_text = text.to_ascii_uppercase().replace(
         &[
@@ -162,18 +187,30 @@ fn search_record_jarowinkler(text: String, level: &str) -> Vec<HashMap<String, V
         ][..],
         "",
     );
-    for word in clean_text.split_whitespace() {
-        let mut word_data: HashMap<String, Value> = HashMap::new();
-        let start_time = Instant::now();
-        let d = jaro_winkler(word, "HEROIN");
-        let elapsed_time = start_time.elapsed().as_secs_f64();
-        let distance: f64 = 1.0 - (d as f64 / max(word.len(), "HEROIN".len()) as f64);
-        word_data.insert(String::from("word"), Value::from(word));
-        word_data.insert(String::from("distance"), Value::from(distance));
-        word_data.insert(String::from("level"), Value::from(level));
-        word_data.insert(String::from("metric"), Value::from("JaroWinkler"));
-        word_data.insert(String::from("time"), Value::from(elapsed_time));
-        data.push(word_data);
+    for drug in drug_list {
+        let drug_id = drug.get("rx_id").unwrap().as_str().unwrap();
+        let drug_words = drug.get("name").unwrap().to_string().to_ascii_uppercase();
+        let drug_names = drug_words.split('/');
+        for name in drug_names {
+            for word in clean_text.split_whitespace() {
+                let mut word_data: HashMap<String, Value> = HashMap::new();
+                let start_time = Instant::now();
+                let d = jaro_winkler(word, name);
+                let elapsed_time = start_time.elapsed().as_secs_f64();
+                let distance: f64 = 1.0 - (d as f64 / max(word.len(), name.len()) as f64);
+                word_data.insert(String::from("word"), Value::from(word));
+                word_data.insert(String::from("similarity"), Value::from(distance));
+                word_data.insert(String::from("level"), Value::from(level));
+                word_data.insert(String::from("metric"), Value::from("JaroWinkler"));
+                word_data.insert(String::from("time"), Value::from(elapsed_time));
+                word_data.insert(
+                    String::from("drug_name"),
+                    Value::from(name.trim_matches('"')),
+                );
+                word_data.insert(String::from("drug_id"), Value::from(drug_id));
+                data.push(word_data);
+            }
+        }
     }
     data
 }

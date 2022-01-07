@@ -90,46 +90,92 @@ func joinCols(record map[string]interface{}) string {
 	return strings.TrimSpace(result)
 }
 
-func searchRecord(text string, level string, searchType string) []map[string]interface{} {
+func loadDrugs() ([]map[string]string, error) {
+	file, fileErr := os.Open("../data/drugs.jsonl")
+	if fileErr != nil {
+		log.Fatalln("could not open drug file", fileErr)
+		return nil, fileErr
+	}
+	defer file.Close()
+	var drugs []map[string]string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		var drug map[string]string
+		err := json.Unmarshal(scanner.Bytes(), &drug)
+		if err != nil {
+			log.Fatalln("could not unmarshal drug", err)
+			return nil, err
+		}
+		drugs = append(drugs, drug)
+	}
+	return drugs, nil
+}
+
+func searchRecord(text string, level string, searchType string, drugList []map[string]string) []map[string]interface{} {
 	var data []map[string]interface{}
 	cleanText := clean(text)
 	switch searchType {
 	case "L":
 		searcher := metrics.NewLevenshtein()
-		for _, word := range strings.Fields(cleanText) {
-			if word == "" {
-				continue
+		for _, drug := range drugList {
+			drugWords := strings.Split(drug["name"], "/")
+			drugId := drug["rx_id"]
+			var drugNames []string
+			for _, drugName := range drugWords {
+				drugNames = append(drugNames, strings.TrimSpace(strings.ToUpper(drugName)))
 			}
-			sTime := time.Now()
-			d := searcher.Distance(word, "HEROIN")
-			eTime := time.Since(sTime).Seconds()
-			distance := 1 - (float64(d) / math.Max(float64(len(word)), float64(len("HEROIN"))))
-			data = append(data,
-				map[string]interface{}{
-					"word":     word,
-					"distance": distance,
-					"level":    level,
-					"metric":   "NormalizedLevenshtein",
-					"time":     eTime,
-				})
+			for _, name := range drugNames {
+				for _, word := range strings.Fields(cleanText) {
+					if word == "" {
+						continue
+					}
+					sTime := time.Now()
+					d := searcher.Distance(word, name)
+					eTime := time.Since(sTime).Seconds()
+					distance := 1 - (float64(d) / math.Max(float64(len(word)), float64(len(name))))
+					data = append(data,
+						map[string]interface{}{
+							"word":       word,
+							"similarity": distance,
+							"level":      level,
+							"metric":     "NormalizedLevenshtein",
+							"time":       eTime,
+							"drug":       name,
+							"drug_id":    drugId,
+						})
+				}
+			}
 		}
 	case "J":
 		searcher := metrics.NewJaroWinkler()
-		for _, word := range strings.Fields(cleanText) {
-			if word == "" {
-				continue
+		for _, drug := range drugList {
+			drugWords := strings.Split(drug["name"], "/")
+			drugId := drug["rx_id"]
+			var drugNames []string
+			for _, drugName := range drugWords {
+				drugNames = append(drugNames, strings.TrimSpace(strings.ToUpper(drugName)))
 			}
-			sTime := time.Now()
-			distance := searcher.Compare(word, "heroin")
-			eTime := time.Since(sTime).Seconds()
-			data = append(data,
-				map[string]interface{}{
-					"word":     word,
-					"distance": distance,
-					"level":    level,
-					"metric":   "JaroWinkler",
-					"time":     eTime,
-				})
+			for _, name := range drugNames {
+				for _, word := range strings.Fields(cleanText) {
+					if word == "" {
+						continue
+					}
+					sTime := time.Now()
+					d := searcher.Compare(word, name)
+					eTime := time.Since(sTime).Seconds()
+					distance := 1 - (float64(d) / math.Max(float64(len(word)), float64(len(name))))
+					data = append(data,
+						map[string]interface{}{
+							"word":       word,
+							"similarity": distance,
+							"level":      level,
+							"metric":     "JaroWinkler",
+							"time":       eTime,
+							"drug":       name,
+							"drug_id":    drugId,
+						})
+				}
+			}
 		}
 	}
 	return data
@@ -147,6 +193,11 @@ func Runner(searchMetric string, fileData *bufio.Scanner) error {
 		return errors.New("invalid search metric")
 	}
 
+	drugs, drugLoadErr := loadDrugs()
+	if drugLoadErr != nil {
+		log.Fatalln("could not load drugs", drugLoadErr)
+		return drugLoadErr
+	}
 	outFilePath := fmt.Sprintf("../data/%s.jsonl", fpathEnding)
 	outFile, outFileCreationErr := os.Create(outFilePath)
 	if outFileCreationErr != nil {
@@ -169,21 +220,21 @@ func Runner(searchMetric string, fileData *bufio.Scanner) error {
 		record["primary_combined"] = joinCols(record)
 		for _, col := range []string{"primary_combined", "secondarycause"} {
 			if recordText, ok := record[col]; ok {
-				searchResults := searchRecord(fmt.Sprintf("%s", recordText), col, searchMetric)
+				searchResults := searchRecord(fmt.Sprintf("%s", recordText), col, searchMetric, drugs)
 				if len(searchResults) == 0 {
 					continue
 				}
 				if recordID, ok2 := record["casenumber"]; ok2 {
-					outData, jsonMarshalErr := json.Marshal(map[string]interface{}{
-						"casenumber": recordID,
-						"results":    searchResults,
-					})
-					if jsonMarshalErr != nil {
-						return jsonMarshalErr
-					}
-					_, outFileWriteErr := outFile.Write(append(outData, []byte("\n")...))
-					if outFileWriteErr != nil {
-						return outFileWriteErr
+					for _, result := range searchResults {
+						result["casenumber"] = recordID
+						outData, jsonMarshalErr := json.Marshal(result)
+						if jsonMarshalErr != nil {
+							return jsonMarshalErr
+						}
+						_, outFileWriteErr := outFile.Write(append(outData, []byte("\n")...))
+						if outFileWriteErr != nil {
+							return outFileWriteErr
+						}
 					}
 				}
 			}
