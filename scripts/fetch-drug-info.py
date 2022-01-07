@@ -27,7 +27,7 @@ for drug_member in data["drugMemberGroup"]["drugMember"]:
         }
     )
 
-with open("data/drugs.jsonl", "w") as f:
+with open("data/input/drugs.jsonl", "w") as f:
     for drug in scraped_data:
         json_line = json.dumps(drug) + "\n"
         f.write(json_line)

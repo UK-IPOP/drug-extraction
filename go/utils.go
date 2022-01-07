@@ -15,7 +15,7 @@ import (
 )
 
 func LoadFileStream() (*bufio.Scanner, error) {
-	file, fileErr := os.Open("../data/records.jsonl")
+	file, fileErr := os.Open("../data/input/records.jsonl")
 	if fileErr != nil {
 		log.Fatalln("could not open file", fileErr)
 		return nil, fileErr
@@ -91,7 +91,7 @@ func joinCols(record map[string]interface{}) string {
 }
 
 func loadDrugs() ([]map[string]string, error) {
-	file, fileErr := os.Open("../data/drugs.jsonl")
+	file, fileErr := os.Open("../data/input/drugs.jsonl")
 	if fileErr != nil {
 		log.Fatalln("could not open drug file", fileErr)
 		return nil, fileErr
@@ -198,7 +198,7 @@ func Runner(searchMetric string, fileData *bufio.Scanner) error {
 		log.Fatalln("could not load drugs", drugLoadErr)
 		return drugLoadErr
 	}
-	outFilePath := fmt.Sprintf("../data/%s.jsonl", fpathEnding)
+	outFilePath := fmt.Sprintf("../data/output/%s.jsonl", fpathEnding)
 	outFile, outFileCreationErr := os.Create(outFilePath)
 	if outFileCreationErr != nil {
 		log.Fatalln(outFileCreationErr)

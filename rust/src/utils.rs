@@ -10,7 +10,7 @@ use std::time::Instant;
 use strsim::{jaro_winkler, levenshtein};
 
 pub fn load_data() -> BufReader<File> {
-    let file = File::open("../data/records.jsonl").expect("could not open input file");
+    let file = File::open("../data/input/records.jsonl").expect("could not open input file");
     let reader = BufReader::new(file);
     reader
 }
@@ -46,7 +46,7 @@ fn combine_cols(mut row: Value) -> Value {
 }
 
 pub fn load_drugs() -> Vec<Value> {
-    let file = File::open("../data/drugs.jsonl").expect("could not open drug file");
+    let file = File::open("../data/input/drugs.jsonl").expect("could not open drug file");
     let reader = BufReader::new(file);
     let mut data: Vec<Value> = Vec::new();
     for line in reader.lines() {
@@ -61,8 +61,8 @@ const ENDLINE_BYTE: &[u8] = "\n".as_bytes();
 
 pub fn levenshtein_runner(reader: BufReader<File>) {
     let drugs = load_drugs();
-    let mut out_file =
-        File::create("../data/rust-levenshtein.jsonl").expect("could not create output file.");
+    let mut out_file = File::create("../data/output/rust-levenshtein.jsonl")
+        .expect("could not create output file.");
     for line in reader.lines() {
         let line = line.expect("no valid line when reading file");
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");
@@ -139,8 +139,8 @@ fn search_record_levenshtein(
 
 pub fn jarowinkler_runner(reader: BufReader<File>) {
     let drugs = load_drugs();
-    let mut out_file =
-        File::create("../data/rust-jarowinkler.jsonl").expect("could not create output file.");
+    let mut out_file = File::create("../data/output/rust-jarowinkler.jsonl")
+        .expect("could not create output file.");
     for line in reader.lines() {
         let line = line.expect("no valid line when reading file");
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");

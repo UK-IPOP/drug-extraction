@@ -12,7 +12,7 @@ pretty.install()
 
 
 def load_data() -> TextIO:
-    f = open("../data/records.jsonl", "r")
+    f = open("../data/input/records.jsonl", "r")
     return f
 
 
@@ -40,7 +40,7 @@ def load_drugs() -> list[dict[str, str]]:
     will be loading from the API not from a file.
     """
     data = []
-    with open("../data/drugs.jsonl", "r") as file:
+    with open("../data/input/drugs.jsonl", "r") as file:
         for line in file:
             json_line = json.loads(line)
             data.append(json_line)
@@ -93,7 +93,7 @@ def runner(search_metric: str, input_file: TextIO):
         return
 
     drugs = load_drugs()
-    with open(f"../data/{fpath_ending}.jsonl", "w") as out_file:
+    with open(f"../data/output/{fpath_ending}.jsonl", "w") as out_file:
         for line in input_file:
             data = json.loads(line)
             data["primary_combined"] = join_cols(data)
