@@ -2,11 +2,7 @@ from pathlib import Path
 import pyspark.pandas as ps
 from rich import pretty, print
 
-
 pretty.install()
-
-languages = ["rust", "go", "python"]
-
 
 # load data, set language field using file name
 print("[yellow]***[blue]Running time analysis...[yellow]***")
@@ -25,10 +21,3 @@ print("[blue]Total time for each language:")
 totals = df.groupby(["language", "metric", "level"])["time"].sum()
 print(totals)
 print("[yellow]***[blue]----------[yellow]***")
-
-dd = {}
-for lang in languages:
-    for metric in ("NormalizedLevenshtein", "JaroWinkler"):
-        for level in ("primary_combined", "secondarycause"):
-            d = {lang: {metric: {level: {"average": 0, "total": 0}}}}
-            dd.update(d)
