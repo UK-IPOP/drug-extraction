@@ -7,8 +7,12 @@ from typing import Generator, Any, TextIO
 from strsimpy.normalized_levenshtein import NormalizedLevenshtein
 from strsimpy.jaro_winkler import JaroWinkler
 from rich import pretty, print
+from rich.progress import track
+import logging
 
 pretty.install()
+
+RECORD_COUNT = 59_630
 
 
 def load_data() -> TextIO:
@@ -84,29 +88,43 @@ def search_record(
 def runner(search_metric: str, input_file: TextIO):
     if search_metric.upper() == "J":
         metric = JaroWinkler()
-        fpath_ending = "python-jarowinkler"
     elif search_metric.upper() == "L":
         metric = NormalizedLevenshtein()
-        fpath_ending = "python-levenshtein"
     else:
         print("Invalid search metric.")
         return
 
     drugs = load_drugs()
-    with open(f"../data/output/{fpath_ending}.jsonl", "w") as out_file:
-        for line in input_file:
-            data = json.loads(line)
-            data["primary_combined"] = join_cols(data)
-            # run the searcher for each col
-            for col in ("primary_combined", "secondarycause"):
-                if row_text := data.get(col):
-                    search_results = search_record(
-                        text=row_text, level=col, searcher=metric, drug_list=drugs
-                    )
-                    if search_results:
-                        for result in search_results:
-                            json_data = (
-                                json.dumps({"casenumber": data["casenumber"], **result})
-                                + "\n"
-                            )
-                            out_file.write(json_data)
+
+    result_count = 0
+    total_time = 0
+    metric_name = (
+        "JaroWinkler" if type(metric) == JaroWinkler else "NormalizedLevenshtein"
+    )
+    logging.basicConfig(
+        filename="../data/results/python.log",
+        encoding="utf-8",
+        level=logging.DEBUG,
+        format="%(asctime)s %(message)s",
+        datefmt="%m/%d/%Y %I:%M:%S",
+    )
+
+    for line in track(input_file, total=RECORD_COUNT, description="Processing"):
+        data = json.loads(line)
+        data["primary_combined"] = join_cols(data)
+        # run the searcher for each col
+        for col in ("primary_combined", "secondarycause"):
+            if row_text := data.get(col):
+                search_results = search_record(
+                    text=row_text, level=col, searcher=metric, drug_list=drugs
+                )
+                if search_results:
+                    for result in search_results:
+                        result_count += 1
+                        total_time += float(result["time"])
+    print(
+        f"[blue]{result_count}[/] results took [blue]{total_time}[/] seconds for [blue]{metric_name}[/] with an average time of [blue]{total_time / result_count}[/]  per record."
+    )
+    logging.info(
+        f"{result_count} results took {total_time} seconds for {metric_name} with an average time of {total_time / result_count} per record."
+    )

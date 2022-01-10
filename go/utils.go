@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -12,7 +11,10 @@ import (
 	"time"
 
 	"github.com/adrg/strutil/metrics"
+	"github.com/schollz/progressbar/v3"
 )
+
+var RECORD_COUNT = 59_630
 
 func LoadFileStream() (*bufio.Scanner, error) {
 	file, fileErr := os.Open("../data/input/records.jsonl")
@@ -182,35 +184,32 @@ func searchRecord(text string, level string, searchType string, drugList []map[s
 }
 
 func Runner(searchMetric string, fileData *bufio.Scanner) error {
-	// prepare search params
-	var fpathEnding string
-	switch searchMetric {
-	case "J":
-		fpathEnding = "go-jarowinkler"
-	case "L":
-		fpathEnding = "go-levenshtein"
-	default:
-		return errors.New("invalid search metric")
-	}
-
 	drugs, drugLoadErr := loadDrugs()
 	if drugLoadErr != nil {
 		log.Fatalln("could not load drugs", drugLoadErr)
 		return drugLoadErr
 	}
-	outFilePath := fmt.Sprintf("../data/output/%s.jsonl", fpathEnding)
-	outFile, outFileCreationErr := os.Create(outFilePath)
-	if outFileCreationErr != nil {
-		log.Fatalln(outFileCreationErr)
-		return outFileCreationErr
+	logFile, err := os.OpenFile("../data/results/golang.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening log file: %v", err)
 	}
-	defer func(outFile *os.File) {
-		err := outFile.Close()
-		if err != nil {
-			log.Fatalln("could not close output file", err)
-		}
-	}(outFile)
+	defer logFile.Close()
 
+	log.SetOutput(logFile)
+
+	var resultCount int
+	var totalTime float64
+	var metricName string
+	switch searchMetric {
+	case "L":
+		metricName = "NormalizedLevenshtein"
+	case "J":
+		metricName = "JaroWinkler"
+	default:
+		panic("invalid metric")
+	}
+
+	bar := progressbar.Default(int64(RECORD_COUNT))
 	for fileData.Scan() {
 		var record map[string]interface{}
 		jsonErr := json.Unmarshal(fileData.Bytes(), &record)
@@ -224,21 +223,16 @@ func Runner(searchMetric string, fileData *bufio.Scanner) error {
 				if len(searchResults) == 0 {
 					continue
 				}
-				if recordID, ok2 := record["casenumber"]; ok2 {
-					for _, result := range searchResults {
-						result["casenumber"] = recordID
-						outData, jsonMarshalErr := json.Marshal(result)
-						if jsonMarshalErr != nil {
-							return jsonMarshalErr
-						}
-						_, outFileWriteErr := outFile.Write(append(outData, []byte("\n")...))
-						if outFileWriteErr != nil {
-							return outFileWriteErr
-						}
-					}
+				for _, result := range searchResults {
+					resultCount++
+					totalTime += result["time"].(float64)
 				}
 			}
 		}
+		bar.Add(1)
 	}
+	average := totalTime / float64(resultCount)
+	fmt.Printf("%d results took %f seconds for %s with an average time of %f", resultCount, totalTime, metricName, average)
+	log.Printf("%d results took %f seconds for %s with an average time of %f", resultCount, totalTime, metricName, average)
 	return nil
 }

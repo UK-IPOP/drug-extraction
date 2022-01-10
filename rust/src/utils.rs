@@ -1,4 +1,7 @@
+use indicatif;
+use log::LevelFilter;
 use serde_json::Value;
+use simple_logging;
 use std::cmp::max;
 use std::collections::HashMap;
 use std::fs::File;
@@ -8,6 +11,8 @@ use std::io::{stdin, stdout};
 use std::string::String;
 use std::time::Instant;
 use strsim::{jaro_winkler, levenshtein};
+
+const RECORD_COUNT: u64 = 59_630;
 
 pub fn load_data() -> BufReader<File> {
     let file = File::open("../data/input/records.jsonl").expect("could not open input file");
@@ -57,22 +62,20 @@ pub fn load_drugs() -> Vec<Value> {
     data
 }
 
-const ENDLINE_BYTE: &[u8] = "\n".as_bytes();
-
 pub fn levenshtein_runner(reader: BufReader<File>) {
     let drugs = load_drugs();
-    let mut out_file = File::create("../data/output/rust-levenshtein.jsonl")
-        .expect("could not create output file.");
+    let bar = indicatif::ProgressBar::new(RECORD_COUNT);
+    simple_logging::log_to_file("../data/results/rust.log", LevelFilter::Info)
+        .expect("could not initialize logger");
+
+    let mut result_count = 0;
+    let mut total_time = 0.00;
+    let metric_name = "Levenshtein";
     for line in reader.lines() {
         let line = line.expect("no valid line when reading file");
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");
         let row = combine_cols(json_value);
         for col in ["primary_combined", "secondarycause"].iter().cloned() {
-            let case_id = row
-                .get("casenumber")
-                .expect("row did not have case number")
-                .as_str()
-                .expect("could not convert case_id Value to str");
             let possible_text = row.get(col);
             let text = match possible_text {
                 Some(t) => t.as_str().expect("could not convert text Value to str"),
@@ -85,15 +88,26 @@ pub fn levenshtein_runner(reader: BufReader<File>) {
             if search_results.len() == 0 {
                 continue;
             }
-            for mut result in search_results {
-                result.insert(String::from("casenumber"), Value::from(case_id.to_string()));
-                let json_data = serde_json::to_string(&result).expect("could not create json data");
-                out_file
-                    .write(&[json_data.as_bytes(), ENDLINE_BYTE].concat())
-                    .expect("could not write jsonline");
+            for result in search_results {
+                result_count += 1;
+                total_time += result["time"].as_f64().unwrap();
             }
         }
+        bar.inc(1);
     }
+    bar.finish();
+    let average = total_time / result_count as f64;
+    println!(
+        "{} results took {} seconds for {} with an average time of {}",
+        result_count, total_time, metric_name, average
+    );
+    log::info!(
+        "{} results took {} seconds for {} with an average time of {}",
+        result_count,
+        total_time,
+        metric_name,
+        average
+    );
 }
 
 fn search_record_levenshtein(
@@ -139,18 +153,18 @@ fn search_record_levenshtein(
 
 pub fn jarowinkler_runner(reader: BufReader<File>) {
     let drugs = load_drugs();
-    let mut out_file = File::create("../data/output/rust-jarowinkler.jsonl")
-        .expect("could not create output file.");
+    let bar = indicatif::ProgressBar::new(RECORD_COUNT);
+    simple_logging::log_to_file("../data/results/rust.log", LevelFilter::Info)
+        .expect("could not initialize logger");
+
+    let mut result_count = 0;
+    let mut total_time = 0.00;
+    let metric_name = "JaroWinkler";
     for line in reader.lines() {
         let line = line.expect("no valid line when reading file");
         let json_value: Value = serde_json::from_str(&line).expect("could not convert to json");
         let row = combine_cols(json_value);
         for col in ["primary_combined", "secondarycause"].iter().cloned() {
-            let case_id = row
-                .get("casenumber")
-                .expect("row did not have case number")
-                .as_str()
-                .expect("could not convert case_id Value to str");
             let possible_text = row.get(col);
             let text = match possible_text {
                 Some(t) => t.as_str().expect("could not convert text Value to str"),
@@ -163,15 +177,26 @@ pub fn jarowinkler_runner(reader: BufReader<File>) {
             if search_results.len() == 0 {
                 continue;
             }
-            for mut result in search_results {
-                result.insert(String::from("casenumber"), Value::from(case_id.to_string()));
-                let json_data = serde_json::to_string(&result).expect("could not create json data");
-                out_file
-                    .write(&[json_data.as_bytes(), ENDLINE_BYTE].concat())
-                    .expect("could not write jsonline");
+            for result in search_results {
+                result_count += 1;
+                total_time += result["time"].as_f64().unwrap();
             }
         }
+        bar.inc(1);
     }
+    bar.finish();
+    let average = total_time / result_count as f64;
+    println!(
+        "{} results took {} seconds for {} with an average time of {}",
+        result_count, total_time, metric_name, average
+    );
+    log::info!(
+        "{} results took {} seconds for {} with an average time of {}",
+        result_count,
+        total_time,
+        metric_name,
+        average
+    );
 }
 
 fn search_record_jarowinkler(
