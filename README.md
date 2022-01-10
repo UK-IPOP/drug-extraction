@@ -9,3 +9,11 @@ then will stream the sample dataset. For each record it will read the (created) 
 and perform some string preprocessing. Then, for each word (as determined by ascii-space) in the record it will perform string similarity comparisons for _each_ drug name saved in the `data/input/drugs.jsonl` file. Those drugs were extracted from the RxClass API using the `scripts/fetch-drug-info.py` script.
 
 Results of each program run are logged to `data/results` folder with a log file for each language.
+
+> The time recorded is for _each_ algorithm/comparison run. (i.e. each drug compared to each word in each record)
+
+Results are calculated as followed:
+
+- Summed time for all algorithm runs
+- Total number of algorithm runs
+- Average time for each algorithm run
