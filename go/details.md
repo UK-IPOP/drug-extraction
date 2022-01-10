@@ -1,5 +1,9 @@
 # Info
 
-Taken from strutil package [here](https://github.com/adrg/strutil).
+This package implements string searching algorithms taken from the
+[strutil package](https://github.com/adrg/strutil). It specifically uses
+the Levenshtein distance and the JaroWinkler Similarity. It does calculations for one algorithm at a time
+depending on user input. Previous iterations streamed results of each comparison to file; however, performance
+and file size limitations resulted in a switch to manual analysis and simple logging of results.
 
-This package implements a variety of algorithms and contains brief explanations of each.
+Comparisons are made to _each_ word in _each_ record and the total time is recorded for each metric and an average is then computed.
