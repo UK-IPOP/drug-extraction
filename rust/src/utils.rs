@@ -12,22 +12,22 @@ use std::string::String;
 use std::time::Instant;
 use strsim::{jaro_winkler, levenshtein};
 
+/// The RECORD_COUNT is the number of records from the ME Case Archive extract.
+
+/// It was statically written here as this number will always be smaller than the future
+/// 'actual' value and this number is only used for the progress bar does not apply to
+/// file streaming.
 const RECORD_COUNT: u64 = 59_630;
-// The RECORD_COUNT is the number of records from the ME Case Archive extract.
 
-// It was statically written here as this number will always be smaller than the future
-// 'actual' value and this number is only used for the progress bar does not apply to
-// file streaming.
-
+/// Reads the case records file and returns the file reader.
 pub fn load_data() -> BufReader<File> {
-    // Reads the case records file and returns the file reader
     let file = File::open("../data/input/records.jsonl").expect("could not open input file");
     let reader = BufReader::new(file);
     reader
 }
 
+/// Gets user input and validates it is one of `J` and `L`
 pub fn get_user_input() -> String {
-    // Gets user input and validates it is one of `J` and `L`
     let mut input = String::new();
     println!("Which metric would you like to run?");
     print!("JaroWinkler or Levenshtein? (J/L): ");
@@ -39,8 +39,8 @@ pub fn get_user_input() -> String {
     return clean;
 }
 
+/// Combines the primary cause columns into one column.
 fn combine_cols(mut row: Value) -> Value {
-    // Combines the primary cause columns into one column.
     let cols = [
         "primarycause",
         "primarycause_linea",
@@ -58,8 +58,8 @@ fn combine_cols(mut row: Value) -> Value {
     row
 }
 
+/// Loads the drug data from file and returns drug list.
 pub fn load_drugs() -> Vec<Value> {
-    // Loads the drug data from file and returns drug list.
     let file = File::open("../data/input/drugs.jsonl").expect("could not open drug file");
     let reader = BufReader::new(file);
     let mut data: Vec<Value> = Vec::new();
@@ -71,8 +71,8 @@ pub fn load_drugs() -> Vec<Value> {
     data
 }
 
+/// Runs the levenshtein string similarity algorithm on all the records in the file reader.
 pub fn levenshtein_runner(reader: BufReader<File>) {
-    // Runs the levenshtein string similarity algorithm on all the records in the file reader.
     let drugs = load_drugs();
     let bar = indicatif::ProgressBar::new(RECORD_COUNT);
     simple_logging::log_to_file("../data/results/rust.log", LevelFilter::Info)
@@ -120,12 +120,12 @@ pub fn levenshtein_runner(reader: BufReader<File>) {
     );
 }
 
+/// Searches each word in the text for similarity to each drug in the drug_list using levenshtein algorithm.
 fn search_record_levenshtein(
     text: String,
     level: &str,
     drug_list: &Vec<Value>,
 ) -> Vec<HashMap<String, Value>> {
-    // Searches each word in the text for similarity to each drug in the drug_list using levenshtein algorithm.
     let mut data: Vec<HashMap<String, Value>> = Vec::new();
     let clean_text = text.to_ascii_uppercase().replace(
         &[
@@ -162,8 +162,8 @@ fn search_record_levenshtein(
     data
 }
 
+/// Runs the jarowinkler string similarity algorithm on all the records in the file reader.
 pub fn jarowinkler_runner(reader: BufReader<File>) {
-    // Runs the jarowinkler string similarity algorithm on all the records in the file reader.
     let drugs = load_drugs();
     let bar = indicatif::ProgressBar::new(RECORD_COUNT);
     simple_logging::log_to_file("../data/results/rust.log", LevelFilter::Info)
@@ -211,12 +211,12 @@ pub fn jarowinkler_runner(reader: BufReader<File>) {
     );
 }
 
+/// Searches each word in the text for similarity to each drug in the drug_list using jarowinkler algorithm.
 fn search_record_jarowinkler(
     text: String,
     level: &str,
     drug_list: &Vec<Value>,
 ) -> Vec<HashMap<String, Value>> {
-    // Searches each word in the text for similarity to each drug in the drug_list using jarowinkler algorithm.
     let mut data: Vec<HashMap<String, Value>> = Vec::new();
     let clean_text = text.to_ascii_uppercase().replace(
         &[
