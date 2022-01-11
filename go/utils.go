@@ -14,8 +14,14 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
+// The RECORD_COUNT is the number of records from the ME Case Archive extract.
+//
+// It was statically written here as this number will always be smaller than the future
+// 'actual' value and this number is only used for the progress bar does not apply to
+// file streaming.
 var RECORD_COUNT = 59_630
 
+// LoadFileStream loads the case archive data form file as a scanner object.
 func LoadFileStream() (*bufio.Scanner, error) {
 	file, fileErr := os.Open("../data/input/records.jsonl")
 	if fileErr != nil {
@@ -26,6 +32,8 @@ func LoadFileStream() (*bufio.Scanner, error) {
 	return scanner, nil
 }
 
+// GetUserInput gets user input on which algorithm to run and
+// validates that it is `J` or `L`.
 func GetUserInput() (string, error) {
 	var choice string
 	fmt.Println("Which algorithm do you want to run?")
@@ -41,7 +49,7 @@ func GetUserInput() (string, error) {
 	}
 }
 
-// clean makes alpha num
+// clean removes symbols and uppercases a string
 func clean(s string) string {
 	text := strings.ToUpper(s)
 	text = strings.ReplaceAll(text, "(", "")
@@ -70,7 +78,7 @@ func clean(s string) string {
 	return text
 }
 
-// joins column values
+// joinCols joins column values
 func joinCols(record map[string]interface{}) string {
 	var result string
 	one, ok1 := record["primarycause"]
@@ -92,6 +100,7 @@ func joinCols(record map[string]interface{}) string {
 	return strings.TrimSpace(result)
 }
 
+// loadDrugs loads the drug data from file.
 func loadDrugs() ([]map[string]string, error) {
 	file, fileErr := os.Open("../data/input/drugs.jsonl")
 	if fileErr != nil {
@@ -113,6 +122,7 @@ func loadDrugs() ([]map[string]string, error) {
 	return drugs, nil
 }
 
+// searchRecord runs the specific string metric on the record for each drug in the drugList.
 func searchRecord(text string, level string, searchType string, drugList []map[string]string) []map[string]interface{} {
 	var data []map[string]interface{}
 	cleanText := clean(text)
@@ -183,6 +193,7 @@ func searchRecord(text string, level string, searchType string, drugList []map[s
 	return data
 }
 
+// Runner runs searchRecord on each record in the fileData streamer.
 func Runner(searchMetric string, fileData *bufio.Scanner) error {
 	drugs, drugLoadErr := loadDrugs()
 	if drugLoadErr != nil {

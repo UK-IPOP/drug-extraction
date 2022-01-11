@@ -12,15 +12,23 @@ import logging
 
 pretty.install()
 
+"""The RECORD_COUNT is the number of records from the ME Case Archive extract.
+
+It was statically written here as this number will always be smaller than the future
+'actual' value and this number is only used for the progress bar does not apply to
+file streaming.
+"""
 RECORD_COUNT = 59_630
 
 
 def load_data() -> TextIO:
+    """Loads the ME cases file as a file object."""
     f = open("../data/input/records.jsonl", "r")
     return f
 
 
 def get_user_input() -> str:
+    """Gets user input. Validates that it is one of `J` or `L`."""
     print("Which metric would you like to run?")
     choice = input("JaroWinkler or Levenshtein? (J/L): ")
     if choice.upper() not in {"J", "L"}:
@@ -86,6 +94,7 @@ def search_record(
 
 
 def runner(search_metric: str, input_file: TextIO):
+    """Runs the searcher on the entire file."""
     if search_metric.upper() == "J":
         metric = JaroWinkler()
     elif search_metric.upper() == "L":
