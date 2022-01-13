@@ -4,7 +4,7 @@ appenders:
     path: ../data/results/rust.log
     append: true
     encoder:
-      pattern: '{d(%Y-%m-%d %H:%M:%S)} - {m}{n}'
+      pattern: '{d(%Y-%m-%d %H:%M:%S)} {m}{n}'
 root:
   appenders:
     - searcher
