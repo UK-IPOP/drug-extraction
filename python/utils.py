@@ -115,7 +115,7 @@ def runner(search_metric: str, input_file: TextIO):
         encoding="utf-8",
         level=logging.DEBUG,
         format="%(asctime)s %(message)s",
-        datefmt="%m/%d/%Y %I:%M:%S",
+        datefmt="%m-%d-%Y %I:%M:%S",
     )
 
     for line in track(input_file, total=RECORD_COUNT, description="Processing"):
