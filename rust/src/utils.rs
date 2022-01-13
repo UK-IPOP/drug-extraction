@@ -1,7 +1,6 @@
 use indicatif;
-use log::LevelFilter;
+use log4rs;
 use serde_json::Value;
-use simple_logging;
 use std::cmp::max;
 use std::collections::HashMap;
 use std::fs::File;
@@ -75,8 +74,7 @@ pub fn load_drugs() -> Vec<Value> {
 pub fn levenshtein_runner(reader: BufReader<File>) {
     let drugs = load_drugs();
     let bar = indicatif::ProgressBar::new(RECORD_COUNT);
-    simple_logging::log_to_file("../data/results/rust.log", LevelFilter::Info)
-        .expect("could not initialize logger");
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
 
     let mut result_count = 0;
     let mut total_time = 0.00;
@@ -166,8 +164,7 @@ fn search_record_levenshtein(
 pub fn jarowinkler_runner(reader: BufReader<File>) {
     let drugs = load_drugs();
     let bar = indicatif::ProgressBar::new(RECORD_COUNT);
-    simple_logging::log_to_file("../data/results/rust.log", LevelFilter::Info)
-        .expect("could not initialize logger");
+    log4rs::init_file("log4rs.yaml", Default::default()).unwrap();
 
     let mut result_count = 0;
     let mut total_time = 0.00;
@@ -193,6 +190,9 @@ pub fn jarowinkler_runner(reader: BufReader<File>) {
                 result_count += 1;
                 total_time += result["time"].as_f64().unwrap();
             }
+        }
+        if result_count > 500 {
+            break;
         }
         bar.inc(1);
     }
