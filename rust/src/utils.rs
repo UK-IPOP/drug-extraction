@@ -191,9 +191,6 @@ pub fn jarowinkler_runner(reader: BufReader<File>) {
                 total_time += result["time"].as_f64().unwrap();
             }
         }
-        if result_count > 500 {
-            break;
-        }
         bar.inc(1);
     }
     bar.finish();
