@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "www/drug-extract-wasm",
+    "cli",
+]
