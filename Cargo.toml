@@ -3,4 +3,5 @@
 members = [
     "www/drug-extract-wasm",
     "cli",
+    "core"
 ]
