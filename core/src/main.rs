@@ -1,77 +1,64 @@
-use reqwest::Error;
+extern crate core;
+
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::error::Error;
 
+use itertools::Itertools;
+use strsim::{damerau_levenshtein, levenshtein};
 mod utils;
+mod external;
 
-#[derive(Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct DrugClass {
-    class_id: String,
-    class_name: String,
-    class_type: String,
-}
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct Drug {
-    #[serde(rename(deserialize = "rxcui"))]
-    rx_id: String,
-    name: String,
-}
-
-// we will need:
-const BASE_URL: &str = "https://rxnav.nlm.nih.gov/REST/rxclass";
-
-pub async fn get_drug_classes() -> Result<Vec<utils::RxclassMinConcept>, Error> {
-    let request_url = format!("{}/allClasses.json", BASE_URL);
-    let response_data = reqwest::get(request_url)
-        .await?
-        .json::<utils::ClassListResponse>()
-        .await?;
-
-    println!("{:?}", response_data);
-    let data = response_data.rxclass_min_concept_list.rxclass_min_concept;
-    let mut d = HashSet::new();
-    for da in data.iter() {
-        d.insert(da.class_id.clone());
-    }
-    println!("{:?}", d);
-    Ok(data)
-}
-
-pub async fn get_class_members(class_id: &String, class_type: &String) -> Result<Vec<Drug>, Error> {
-    // TODO: have to implement more for VA and RXNORM classes
-    // they require ttys param
-    // TODO: must parse class_type to one of accepted values
-
-    let request_url = format!(
-        "{}/classMembers.json?classId={}&relaSource={}",
-        BASE_URL, class_id, class_type
-    );
-    println!("{}", request_url);
-    let response_data = reqwest::get(request_url)
-        .await?
-        .json::<utils::ClassMembersResponse>()
-        .await?;
-
-    println!("{:?}", response_data);
-    let drug_members = response_data.drug_member_group.drug_member;
-    let mut drugs_list: Vec<Drug> = Vec::new();
-    for drug in drug_members {
-        drugs_list.push(Drug {
-            rx_id: drug.min_concept.rxcui,
-            name: drug.min_concept.name,
-        });
-    }
-    Ok(drugs_list)
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let drug_classes = get_drug_classes().await?;
-    println!("{:?}", drug_classes);
-    let members = get_class_members(&drug_classes[0].class_id, &drug_classes[0].class_type).await?;
-    println!("{:?}", members);
+
+    // this entire function mimics how a user would consume/utilize the library
+    // most of this is pseudocode for CLI and web apps
+
+    let records = external::read_text_records_from_file();
+    // let drugs = external::get_drugs_from_file();
+
+    let drugs = vec!["cocaine".to_string().to_uppercase(), "tramadol".to_string().to_uppercase()];
+
+    for record in &records {
+        for drug_name in &drugs {
+            // TODO::CORE perform search on drug and record
+            // should have exact match param
+            // should take either drug OR String as search param
+            // ie search_record(text: record, search_term: drug, exact:False)
+            // AND / OR
+            // ie search_record(text: record, search_term: "narcan", exact:False)
+            // should work
+            let results = utils::custom_search(record, drug_name, false, Some(2.0));
+            match results.len() {
+                x if x > 0 => {
+                    println!("{:?}", results[0]);
+                },
+                _ => continue
+            }
+        }
+    }
+
+    // let classID = "D000701";
+    // let relaSource = "MESH";
+    // let drugs = get_drug_class_members(&classID, &relaSource).await?;
+    // println!("{:?}", drugs[0]);
+    // println!("{:?}", drugs[0].aliases());
+    // println!("{:?}", drugs[0].ngrams());
+    //
+    // for drug in &drugs {
+    //     if drug.name.contains("/") {
+    //         println!("{:?}", drug);
+    //         println!("{:?}", drug.aliases());
+    //         println!("{:?}", drug.ngrams());
+    //         break;
+    //     }
+    // }
+    //
+    // let records = read_text_records_from_file();
+    // println!("{:?}", &records[0..10]);
+
     Ok(())
 }
