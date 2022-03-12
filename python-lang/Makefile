@@ -1,7 +1,7 @@
 bench-save:
 	@echo "Running python benchmarks..."
 	@echo $(shell date) >> logs/results.log
-	@poetry run pytest --color=auto --benchmark-histogram="logs/bench_hist" >> logs/results.log
+	@poetry run python -m pytest --color=auto --benchmark-histogram="logs/bench_hist" >> logs/results.log
 
 
 bench:
