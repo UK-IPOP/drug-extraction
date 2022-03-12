@@ -11,15 +11,6 @@ import (
 const s1 = "alcohol"
 const s2 = "acloholism"
 
-func BenchmarkCosine(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		s := edlib.CosineSimilarity(s1, s2, 2)
-		if s < 0.40 || s > 0.45 {
-			b.Errorf("Cosine Similarity should be around 0.4 not %f", s)
-		}
-	}
-}
-
 func BenchmarkLevenshtein(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		d := edlib.LevenshteinDistance(s1, s2)
@@ -44,15 +35,6 @@ func BenchmarkOptimalStringAlignment(b *testing.B) {
 		d := edlib.OSADamerauLevenshteinDistance(s1, s2)
 		if d != 4 {
 			b.Errorf("OSA should be 4 not %d", d)
-		}
-	}
-}
-
-func BenchmarkJaccard(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		s := edlib.JaccardSimilarity(s1, s2, 2)
-		if s != 0.25 {
-			b.Errorf("Jaccard Similarity should be 0.25 not %f", s)
 		}
 	}
 }

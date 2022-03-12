@@ -6,12 +6,10 @@
 # metrics (triangle inequality)
 from strsimpy.levenshtein import Levenshtein
 from strsimpy.damerau import Damerau
-from strsimpy.jaccard import Jaccard
 
 
 from strsimpy.optimal_string_alignment import OptimalStringAlignment
 from strsimpy.jaro_winkler import JaroWinkler
-from strsimpy.cosine import Cosine
 from strsimpy.sorensen_dice import SorensenDice
 
 
@@ -36,28 +34,12 @@ def test_damerau_distance(benchmark):
     assert result == 4
 
 
-def test_jaccard_distance(benchmark):
-    def f():
-        return Jaccard(k=2).distance(s1, s2)
-
-    result = benchmark.pedantic(f, iterations=iterations)
-    assert result == 0.75
-
-
 def test_jarowinkler_distance(benchmark):
     def f():
         return JaroWinkler().distance(s1, s2)
 
     result = benchmark.pedantic(f, iterations=iterations)
     assert result == 0.1328571428571429
-
-
-def test_cosine_distance(benchmark):
-    def f():
-        return Cosine(k=2).distance(s1, s2)
-
-    result = benchmark.pedantic(f, iterations=iterations)
-    assert result == 0.5917517095361369
 
 
 def test_sorensen_dice_distance(benchmark):
