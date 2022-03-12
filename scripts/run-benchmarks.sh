@@ -1,5 +1,7 @@
 #! /bin/bash
 
+# script to run the benchmarks for all three languages
+
 cd go-lang
 make bench-save
 

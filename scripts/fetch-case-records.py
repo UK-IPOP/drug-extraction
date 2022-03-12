@@ -1,3 +1,5 @@
+# fetches case records from chicago medical examiner archive
+
 from sodapy import Socrata
 import json
 

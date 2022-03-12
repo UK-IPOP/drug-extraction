@@ -1,3 +1,6 @@
+# fetches two drug classes from RxNorm as a sample dataset
+# saves into a file
+
 import json
 import requests
 from rich import print, pretty
