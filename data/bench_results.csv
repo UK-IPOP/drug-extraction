@@ -1,13 +1,13 @@
 ﻿Language,Algorithm,Avg. Time (ns)
-Rust,Levensthein,119.40
+Rust,Levensthein,119.4
 Rust,Damerau-Levenshtein,"1,512.60"
 Rust,OSA,283.11
 Rust,Jaro-Winkler,77.22
 Rust,Sorensen-Dice,505.87
-Go,Levensthein,285.10
-Go,Damerau-Levenshtein,996.70
-Go,OSA, 521.5
-Go,Jaro-Winkler, 124.7
+Go,Levensthein,285.1
+Go,Damerau-Levenshtein,996.7
+Go,OSA,521.5
+Go,Jaro-Winkler,124.7
 Go,Sorensen-Dice,"1,080.00"
 Python,Levensthein,"15,540.30"
 Python,Damerau-Levenshtein,"39,473.30"
