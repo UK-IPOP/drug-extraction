@@ -43,9 +43,10 @@ then simply `cd drug-extraction` to get into the active directory.
 
 ## Usage
 
-### Benchmarks
+In order to successfully run the benchmarks or tests you need to make the script you are going to run executable.  
+This can be accomplished by simply running: `chmod u+x <script-name>`. For example: `chmod u+x scripts/run-tests.sh`. Then you can simply execute the script `./scripts/run-tests.sh`.
 
-In order to successfully run the benchmarks
+### Benchmarks
 
 To actually run the benchmarks first decide if you want the results logged to file or simply output to the terminal. Then use the corresponding script (either `run-` or `save-`).
 
@@ -57,11 +58,7 @@ The results from save runs (`<LANGUAGE-FOLDER>/logs/bench_results.log`) are appe
 
 ### Tests
 
-To get the tests running follow the same procedures as setting up benchmarks. If you have already run benchmarks then you are all set.
-
-To actually run the tests first decide if you want the results logged to file or simply output to the terminal. Then use the corresponding script (either `run-` or `save-`).
-
-For example: `./scripts/run-tests.sh` to run all the tests and print output (no save).
+To actually run the tests simply run `./scripts/run-tests.sh` to run all the tests and print output.
 
 The tests for each language are written to identify cases where different languages/packages may have different implementations of an algorithm. The goal of the tests is not code coverage, but to identify cases where different languages may return different edit distances due to the nature of their implementations.
 

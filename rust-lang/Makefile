@@ -7,3 +7,6 @@ bench:
 report:
 	@echo "Generating rust report..."
 	@open ./target/criterion/reports/Algorithms/index.html
+
+test:
+	@cargo test

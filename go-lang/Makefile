@@ -8,3 +8,8 @@ bench-save:
 	@echo $(shell date) >> logs/bench_results.log
 	@go test -bench=. --benchtime 100000x >> logs/bench_results.log
 	@echo "==========================" >> logs/bench_results.log
+
+
+test:
+	@echo "Running go tests..."
+	@go test

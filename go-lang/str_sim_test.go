@@ -56,3 +56,38 @@ func BenchmarkSorensonDice(b *testing.B) {
 		}
 	}
 }
+
+func TestLevenshtein(t *testing.T) {
+	d := edlib.LevenshteinDistance(s1, s2)
+	if d != 5 {
+		t.Errorf("Levenshtein Distance should be 5 not %d", d)
+	}
+}
+
+func TestDamerau(t *testing.T) {
+	d := edlib.DamerauLevenshteinDistance(s1, s2)
+	if d != 4 {
+		t.Errorf("Damerau Levenshtein Distance should be 4 not %d", d)
+	}
+}
+
+func TestOptimalStringAlignment(t *testing.T) {
+	d := edlib.OSADamerauLevenshteinDistance(s1, s2)
+	if d != 4 {
+		t.Errorf("OSA should be 4 not %d", d)
+	}
+}
+
+func TestJaroWinkler(t *testing.T) {
+	s := edlib.JaroWinklerSimilarity(s1, s2)
+	if s > 0.9 || s < 0.8 {
+		t.Errorf("Expected around 0.8, got %f", s)
+	}
+}
+
+func TestSorensenDice(t *testing.T) {
+	c := edlib.SorensenDiceCoefficient(s1, s2, 2)
+	if c != 0.40 {
+		t.Errorf("Sorensen Dice Coefficient should be 1 not %f", c)
+	}
+}
