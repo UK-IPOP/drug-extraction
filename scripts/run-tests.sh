@@ -5,8 +5,8 @@
 cd go-lang
 make test
 
-cd ../python-lang
+cd ../rust-lang
 make test
 
-cd ../rust-lang
+cd ../python-lang
 make test
