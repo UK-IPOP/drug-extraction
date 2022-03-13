@@ -47,9 +47,11 @@ then simply `cd drug-extraction` to get into the active directory.
 
 In order to successfully run the benchmarks
 
-To actually run the benchmarks first change the permissions on the script: `chmod u+x scripts/run-benchmarks.sh` then simply `./scripts/run-benchmarks.sh`
+To actually run the benchmarks first decide if you want the results logged to file or simply output to the terminal. Then use the corresponding script (either `run-` or `save-`).
 
-The results from each log file (`<LANGUAGE-FOLDER>/logs/bench_results.log`) are appended each benchmarking run and are manually examined and entered into a [spreadsheet](data/bench_results.csv) for easy analysis and cross-language comparison.
+For example: `./scripts/run-benchmarks.sh` to run all the benchmarks and print output (no save).
+
+The results from save runs (`<LANGUAGE-FOLDER>/logs/bench_results.log`) are appended each benchmarking run and are manually examined and entered into a [spreadsheet](data/bench_results.csv) for easy analysis and cross-language comparison.
 
 > The time recorded is _averaged_ (~100,000 iterations) for each algorithm/comparison run.
 
@@ -57,7 +59,9 @@ The results from each log file (`<LANGUAGE-FOLDER>/logs/bench_results.log`) are 
 
 To get the tests running follow the same procedures as setting up benchmarks. If you have already run benchmarks then you are all set.
 
-To actually run the tests first change the permissions on the script: `chmod u+x scripts/run-tests.sh` then simply `./scripts/run-tests.sh`
+To actually run the tests first decide if you want the results logged to file or simply output to the terminal. Then use the corresponding script (either `run-` or `save-`).
+
+For example: `./scripts/run-tests.sh` to run all the tests and print output (no save).
 
 The tests for each language are written to identify cases where different languages/packages may have different implementations of an algorithm. The goal of the tests is not code coverage, but to identify cases where different languages may return different edit distances due to the nature of their implementations.
 
