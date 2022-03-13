@@ -18,42 +18,36 @@ s2 = "acloholism"
 iterations = 1_000_000
 
 
-def test_levenshtein_distance(benchmark):
+def benchmark_levenshtein_distance(benchmark):
     def f():
         return Levenshtein().distance(s1, s2)
 
     result = benchmark.pedantic(f, iterations=iterations)
-    assert result == 5
 
 
-def test_damerau_distance(benchmark):
+def benchmark_damerau_distance(benchmark):
     def f():
         return Damerau().distance(s1, s2)
 
     result = benchmark.pedantic(f, iterations=iterations)
-    assert result == 4
 
 
-def test_jarowinkler_distance(benchmark):
+def benchmark_jarowinkler_distance(benchmark):
     def f():
         return JaroWinkler().distance(s1, s2)
 
     result = benchmark.pedantic(f, iterations=iterations)
-    assert result == 0.1328571428571429
 
 
-def test_sorensen_dice_distance(benchmark):
+def benchmark_sorensen_dice_distance(benchmark):
     def f():
         return SorensenDice().distance(s1, s2)
 
     result = benchmark.pedantic(f, iterations=iterations)
-    assert result == 0.6923076923076923
 
 
-def test_optimal_string_alignment_distance(benchmark):
+def benchmark_optimal_string_alignment_distance(benchmark):
     def f():
         return OptimalStringAlignment().distance(s1, s2)
 
     result = benchmark.pedantic(f, iterations=iterations)
-    d = OptimalStringAlignment().distance(s1, s2)
-    assert result == 4
