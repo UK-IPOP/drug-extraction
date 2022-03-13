@@ -8,3 +8,21 @@ Benchmarking Algorithms/Levenshtein
 Benchmarking Algorithms/Levenshtein: Warming up for 3.0000 s
 Benchmarking Algorithms/Levenshtein: Collecting 100000 samples in estimated 5.0012 s (42000000 iterations)
 Benchmarking Algorithms/Levenshtein: Analyzing
+Sat Mar 12 19:35:51 EST 2022
+    Finished bench [optimized] target(s) in 0.02s
+Benchmarking Algorithms/Levenshtein
+Benchmarking Algorithms/Levenshtein: Warming up for 3.0000 s
+Benchmarking Algorithms/Levenshtein: Collecting 100000 samples in estimated 5.0001 s (41300000 iterations)
+Benchmarking Algorithms/Levenshtein: Analyzing
+Algorithms/Levenshtein  time:   [120.25 ns 120.32 ns 120.40 ns]
+                        change: [+0.6769% +0.7457% +0.8116%] (p = 0.00 < 0.01)
+                        Change within noise threshold.
+Found 8092 outliers among 100000 measurements (8.09%)
+  4096 (4.10%) high mild
+  3996 (4.00%) high severe
+mean   [120.25 ns 120.40 ns] std. dev.      [10.111 ns 14.229 ns]
+median [117.63 ns 117.74 ns] med. abs. dev. [1.1954 ns 1.3462 ns]
+Benchmarking Algorithms/Jaro-Winkler
+Benchmarking Algorithms/Jaro-Winkler: Warming up for 3.0000 s
+Benchmarking Algorithms/Jaro-Winkler: Collecting 100000 samples in estimated 5.0063 s (65300000 iterations)
+Benchmarking Algorithms/Jaro-Winkler: Analyzing
