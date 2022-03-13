@@ -1,0 +1,6 @@
+Metric,Python,Go,Rust
+Levensthein,5,5,5
+Damerau,4,4,4
+Jaro-Winkler,0.87,0.867143,867142857142857
+Sorensen-Dice,0.69,0.40,0.40
+Optimal-String-Alignment,4,4,4
