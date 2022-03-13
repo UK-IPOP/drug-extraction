@@ -80,8 +80,8 @@ func TestOptimalStringAlignment(t *testing.T) {
 
 func TestJaroWinkler(t *testing.T) {
 	s := edlib.JaroWinklerSimilarity(s1, s2)
-	if s > 0.9 || s < 0.8 {
-		t.Errorf("Expected around 0.8, got %f", s)
+	if s != 0.867143 {
+		t.Errorf("Expected 0.867143, got %f", s)
 	}
 }
 
