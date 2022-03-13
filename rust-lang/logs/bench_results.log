@@ -26,6 +26,7 @@ Benchmarking Algorithms/Jaro-Winkler
 Benchmarking Algorithms/Jaro-Winkler: Warming up for 3.0000 s
 Benchmarking Algorithms/Jaro-Winkler: Collecting 100000 samples in estimated 5.0063 s (65300000 iterations)
 Benchmarking Algorithms/Jaro-Winkler: Analyzing
+<<<<<<< HEAD
 Algorithms/Jaro-Winkler time:   [77.161 ns 77.193 ns 77.227 ns]
                         change: [-0.1183% -0.0669% -0.0142%] (p = 0.01 > 0.01)
                         No change in performance detected.
@@ -81,3 +82,5 @@ mean   [285.32 ns 285.50 ns] std. dev.      [13.859 ns 15.303 ns]
 median [283.01 ns 283.01 ns] med. abs. dev. [1.3826 ns 1.3826 ns]
 
 ==========================================================
+=======
+>>>>>>> perf-comp
