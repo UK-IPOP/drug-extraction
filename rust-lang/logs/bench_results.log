@@ -1,0 +1,10 @@
+Sat Mar 12 19:32:58 EST 2022
+    Finished bench [optimized] target(s) in 0.03s
+Benchmarking Algorithms/Levenshtein
+Benchmarking Algorithms/Levenshtein: Warming up for 3.0000 s
+Sat Mar 12 19:33:33 EST 2022
+    Finished bench [optimized] target(s) in 0.01s
+Benchmarking Algorithms/Levenshtein
+Benchmarking Algorithms/Levenshtein: Warming up for 3.0000 s
+Benchmarking Algorithms/Levenshtein: Collecting 100000 samples in estimated 5.0012 s (42000000 iterations)
+Benchmarking Algorithms/Levenshtein: Analyzing

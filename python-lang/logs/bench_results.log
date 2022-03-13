@@ -1,0 +1,27 @@
+Sat Mar 12 19:32:57 EST 2022
+============================= test session starts ==============================
+platform darwin -- Python 3.10.2, pytest-7.0.1, pluggy-1.0.0
+benchmark: 3.4.1 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/nick/Projects/Kentucky/drug-extraction/python-lang, configfile: pyproject.toml, testpaths: tests
+plugins: benchmark-3.4.1
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+Sat Mar 12 19:33:32 EST 2022
+============================= test session starts ==============================
+platform darwin -- Python 3.10.2, pytest-7.0.1, pluggy-1.0.0
+benchmark: 3.4.1 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/nick/Projects/Kentucky/drug-extraction/python-lang, configfile: pyproject.toml, testpaths: tests
+plugins: benchmark-3.4.1
+collected 0 items
+
+============================ no tests ran in 0.00s =============================
+Sat Mar 12 19:34:19 EST 2022
+============================= test session starts ==============================
+platform darwin -- Python 3.10.2, pytest-7.0.1, pluggy-1.0.0
+benchmark: 3.4.1 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/nick/Projects/Kentucky/drug-extraction/python-lang, configfile: pyproject.toml, testpaths: tests
+plugins: benchmark-3.4.1
+collected 5 items
+
+tests/test_str_sim.py .

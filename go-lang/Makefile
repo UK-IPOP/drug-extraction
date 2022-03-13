@@ -5,6 +5,6 @@ bench:
 
 bench-save:
 	@echo "Running go benchmarks..."
-	@echo $(shell date) >> logs/results.log
-	@go test -bench=. --benchtime 100000x >> logs/results.log
-	@echo "==========================" >> logs/results.log
+	@echo $(shell date) >> logs/bench_results.log
+	@go test -bench=. --benchtime 100000x >> logs/bench_results.log
+	@echo "==========================" >> logs/bench_results.log
