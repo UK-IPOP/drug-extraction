@@ -12,6 +12,6 @@ docker run python-benchmarks
 
 docker run rust-benchmarks
 
-docker cp rust-benchmarks:/rust-app/target/criterion ./rust-report
+docker cp rust-benchmarks:/rust-app/target/criterion/ ./rust-report
 
-open rust-report/reports/index.html
+open rust-report/reports/Algorithms/index.html
