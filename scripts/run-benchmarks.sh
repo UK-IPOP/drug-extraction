@@ -10,8 +10,10 @@ docker run --rm go-benchmarks
 
 docker run --rm python-benchmarks
 
-docker run --rm rust-benchmarks
+docker run rust-benchmarks
 
 docker cp rust-benchmarks:/rust-app/target/criterion/ ./rust-report
+
+docker rm rust-benchmarks
 
 open rust-report/reports/Algorithms/index.html
