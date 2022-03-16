@@ -6,8 +6,8 @@ bench-save:
 
 bench:
 	@echo "Running python benchmarks..."
-	@poetry run pytest --color=auto
+	@poetry run python -m pytest --color=auto
 
 test:
 	@echo "Running python tests..."
-	@poetry run pytest --color=auto
+	@poetry run python -m pytest --color=auto
