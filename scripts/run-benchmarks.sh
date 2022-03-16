@@ -1,10 +1,10 @@
 #! /bin/bash
 
-docker build -t go-benchmarks -f go-lang/Dockerfile . 
+docker build -t go-benchmarks -f go-lang/Dockerfile ./go-lang
 
-docker build -t python-benchmarks -f python-lang/Dockerfile .
+docker build -t python-benchmarks -f python-lang/Dockerfile ./python-lang
 
-docker build -t rust-benchmarks -f rust-lang/Dockerfile .
+docker build -t rust-benchmarks -f rust-lang/Dockerfile ./rust-lang
 
 docker run go-benchmarks
 
