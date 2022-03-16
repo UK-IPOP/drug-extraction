@@ -1,13 +1,17 @@
 #! /bin/bash
 
-# script to run the benchmarks for all three languages
+docker build -t go-benchmarks -f go-lang/Dockerfile
 
-cd go-lang
-make bench
+docker build -t python-benchmarks -f python-lang/Dockerfile
 
-cd ../python-lang
-make bench
+docker build -t rust-benchmarks -f rust-lang/Dockerfile
 
-cd ../rust-lang
-make bench
-make report
+docker run go-benchmarks
+
+docker run python-benchmarks
+
+docker run rust-benchmarks
+
+docker cp rust-benchmarks:/rust-app/target/criterion ./rust-report
+
+open rust-report/reports/index.html
