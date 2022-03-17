@@ -1,19 +1,5 @@
 #! /bin/bash
 
-docker build -t go-benchmarks -f go-lang/Dockerfile ./go-lang
+./scripts/bench.sh &> data/results.log
 
-docker build -t python-benchmarks -f python-lang/Dockerfile ./python-lang
-
-docker build -t rust-benchmarks -f rust-lang/Dockerfile ./rust-lang
-
-docker run --rm go-benchmarks
-
-docker run --rm python-benchmarks
-
-docker run rust-benchmarks
-
-docker cp rust-benchmarks:/rust-app/target/criterion/ ./rust-report
-
-docker rm rust-benchmarks
-
-open rust-report/reports/Algorithms/index.html
+open data/results.log
