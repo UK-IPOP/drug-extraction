@@ -54,14 +54,16 @@ These scripts utilize docker images and containers to avoid having to install an
 
 ### Benchmarks
 
-To actually run the benchmarks first decide if you want the results logged to file or simply output to the terminal.
+To actually run the benchmarks yourself first decide if you want the results logged to file or simply output to the terminal.
 Then use the corresponding make command (either `bench` or `bench-save`).
-
-For example: `make bench` (inside the python directory) to run all the benchmarks and print output (no save).
 
 The results from save runs (`<LANGUAGE-FOLDER>/logs/bench_results.log`) are appended each benchmarking run and are manually examined and entered into a [spreadsheet](data/bench_results.csv) for easy analysis and cross-language comparison.
 
 > The time recorded is _averaged_ (~100,000 iterations) for each algorithm/comparison run.
+
+For example: `make bench` (inside the python directory) to run all the benchmarks and print output (no save). This variation requires you to have all the dependencies for that language installed.
+
+Alternatively, you can simply `docker build` and then `docker run` inside the language directory to run benchmarks for that language only. This requires you _only_ to have Docker installed.
 
 ## Contributing
 
