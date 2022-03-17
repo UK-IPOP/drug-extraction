@@ -8,6 +8,10 @@ Each directory (`python-lang`, `go-lang`, `rust-lang`) contains various benchmar
 
 ### Built With
 
+- [docker](https://www.docker.com)
+- [rust](https://www.rust-lang.org)
+- [go](https://go.dev)
+- [python](https://www.python.org)
 - [pytest](https://github.com/pytest-dev/pytest)
 - [pytest-benchmark](https://github.com/ionelmc/pytest-benchmark/)
 - [go-edlib](https://github.com/hbollon/go-edlib)
@@ -22,14 +26,8 @@ To get a local copy up and running follow these simple example steps.
 
 This is an example of how to list things you need to use the software and how to install them.
 
-<!-- Add versions and links here -->
-
-- Rust
-- Go
-- Python
-- Poetry
-- Make
-- Git
+- Docker >= 20.0
+- [Git](https://git-scm.com) >= 2.35
 
 ### Installation
 
@@ -43,26 +41,27 @@ then simply `cd drug-extraction` to get into the active directory.
 
 ## Usage
 
-In order to successfully run the benchmarks or tests you need to make the script you are going to run executable.  
-This can be accomplished by simply running: `chmod u+x <script-name>`. For example: `chmod u+x scripts/run-tests.sh`. Then you can simply execute the script `./scripts/run-tests.sh`.
+In order to successfully run the benchmarks or tests you need to make the scripts you are going to run executable.  
+This can be accomplished by simply running: `chmod u+x scripts` which will make all the files in the scripts directory executable.
+
+Running the benchmarks is then simply: `./scripts/bench.sh`.
+
+To run the benchmarks and log their output to a file: `./scripts/run-benchmarks.sh`.
+
+The log file can be found at `data/results.log`. This script will also open up the interactive Rust report (from criterion) for you.
+
+These scripts utilize docker images and containers to avoid having to install and manage all of these languages and dependencies on your system.
 
 ### Benchmarks
 
-To actually run the benchmarks first decide if you want the results logged to file or simply output to the terminal. Then use the corresponding script (either `run-` or `save-`).
+To actually run the benchmarks first decide if you want the results logged to file or simply output to the terminal.
+Then use the corresponding make command (either `bench` or `bench-save`).
 
-For example: `./scripts/run-benchmarks.sh` to run all the benchmarks and print output (no save).
+For example: `make bench` (inside the python directory) to run all the benchmarks and print output (no save).
 
 The results from save runs (`<LANGUAGE-FOLDER>/logs/bench_results.log`) are appended each benchmarking run and are manually examined and entered into a [spreadsheet](data/bench_results.csv) for easy analysis and cross-language comparison.
 
 > The time recorded is _averaged_ (~100,000 iterations) for each algorithm/comparison run.
-
-### Tests
-
-To actually run the tests simply run `./scripts/run-tests.sh` to run all the tests and print output.
-
-The tests for each language are written to identify cases where different languages/packages may have different implementations of an algorithm. The goal of the tests is not code coverage, but to identify cases where different languages may return different edit distances due to the nature of their implementations.
-
-The results of the tests are manually compiled from their log-files (`<LANGUAGE-FOLDER>/logs/test_results.log`) into another spreadsheet for easy analysis and cross-language comparison.
 
 ## Contributing
 
