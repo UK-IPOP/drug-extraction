@@ -21,6 +21,13 @@ Drugs:
       - drug
       - nonfentanyl_opioid
       - opiate
+ - Name: Benzimidazole
+    Search Terms:
+      - Benzimidazole
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
   - Name: Flunitazene
     Search Terms:
       - Flunitazene
