@@ -21,6 +21,48 @@ Drugs:
       - drug
       - nonfentanyl_opioid
       - opiate
+  - Name: Flunitazene
+    Search Terms:
+      - Flunitazene
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
+  - Name: Etodesnitazene
+    Search Terms:
+      - Etodesnitazene
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
+  - Name: Utonitazene
+    Search Terms:
+      - Utonitazene
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
+  - Name: Metonitazene
+    Search Terms:
+      - Metonitazene
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
+  - Name: Metodesnitazene
+    Search Terms:
+      - Metodesnitazene
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
+  - Name: Protonitazene
+    Search Terms:
+      - Protonitazene
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
   - Name: Hydromorphone
     Search Terms:
       - Hydromorphone
