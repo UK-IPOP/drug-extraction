@@ -56,6 +56,13 @@ Drugs:
       - drug
       - nonfentanyl_opioid
       - opiate
+  - Name: Isotonitazene
+    Search Terms:
+      - Isotonitazene
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
   - Name: Metodesnitazene
     Search Terms:
       - Metodesnitazene
