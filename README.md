@@ -65,6 +65,10 @@ For example: `make bench` (inside the python directory) to run all the benchmark
 
 Alternatively, you can simply `docker build` and then `docker run` inside the language directory to run benchmarks for that language only. This requires you _only_ to have Docker installed.
 
+#### Benchmark Results
+
+![file](data/benchmarks_chart.png)
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
