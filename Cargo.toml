@@ -2,7 +2,5 @@
 edition = "2021"
 
 members = [
-    "www/drug-extract-wasm",
-    "cli",
-    "core"
+    "core",
 ]
