@@ -11,7 +11,11 @@ format:
     @cargo fmt
 
 run:
-    @cargo run -p extract-drugs
+    @cargo run -p extract-drugs -- cli/data/Medical_Examiner_Case_Archive.csv \
+        -a "l" \
+        -l 0.95 \
+        -t "Primary Cause" \
+        -s "coacine|heroin|Fentanyl" 
 
 build-prod: format check
     @cargo build --release
