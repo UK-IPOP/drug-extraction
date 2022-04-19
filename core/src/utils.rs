@@ -173,7 +173,7 @@ impl Input for SearchInput {
             let edits = self.max_edits.unwrap();
             results
                 .into_iter()
-                .filter(|x| x.edits.unwrap() >= edits)
+                .filter(|x| x.edits.unwrap() <= edits)
                 .collect::<Vec<Output>>()
         } else if self.similarity_threshold.is_some() {
             // filter by similarity
