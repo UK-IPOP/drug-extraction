@@ -8,7 +8,6 @@ use std::str::FromStr;
 
 use extract_drugs_core::utils as drug_core;
 
-
 fn run() -> Result<(), Box<dyn Error>> {
     // will move into struct (clap)
     // let args = env::args();
@@ -35,7 +34,14 @@ fn run() -> Result<(), Box<dyn Error>> {
         if cod.is_empty() {
             continue;
         }
-        let res = drug_core::scan(algorithm, distance, cod, i.to_string().as_str(), search_word, limit);
+        let res = drug_core::scan(
+            algorithm,
+            distance,
+            cod,
+            i.to_string().as_str(),
+            search_word,
+            limit,
+        );
         if !res.is_empty() {
             println!("{:?}", res);
         }

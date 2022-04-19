@@ -25,7 +25,6 @@ impl error::Error for ValueError {}
 
 type Result<T> = std::result::Result<T, ValueError>;
 
-
 // TODO: these functions could probably be better implemented using a closure or something
 // since they currently take 2 function calls to execute
 fn my_damerau(a: &str, b: &str) -> f64 {
@@ -40,17 +39,15 @@ fn my_osa(a: &str, b: &str) -> f64 {
     osa_distance(a, b) as f64
 }
 
-
 pub fn initialize_distance(a: Algorithm) -> fn(&str, &str) -> f64 {
     match a {
-        Algorithm::DAMERAU => {my_damerau}
-        Algorithm::LEVENSHTEIN => {my_leven}
-        Algorithm::JAROWINKLER => {jaro_winkler}
-        Algorithm::OSA => {my_osa}
-        Algorithm::SORENSENDICE => {sorensen_dice}
+        Algorithm::DAMERAU => my_damerau,
+        Algorithm::LEVENSHTEIN => my_leven,
+        Algorithm::JAROWINKLER => jaro_winkler,
+        Algorithm::OSA => my_osa,
+        Algorithm::SORENSENDICE => sorensen_dice,
     }
 }
-
 
 #[derive(Clone, Copy, Debug)]
 pub enum Algorithm {
@@ -64,18 +61,14 @@ pub enum Algorithm {
 impl Algorithm {
     fn is_edits(&self) -> bool {
         match self {
-            Algorithm::OSA | Algorithm::DAMERAU | Algorithm::LEVENSHTEIN => {
-                true
-            },
-            Algorithm::JAROWINKLER | Algorithm::SORENSENDICE => {
-                false
-            }
+            Algorithm::OSA | Algorithm::DAMERAU | Algorithm::LEVENSHTEIN => true,
+            Algorithm::JAROWINKLER | Algorithm::SORENSENDICE => false,
         }
     }
 }
 
 impl FromStr for Algorithm {
-   type Err = ValueError;
+    type Err = ValueError;
     /// Parses an Algorithm type from a string reference.
     fn from_str(s: &str) -> Result<Algorithm> {
         match s.to_uppercase().as_str() {
@@ -111,9 +104,17 @@ pub struct Output {
     pub similarity: f64,
 }
 
-
-pub fn scan(a: Algorithm, distance: fn(&str, &str) -> f64, text: &str, record: &str, target: &str, limit: Option<f64>) -> Vec<Output> {
-    let clean = text.replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "").to_uppercase();
+pub fn scan(
+    a: Algorithm,
+    distance: fn(&str, &str) -> f64,
+    text: &str,
+    record: &str,
+    target: &str,
+    limit: Option<f64>,
+) -> Vec<Output> {
+    let clean = text
+        .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
+        .to_uppercase();
     let words = clean.split_whitespace();
     let mut results: Vec<Output> = Vec::new();
     for word in words {
@@ -124,7 +125,11 @@ pub fn scan(a: Algorithm, distance: fn(&str, &str) -> f64, text: &str, record: &
             matched_term: word.to_string(),
             algorithm: a,
             edits: if a.is_edits() { Some(d as i32) } else { None },
-            similarity: if !a.is_edits() {d} else {1.0 - (d / (target.chars().count().max(word.chars().count()) as f64))}
+            similarity: if !a.is_edits() {
+                d
+            } else {
+                1.0 - (d / (target.chars().count().max(word.chars().count()) as f64))
+            },
         };
         results.push(res);
     }
@@ -137,7 +142,7 @@ pub fn scan(a: Algorithm, distance: fn(&str, &str) -> f64, text: &str, record: &
                 }
             }
             filt_results
-        },
-        None => results
+        }
+        None => results,
     }
 }
