@@ -37,6 +37,9 @@ struct Tool {
 
     #[clap(long)]
     threshold: Option<f64>,
+
+    #[clap(long)]
+    format: drug_core::OutputFormat,
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
@@ -54,6 +57,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     let user_algo = args.algorithm;
     let max_edits = args.max_edits;
     let thresh = args.threshold;
+    let user_format = args.format;
     // handle config file
     // let config = args.config
 
@@ -73,7 +77,17 @@ fn run() -> Result<(), Box<dyn Error>> {
     };
     println!("{:?}", headers);
 
-    let mut out_file = fs::File::create("extracted.jsonl").unwrap();
+    let mut out_file = match user_format {
+        drug_core::OutputFormat::JSONL => fs::File::create("extracted_drugs.jsonl").unwrap(),
+        drug_core::OutputFormat::CSV => {
+            let headers =
+                "record_id,search_term,matched_term,algorithm,edits,similarity".to_string();
+            let mut f = fs::File::create("extracted_drugs.csv").unwrap();
+            f.write_all(headers.as_bytes());
+            f.write(b"\n");
+            f
+        }
+    };
 
     let line_count = BufReader::new(File::open(&file_path).unwrap())
         .lines()
@@ -102,13 +116,14 @@ fn run() -> Result<(), Box<dyn Error>> {
             search_words.as_slice(),
         );
         let res = searcher.scan(text, record_id);
-        // if !res.is_empty() {
-        //     println!("{:?}", res);
-        // }
-        for output in res {
-            let json_string = serde_json::to_string(&output).unwrap();
-            out_file.write_all(json_string.as_bytes());
-            out_file.write(b"\n");
+        let output_list = drug_core::format(res, user_format);
+        let mut output = output_list.iter().peekable();
+        while let Some(out) = output.next() {
+            // check for last item
+            if output.peek().is_some() {
+                out_file.write_all(out.as_bytes()).unwrap();
+                out_file.write(b"\n");
+            }
         }
         bar.inc(1);
     }

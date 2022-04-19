@@ -84,3 +84,5 @@ Cargo.lock
 core/data/records.csv
 core/data/sample_opioids.json
 extracted.jsonl
+extracted_drugs.csv
+extracted_drugs.jsonl

@@ -1,3 +1,5 @@
+use csv::StringRecord;
+use csv::WriterBuilder;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error;
@@ -96,7 +98,7 @@ impl ToString for Algorithm {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Output {
     pub record_id: Option<String>,
     pub search_term: String,
@@ -104,6 +106,44 @@ pub struct Output {
     pub algorithm: Algorithm,
     pub edits: Option<i32>,
     pub similarity: f64,
+}
+
+#[derive(Clone, Copy)]
+pub enum OutputFormat {
+    JSONL,
+    CSV,
+}
+
+impl FromStr for OutputFormat {
+    type Err = ValueError;
+    /// Parses an Algorithm type from a string reference.
+    fn from_str(s: &str) -> Result<OutputFormat> {
+        match s.to_uppercase().as_str() {
+            "JSONL" => Ok(OutputFormat::JSONL),
+            "CSV" => Ok(OutputFormat::CSV),
+            _ => Err(ValueError),
+        }
+    }
+}
+
+pub fn format(data: Vec<Output>, format: OutputFormat) -> Vec<String> {
+    match format {
+        OutputFormat::JSONL => data
+            .iter()
+            .map(|x| serde_json::to_string(x).unwrap())
+            .collect::<Vec<String>>(),
+        OutputFormat::CSV => {
+            let mut wtr = WriterBuilder::new().has_headers(false).from_writer(vec![]);
+            for row in data {
+                wtr.serialize(row).unwrap();
+            }
+            let csv_data = String::from_utf8(wtr.into_inner().unwrap()).unwrap();
+            csv_data
+                .split('\n')
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+        }
+    }
 }
 
 // can duplicate for Drugs later just switching type of targets
@@ -173,7 +213,7 @@ impl Input for SearchInput {
             let edits = self.max_edits.unwrap();
             results
                 .into_iter()
-                .filter(|x| x.edits.unwrap() >= edits)
+                .filter(|x| x.edits.unwrap() <= edits)
                 .collect::<Vec<Output>>()
         } else if self.similarity_threshold.is_some() {
             // filter by similarity
