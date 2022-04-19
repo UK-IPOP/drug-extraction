@@ -83,3 +83,4 @@ Cargo.lock
 *.pdb
 core/data/records.csv
 core/data/sample_opioids.json
+extracted.jsonl

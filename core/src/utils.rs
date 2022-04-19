@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error;
 use std::fmt;
@@ -5,6 +6,7 @@ use std::fmt::Display;
 use std::hash::Hash;
 use std::iter::{Filter, FlatMap};
 use std::str::{FromStr, SplitWhitespace};
+
 use strsim::{damerau_levenshtein, jaro_winkler, levenshtein, osa_distance, sorensen_dice};
 
 /// Will need to be modified/extended to account for drug tags
@@ -49,7 +51,7 @@ pub fn initialize_distance(a: Algorithm) -> fn(&str, &str) -> f64 {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub enum Algorithm {
     DAMERAU,
     LEVENSHTEIN,
@@ -94,7 +96,7 @@ impl ToString for Algorithm {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Output {
     pub record_id: String,
     pub search_term: String,
@@ -109,7 +111,7 @@ pub fn scan(
     distance: fn(&str, &str) -> f64,
     text: &str,
     record: &str,
-    targets: &Vec<&str>,
+    targets: &Vec<String>,
     limit: Option<f64>,
 ) -> Vec<Output> {
     let clean = text
