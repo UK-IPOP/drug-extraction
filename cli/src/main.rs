@@ -8,16 +8,25 @@ use std::str::FromStr;
 
 use extract_drugs_core::utils as drug_core;
 
-
 fn run() -> Result<(), Box<dyn Error>> {
     // will move into struct (clap)
-    // let args = env::args();
-    // let file_path = args[1];
-    // let search_word = args[2];
-    // let limit = args[3];
-    let file_path = "cli/data/Medical_Examiner_Case_Archive.csv";
-    let search_word = "COCAINE";
-    let limit = Some(0.95);
+    let args = env::args();
+    let file_path = get_x_arg(1).unwrap();
+    let user_search_words = get_x_arg(2).unwrap().to_ascii_uppercase();
+    let search_words = user_search_words
+        .to_str()
+        .unwrap()
+        .split('|')
+        .collect::<Vec<&str>>();
+    let limit = get_x_arg(3)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .parse::<f64>()
+        .unwrap();
+    // let file_path = "cli/data/Medical_Examiner_Case_Archive.csv";
+    // let search_word = "COCAINE";
+    // let limit = Some(0.95);
     let file = File::open(file_path)?;
     let mut rdr = csv::Reader::from_reader(file);
 
@@ -35,7 +44,14 @@ fn run() -> Result<(), Box<dyn Error>> {
         if cod.is_empty() {
             continue;
         }
-        let res = drug_core::scan(algorithm, distance, cod, i.to_string().as_str(), search_word, limit);
+        let res = drug_core::scan(
+            algorithm,
+            distance,
+            cod,
+            i.to_string().as_str(),
+            &search_words,
+            Some(limit),
+        );
         if !res.is_empty() {
             println!("{:?}", res);
         }
@@ -45,8 +61,8 @@ fn run() -> Result<(), Box<dyn Error>> {
 
 /// Returns the first positional argument sent to this process. If there are no
 /// positional arguments, then this returns an error.
-fn get_first_arg() -> Result<OsString, Box<dyn Error>> {
-    match env::args_os().nth(1) {
+fn get_x_arg(x: usize) -> Result<OsString, Box<dyn Error>> {
+    match env::args_os().nth(x) {
         None => Err(From::from("expected 1 argument, but got none")),
         Some(file_path) => Ok(file_path),
     }
