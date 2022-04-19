@@ -18,19 +18,19 @@ struct Tool {
     #[clap(default_value_t = String::from("cli/data/Medical_Examiner_Case_Archive.csv"))]
     file: String,
 
-    #[clap(default_value_t = String::from("Case Number"))]
+    #[clap(short, default_value_t = String::from("Case Number"))]
     id_column: String,
 
-    #[clap(default_value_t = String::from("Primary Cause"))]
+    #[clap(short, default_value_t = String::from("Primary Cause"))]
     target_column: String,
 
-    #[clap(default_value_t = String::from("cocaine|heroin|fentanyl|alcohol"))]
+    #[clap(short, default_value_t = String::from("cocaine|heroin|fentanyl|alcohol"))]
     search_words: String,
 
-    #[clap(default_value_t = String::from("l"))]
+    #[clap(short, default_value_t = String::from("l"))]
     algorithm: String,
 
-    #[clap(default_value_t = 0.90)]
+    #[clap(short, default_value_t = 0.90)]
     limit: f64,
 }
 
