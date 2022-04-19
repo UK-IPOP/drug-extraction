@@ -106,6 +106,89 @@ pub struct Output {
     pub similarity: f64,
 }
 
+// can duplicate for Drugs later just switching type of targets
+// need to validate (in `::new()`) that everything is valid/aligns
+// i.e. max edits not threshold only applies for `has_edits()` algos
+pub struct SearchInput {
+    pub algorithm: Algorithm,
+    pub distance: fn(&str, &str) -> f64,
+    pub max_edits: Option<i32>,
+    pub similarity_threshold: Option<f64>,
+    pub targets: Vec<String>,
+}
+
+impl SearchInput {
+    pub fn new(
+        algorithm: Algorithm,
+        distance: fn(&str, &str) -> f64,
+        max_edits: Option<i32>,
+        similarity_threshold: Option<f64>,
+        targets: &[String],
+    ) -> SearchInput {
+        SearchInput {
+            algorithm: algorithm,
+            distance: distance,
+            max_edits: max_edits,
+            similarity_threshold: similarity_threshold,
+            targets: targets.to_vec(),
+        }
+    }
+}
+
+pub trait Input {
+    fn scan(&self, text: &str, record: Option<String>) -> Vec<Output>;
+}
+
+impl Input for SearchInput {
+    fn scan(&self, text: &str, record: Option<String>) -> Vec<Output> {
+        let clean = text
+            .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
+            .to_uppercase();
+        let words = clean.split_whitespace();
+        let mut results: Vec<Output> = Vec::new();
+        for word in words {
+            for target in &self.targets {
+                let d = (self.distance)(target, word);
+                let res = Output {
+                    record_id: record.clone(),
+                    search_term: target.to_string(),
+                    matched_term: word.to_string(),
+                    algorithm: self.algorithm,
+                    edits: if self.algorithm.is_edits() {
+                        Some(d as i32)
+                    } else {
+                        None
+                    },
+                    similarity: if self.algorithm.is_edits() {
+                        1.0 - (d / (target.chars().count().max(word.chars().count()) as f64))
+                    } else {
+                        d
+                    },
+                };
+                results.push(res);
+            }
+        }
+        if self.max_edits.is_some() {
+            // filter by edits
+            let edits = self.max_edits.unwrap();
+            results
+                .into_iter()
+                .filter(|x| x.edits.unwrap() >= edits)
+                .collect::<Vec<Output>>()
+        } else if self.similarity_threshold.is_some() {
+            // filter by similarity
+            let thresh = self.similarity_threshold.unwrap();
+            results
+                .into_iter()
+                .filter(|x| x.similarity >= thresh)
+                .collect::<Vec<Output>>()
+        } else {
+            // return all
+            results
+        }
+    }
+}
+
 pub fn scan(
     a: Algorithm,
     distance: fn(&str, &str) -> f64,

@@ -12,7 +12,7 @@ use std::str::FromStr;
 use std::{env, path::Path};
 use walkdir::WalkDir;
 
-use extract_drugs_core::utils::{self as drug_core, Output};
+use extract_drugs_core::utils::{self as drug_core, Input, Output};
 
 #[derive(Parser)]
 #[clap(args_override_self = true)]
@@ -20,20 +20,23 @@ use extract_drugs_core::utils::{self as drug_core, Output};
 struct Tool {
     file: String,
 
-    #[clap(short)]
+    #[clap(long)]
     id_column: Option<String>,
 
-    #[clap(short)]
+    #[clap(long)]
     target_column: String,
 
-    #[clap(short)]
+    #[clap(long)]
     search_words: String,
 
-    #[clap(short)]
+    #[clap(long)]
     algorithm: String,
 
-    #[clap(short)]
-    limit: f64,
+    #[clap(long)]
+    max_edits: Option<i32>,
+
+    #[clap(long)]
+    threshold: Option<f64>,
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
@@ -49,7 +52,8 @@ fn run() -> Result<(), Box<dyn Error>> {
         .map(|x| x.to_uppercase())
         .collect::<Vec<String>>();
     let user_algo = args.algorithm;
-    let limit = args.limit;
+    let max_edits = args.max_edits;
+    let thresh = args.threshold;
     // handle config file
     // let config = args.config
 
@@ -90,14 +94,14 @@ fn run() -> Result<(), Box<dyn Error>> {
         if text.is_empty() {
             continue;
         }
-        let res = drug_core::scan(
+        let searcher = drug_core::SearchInput::new(
             algorithm,
             distance,
-            text,
-            record_id,
-            &search_words,
-            Some(limit),
+            max_edits,
+            thresh,
+            search_words.as_slice(),
         );
+        let res = searcher.scan(text, record_id);
         // if !res.is_empty() {
         //     println!("{:?}", res);
         // }
