@@ -49,13 +49,8 @@ fn run() -> Result<(), Box<dyn Error>> {
             distance,
             cod,
             i.to_string().as_str(),
-<<<<<<< HEAD
-            search_word,
-            limit,
-=======
             &search_words,
             Some(limit),
->>>>>>> c8968b03dfbedd3f23780d40bfffb219d6b7689c
         );
         if !res.is_empty() {
             println!("{:?}", res);
