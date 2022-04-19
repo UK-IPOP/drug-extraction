@@ -1,13 +1,16 @@
 //tutorial-read-01.rs
 use clap::Parser;
 use csv::StringRecord;
+use indicatif::{ProgressBar, ProgressStyle};
 use std::error::Error;
 use std::ffi::OsString;
 use std::fs::{self, File};
+use std::io::{BufRead, BufReader};
 use std::io::{LineWriter, Write};
 use std::process;
 use std::str::FromStr;
 use std::{env, path::Path};
+use walkdir::WalkDir;
 
 use extract_drugs_core::utils::{self as drug_core, Output};
 
@@ -50,7 +53,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     // handle config file
     // let config = args.config
 
-    let file = File::open(file_path)?;
+    let file = File::open(&file_path)?;
     let mut rdr = csv::Reader::from_reader(file);
 
     let algorithm = drug_core::Algorithm::from_str(&user_algo).unwrap();
@@ -68,6 +71,10 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     let mut out_file = fs::File::create("extracted.jsonl").unwrap();
 
+    let line_count = BufReader::new(File::open(&file_path).unwrap())
+        .lines()
+        .count();
+    let bar = initialize_progress(line_count as u64);
     for result in rdr.records() {
         let record = result?;
         if record.is_empty() {
@@ -99,7 +106,9 @@ fn run() -> Result<(), Box<dyn Error>> {
             out_file.write_all(json_string.as_bytes());
             out_file.write(b"\n");
         }
+        bar.inc(1);
     }
+    bar.finish();
     Ok(())
 }
 
@@ -111,6 +120,20 @@ fn get_header_index(headers: &StringRecord, search: String) -> Option<usize> {
         }
     }
     None
+}
+
+fn initialize_progress(items: u64) -> ProgressBar {
+    let pb = ProgressBar::new(items);
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template("[{elapsed_precise}] [{bar:.cyan/blue}] {pos}/{len} ({eta})")
+            .progress_chars("#>-"),
+    );
+    pb
+}
+
+fn get_total_files(target_folder: &str) -> usize {
+    WalkDir::new(target_folder).into_iter().count()
 }
 
 fn main() {
