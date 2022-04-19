@@ -109,7 +109,11 @@ pub fn scan(
     distance: fn(&str, &str) -> f64,
     text: &str,
     record: &str,
+<<<<<<< HEAD
     target: &str,
+=======
+    targets: &Vec<&str>,
+>>>>>>> c8968b03dfbedd3f23780d40bfffb219d6b7689c
     limit: Option<f64>,
 ) -> Vec<Output> {
     let clean = text
@@ -118,6 +122,7 @@ pub fn scan(
     let words = clean.split_whitespace();
     let mut results: Vec<Output> = Vec::new();
     for word in words {
+<<<<<<< HEAD
         let d = distance(target, word);
         let res = Output {
             record_id: record.to_string(),
@@ -132,6 +137,24 @@ pub fn scan(
             },
         };
         results.push(res);
+=======
+        for target in targets {
+            let d = distance(target, word);
+            let res = Output {
+                record_id: record.to_string(),
+                search_term: target.to_string(),
+                matched_term: word.to_string(),
+                algorithm: a,
+                edits: if a.is_edits() { Some(d as i32) } else { None },
+                similarity: if !a.is_edits() {
+                    d
+                } else {
+                    1.0 - (d / (target.chars().count().max(word.chars().count()) as f64))
+                },
+            };
+            results.push(res);
+        }
+>>>>>>> c8968b03dfbedd3f23780d40bfffb219d6b7689c
     }
     match limit {
         Some(l) => {
