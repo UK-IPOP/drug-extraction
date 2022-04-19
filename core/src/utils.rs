@@ -98,7 +98,7 @@ impl ToString for Algorithm {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Output {
-    pub record_id: String,
+    pub record_id: Option<String>,
     pub search_term: String,
     pub matched_term: String,
     pub algorithm: Algorithm,
@@ -110,7 +110,7 @@ pub fn scan(
     a: Algorithm,
     distance: fn(&str, &str) -> f64,
     text: &str,
-    record: &str,
+    record: Option<String>,
     targets: &Vec<String>,
     limit: Option<f64>,
 ) -> Vec<Output> {
@@ -123,7 +123,7 @@ pub fn scan(
         for target in targets {
             let d = distance(target, word);
             let res = Output {
-                record_id: record.to_string(),
+                record_id: record.to_owned(),
                 search_term: target.to_string(),
                 matched_term: word.to_string(),
                 algorithm: a,

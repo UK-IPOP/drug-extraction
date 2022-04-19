@@ -15,22 +15,21 @@ use extract_drugs_core::utils::{self as drug_core, Output};
 #[clap(args_override_self = true)]
 #[clap(author, version, about, long_about = None)]
 struct Tool {
-    #[clap(default_value_t = String::from("cli/data/Medical_Examiner_Case_Archive.csv"))]
     file: String,
 
-    #[clap(short, default_value_t = String::from("Case Number"))]
-    id_column: String,
+    #[clap(short)]
+    id_column: Option<String>,
 
-    #[clap(short, default_value_t = String::from("Primary Cause"))]
+    #[clap(short)]
     target_column: String,
 
-    #[clap(short, default_value_t = String::from("cocaine|heroin|fentanyl|alcohol"))]
+    #[clap(short)]
     search_words: String,
 
-    #[clap(short, default_value_t = String::from("l"))]
+    #[clap(short)]
     algorithm: String,
 
-    #[clap(short, default_value_t = 0.90)]
+    #[clap(short)]
     limit: f64,
 }
 
@@ -39,7 +38,8 @@ fn run() -> Result<(), Box<dyn Error>> {
     let args = Tool::parse();
     let file_path = args.file;
     let target_col = args.target_column;
-    let id_col = args.id_column;
+    let user_id_col = args.id_column;
+    let has_id = user_id_col.is_some();
     let search_words = args
         .search_words
         .split('|')
@@ -59,7 +59,11 @@ fn run() -> Result<(), Box<dyn Error>> {
     // clones, could use scoped alternative to return header indices
     let headers = rdr.headers()?.clone();
     let target_col_index = get_header_index(&headers, target_col).unwrap();
-    let id_col_index = get_header_index(&headers, id_col).unwrap();
+    let id_col_index = if has_id {
+        Some(get_header_index(&headers, user_id_col.unwrap()).unwrap())
+    } else {
+        None
+    };
     println!("{:?}", headers);
 
     let mut out_file = fs::File::create("extracted.jsonl").unwrap();
@@ -69,9 +73,14 @@ fn run() -> Result<(), Box<dyn Error>> {
         if record.is_empty() {
             continue;
         }
-        let record_id = record.get(id_col_index).unwrap();
+        let record_id = if has_id {
+            Some(record.get(id_col_index.unwrap()).unwrap().to_string())
+        } else {
+            None
+        };
+
         let text = record.get(target_col_index).unwrap();
-        if text.is_empty() || record_id.is_empty() {
+        if text.is_empty() {
             continue;
         }
         let res = drug_core::scan(
