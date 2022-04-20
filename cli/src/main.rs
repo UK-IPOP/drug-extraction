@@ -15,8 +15,8 @@ use std::str::FromStr;
 use std::{env, path::Path};
 use walkdir::WalkDir;
 
-use extract_drugs_core::utils as drug_core;
-use extract_drugs_core::utils::SearchInput;
+use extract_drugs_core as drug_core;
+use extract_drugs_core::SearchInput;
 
 #[derive(Parser)]
 #[clap(args_override_self = true)]
@@ -319,5 +319,4 @@ fn main() {
         println!("{}", err);
         process::exit(1);
     }
-    // drug_core::
 }
