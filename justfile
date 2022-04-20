@@ -11,7 +11,8 @@ format:
     @cargo fmt
 
 run:
-    @cargo run -p extract-drugs -- --algorithm "l" \
+    @cargo run -p extract-drugs -- run \
+        --algorithm "l" \
         --max-edits 2 \
         --id-column "Case Number" \
         --target-column "Primary Cause" \

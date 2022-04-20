@@ -63,11 +63,21 @@ pub enum Algorithm {
 }
 
 impl Algorithm {
-    fn is_edits(&self) -> bool {
+    pub fn is_edits(&self) -> bool {
         match self {
             Algorithm::OSA | Algorithm::DAMERAU | Algorithm::LEVENSHTEIN => true,
             Algorithm::JAROWINKLER | Algorithm::SORENSENDICE => false,
         }
+    }
+
+    pub fn options() -> Vec<String> {
+        vec![
+            "Levenshtein".to_string(),
+            "Damerau".to_string(),
+            "OSA".to_string(),
+            "JaroWinkler".to_string(),
+            "SorensenDice".to_string(),
+        ]
     }
 }
 
@@ -75,12 +85,12 @@ impl FromStr for Algorithm {
     type Err = ValueError;
     /// Parses an Algorithm type from a string reference.
     fn from_str(s: &str) -> Result<Algorithm> {
-        match s.to_uppercase().as_str() {
-            "L" => Ok(Algorithm::LEVENSHTEIN),
-            "D" => Ok(Algorithm::DAMERAU),
-            "O" => Ok(Algorithm::OSA),
-            "J" => Ok(Algorithm::JAROWINKLER),
-            "S" => Ok(Algorithm::SORENSENDICE),
+        match s.to_uppercase().chars().next().unwrap() {
+            'L' => Ok(Algorithm::LEVENSHTEIN),
+            'D' => Ok(Algorithm::DAMERAU),
+            'O' => Ok(Algorithm::OSA),
+            'J' => Ok(Algorithm::JAROWINKLER),
+            'S' => Ok(Algorithm::SORENSENDICE),
             _ => Err(ValueError),
         }
     }
@@ -108,7 +118,7 @@ pub struct Output {
     pub similarity: f64,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum OutputFormat {
     JSONL,
     CSV,
@@ -149,7 +159,7 @@ pub fn format(data: Vec<Output>, format: OutputFormat) -> Vec<String> {
 // can duplicate for Drugs later just switching type of targets
 // need to validate (in `::new()`) that everything is valid/aligns
 // i.e. max edits not threshold only applies for `has_edits()` algos
-pub struct SearchInput {
+pub struct SimpleInput {
     pub algorithm: Algorithm,
     pub distance: fn(&str, &str) -> f64,
     pub max_edits: Option<i32>,
@@ -157,29 +167,29 @@ pub struct SearchInput {
     pub targets: Vec<String>,
 }
 
-impl SearchInput {
+impl SimpleInput {
     pub fn new(
         algorithm: Algorithm,
         distance: fn(&str, &str) -> f64,
         max_edits: Option<i32>,
         similarity_threshold: Option<f64>,
         targets: &[String],
-    ) -> SearchInput {
-        SearchInput {
-            algorithm: algorithm,
-            distance: distance,
-            max_edits: max_edits,
-            similarity_threshold: similarity_threshold,
+    ) -> SimpleInput {
+        SimpleInput {
+            algorithm,
+            distance,
+            max_edits,
+            similarity_threshold,
             targets: targets.to_vec(),
         }
     }
 }
 
-pub trait Input {
+pub trait SearchInput {
     fn scan(&self, text: &str, record: Option<String>) -> Vec<Output>;
 }
 
-impl Input for SearchInput {
+impl SearchInput for SimpleInput {
     fn scan(&self, text: &str, record: Option<String>) -> Vec<Output> {
         let clean = text
             .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
