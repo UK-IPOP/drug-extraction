@@ -12,4 +12,6 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 indicatif = "0.16.2"
 walkdir = "2.3.2"
+dialoguer = "0.10.0"
+console = "0.15.0"
 extract-drugs-core = { path = "../core" }
