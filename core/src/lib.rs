@@ -111,13 +111,13 @@ impl ToString for Algorithm {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct Output {
+pub struct SimpleOutput {
     pub record_id: Option<String>,
-    pub search_term: String,
-    pub matched_term: String,
     pub algorithm: Algorithm,
     pub edits: Option<i32>,
     pub similarity: f64,
+    pub search_term: String,
+    pub matched_term: String,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -138,7 +138,7 @@ impl FromStr for OutputFormat {
     }
 }
 
-pub fn format(data: Vec<Output>, format: OutputFormat) -> Vec<String> {
+pub fn format(data: Vec<SearchOutput>, format: OutputFormat) -> Vec<String> {
     match format {
         OutputFormat::JSONL => data
             .iter()
@@ -187,21 +187,26 @@ impl SimpleInput {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SearchOutput {
+    SimpleOutput(SimpleOutput),
+    DrugOutput(DrugOutput),
+}
 pub trait SearchInput {
-    fn scan(&self, text: &str, record: Option<String>) -> Vec<Output>;
+    fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput>;
 }
 
 impl SearchInput for SimpleInput {
-    fn scan(&self, text: &str, record: Option<String>) -> Vec<Output> {
+    fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput> {
         let clean = text
             .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
             .to_uppercase();
         let words = clean.split_whitespace();
-        let mut results: Vec<Output> = Vec::new();
+        let mut results: Vec<SimpleOutput> = Vec::new();
         for word in words {
             for target in &self.targets {
                 let d = (self.distance)(target, word);
-                let res = Output {
+                let res = SimpleOutput {
                     record_id: record.clone(),
                     search_term: target.to_string(),
                     matched_term: word.to_string(),
@@ -226,52 +231,174 @@ impl SearchInput for SimpleInput {
             results
                 .into_iter()
                 .filter(|x| x.edits.unwrap() <= edits)
-                .collect::<Vec<Output>>()
+                .map(SearchOutput::SimpleOutput)
+                .collect::<Vec<SearchOutput>>()
         } else if self.similarity_threshold.is_some() {
             // filter by similarity
             let thresh = self.similarity_threshold.unwrap();
             results
                 .into_iter()
                 .filter(|x| x.similarity >= thresh)
-                .collect::<Vec<Output>>()
+                .map(SearchOutput::SimpleOutput)
+                .collect::<Vec<SearchOutput>>()
         } else {
             // return all
             results
+                .into_iter()
+                .map(SearchOutput::SimpleOutput)
+                .collect()
         }
     }
 }
 
-pub fn scan(
-    a: Algorithm,
-    distance: fn(&str, &str) -> f64,
-    text: &str,
-    record: Option<String>,
-    targets: &Vec<String>,
-    limit: Option<f64>,
-) -> Vec<Output> {
-    let clean = text
-        .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
-        .to_uppercase();
-    let words = clean.split_whitespace();
-    let mut results: Vec<Output> = Vec::new();
-    for word in words {
-        for target in targets {
-            let d = distance(target, word);
-            let res = Output {
-                record_id: record.to_owned(),
-                search_term: target.to_string(),
-                matched_term: word.to_string(),
-                algorithm: a,
-                edits: if a.is_edits() { Some(d as i32) } else { None },
-                similarity: if !a.is_edits() {
-                    d
-                } else {
-                    1.0 - (d / (target.chars().count().max(word.chars().count()) as f64))
-                },
-            };
-            results.push(res);
+// /////////////////////////////////////////////////////
+//
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Drug {
+    pub name: String,
+    pub rx_id: String,
+    pub group_name: String,
+    pub class_id: String,
+}
+
+pub struct DrugInput {
+    pub algorithm: Algorithm,
+    pub distance: fn(&str, &str) -> f64,
+    pub max_edits: Option<i32>,
+    pub similarity_threshold: Option<f64>,
+    pub targets: Vec<Drug>,
+}
+
+impl DrugInput {
+    pub fn new(
+        algorithm: Algorithm,
+        distance: fn(&str, &str) -> f64,
+        max_edits: Option<i32>,
+        similarity_threshold: Option<f64>,
+        targets: &[Drug],
+    ) -> DrugInput {
+        DrugInput {
+            algorithm,
+            distance,
+            max_edits,
+            similarity_threshold,
+            targets: targets.to_vec(),
         }
     }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct DrugOutput {
+    pub record_id: Option<String>,
+    pub algorithm: Algorithm,
+    pub edits: Option<i32>,
+    pub similarity: f64,
+    pub matched_term: String,
+    pub drug: Drug,
+}
+
+impl SearchInput for DrugInput {
+    fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput> {
+        let clean = text
+            .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
+            .to_uppercase();
+        let words = clean.split_whitespace();
+        let mut results: Vec<DrugOutput> = Vec::new();
+        for word in words {
+            for target in &self.targets {
+                let d = (self.distance)(target.name.to_uppercase().as_str(), word);
+                let res = DrugOutput {
+                    record_id: record.clone(),
+                    matched_term: word.to_string(),
+                    algorithm: self.algorithm,
+                    edits: if self.algorithm.is_edits() {
+                        Some(d as i32)
+                    } else {
+                        None
+                    },
+                    similarity: if self.algorithm.is_edits() {
+                        1.0 - (d / (target.name.chars().count().max(word.chars().count()) as f64))
+                    } else {
+                        d
+                    },
+                    drug: target.to_owned(),
+                };
+                results.push(res);
+            }
+        }
+        for r in &results {
+            if r.edits.unwrap() < 4 {
+                println!("{:?}", r);
+            }
+        }
+        if self.max_edits.is_some() {
+            // filter by edits
+            let edits = self.max_edits.unwrap();
+            results
+                .into_iter()
+                .filter(|x| x.edits.unwrap() <= edits)
+                .map(SearchOutput::DrugOutput)
+                .collect::<Vec<SearchOutput>>()
+        } else if self.similarity_threshold.is_some() {
+            // filter by similarity
+            let thresh = self.similarity_threshold.unwrap();
+            results
+                .into_iter()
+                .filter(|x| x.similarity >= thresh)
+                .map(SearchOutput::DrugOutput)
+                .collect::<Vec<SearchOutput>>()
+        } else {
+            // return all
+            results.into_iter().map(SearchOutput::DrugOutput).collect()
+        }
+    }
+}
+
+pub fn fetch_drugs(class_id: &str, rela_source: &str) -> Vec<Drug> {
+    let url = format!(
+        "https://rxnav.nlm.nih.gov/REST/rxclass/classMembers.json?classId={}&relaSource={}",
+        class_id, rela_source
+    );
+    let res = reqwest::blocking::get(url).unwrap().json::<Root>().unwrap();
+    res.drug_member_group
+        .drug_member
+        .iter()
+        .map(|item| Drug {
+            name: item.min_concept.name.to_string(),
+            rx_id: item.min_concept.rxcui.to_string(),
+            group_name: "Opioid".to_string(),
+            class_id: class_id.to_string(),
+        })
+        .collect::<Vec<Drug>>()
+}
+
+pub fn initialize_searcher(
+    algorithm: Algorithm,
+    distance: fn(&str, &str) -> f64,
+    max_edits: Option<i32>,
+    similarity_threshold: Option<f64>,
+    search_words: Option<&[String]>,
+    drug_list: Option<Vec<Drug>>,
+) -> Box<dyn SearchInput> {
+    if let Some(drugs) = drug_list {
+        Box::new(DrugInput::new(
+            algorithm,
+            distance,
+            max_edits,
+            similarity_threshold,
+            drugs.as_ref(),
+        ))
+    } else {
+        Box::new(SimpleInput::new(
+            algorithm,
+            distance,
+            max_edits,
+            similarity_threshold,
+            search_words.unwrap(),
+        ))
+    }
+}
 
 ////// nonesense  for parsing json ////////
 ///
@@ -279,20 +406,20 @@ pub fn scan(
 #[serde(rename_all = "camelCase")]
 pub struct Root {
     pub drug_member_group: DrugMemberGroup,
-                }
+}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DrugMemberGroup {
     pub drug_member: Vec<DrugMember>,
-            }
+}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DrugMember {
     pub min_concept: MinConcept,
     pub node_attr: Vec<NodeAttr>,
-        }
+}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -300,7 +427,7 @@ pub struct MinConcept {
     pub rxcui: String,
     pub name: String,
     pub tty: String,
-    }
+}
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
