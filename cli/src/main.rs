@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 use csv::StringRecord;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{Confirm, Input, Select};
+use drug_core::{fetch_drugs, initialize_searcher};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::collections::HashMap;
 use std::error::Error;
@@ -54,6 +55,12 @@ enum Commands {
 
         #[clap(long)]
         format: drug_core::OutputFormat,
+
+        #[clap(long)]
+        rx_class_id: Option<String>,
+
+        #[clap(long)]
+        rx_class_source: Option<String>,
     },
 }
 
@@ -202,6 +209,8 @@ fn run() -> Result<(), Box<dyn Error>> {
             max_edits,
             threshold,
             format,
+            rx_class_id,
+            rx_class_source,
         } => {
             let file_path = file;
             let target_col = target_column;
@@ -211,6 +220,13 @@ fn run() -> Result<(), Box<dyn Error>> {
                 .split('|')
                 .map(|x| x.to_uppercase())
                 .collect::<Vec<String>>();
+
+            let drugs = if let Some(id) = &rx_class_id {
+                let result = fetch_drugs(&id, &rx_class_source.unwrap());
+                Some(result)
+            } else {
+                None
+            };
             let user_algo = algorithm;
             let max_edits = max_edits;
             let thresh = threshold;
@@ -236,10 +252,13 @@ fn run() -> Result<(), Box<dyn Error>> {
                     fs::File::create("extracted_drugs.jsonl").unwrap()
                 }
                 drug_core::OutputFormat::CSV => {
-                    let headers =
-                        "record_id,search_term,matched_term,algorithm,edits,similarity".to_string();
+                    let my_headers = if rx_class_id.is_some() {
+                        "record_id,algorithm,edits,similarity,matched_term,drug_name,rx_id,group_name,class_id".to_string()
+                    } else {
+                        "record_id,algorithm,edits,similarity,matched_term,search_term".to_string()
+                    };
                     let mut f = fs::File::create("extracted_drugs.csv").unwrap();
-                    f.write_all(headers.as_bytes());
+                    f.write_all(my_headers.as_bytes());
                     f.write(b"\n");
                     f
                 }
@@ -248,6 +267,14 @@ fn run() -> Result<(), Box<dyn Error>> {
             let line_count = BufReader::new(File::open(&file_path).unwrap())
                 .lines()
                 .count();
+            let searcher = initialize_searcher(
+                algorithm,
+                distance,
+                max_edits,
+                thresh,
+                Some(&search_words),
+                drugs,
+            );
             let bar = initialize_progress(line_count as u64);
             for result in rdr.records() {
                 let record = result?;
@@ -264,14 +291,10 @@ fn run() -> Result<(), Box<dyn Error>> {
                 if text.is_empty() {
                     continue;
                 }
-                let searcher = drug_core::SimpleInput::new(
-                    algorithm,
-                    distance,
-                    max_edits,
-                    thresh,
-                    search_words.as_slice(),
-                );
                 let res = searcher.scan(text, record_id);
+                if !res.is_empty() {
+                    println!("{:?}", res);
+                }
                 let output_list = drug_core::format(res, user_format);
                 let mut output = output_list.iter().peekable();
                 while let Some(out) = output.next() {
@@ -308,10 +331,6 @@ fn initialize_progress(items: u64) -> ProgressBar {
             .progress_chars("#>-"),
     );
     pb
-}
-
-fn get_total_files(target_folder: &str) -> usize {
-    WalkDir::new(target_folder).into_iter().count()
 }
 
 fn main() {

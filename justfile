@@ -18,6 +18,8 @@ run:
         --target-column "Primary Cause" \
         --search-words "coacine|heroin|Fentanyl" \
         --format csv \
+        --rx-class-id "N02A" \
+        --rx-class-source "ATC" \
         cli/data/Medical_Examiner_Case_Archive.csv
 
 build-prod: format check
