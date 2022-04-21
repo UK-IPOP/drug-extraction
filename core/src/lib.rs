@@ -272,16 +272,39 @@ pub fn scan(
             results.push(res);
         }
     }
-    match limit {
-        Some(l) => {
-            let mut filt_results: Vec<Output> = Vec::new();
-            for r in results {
-                if r.similarity >= l {
-                    filt_results.push(r);
+
+////// nonesense  for parsing json ////////
+///
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Root {
+    pub drug_member_group: DrugMemberGroup,
                 }
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DrugMemberGroup {
+    pub drug_member: Vec<DrugMember>,
             }
-            filt_results
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DrugMember {
+    pub min_concept: MinConcept,
+    pub node_attr: Vec<NodeAttr>,
         }
-        None => results,
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MinConcept {
+    pub rxcui: String,
+    pub name: String,
+    pub tty: String,
     }
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NodeAttr {
+    pub attr_name: String,
+    pub attr_value: String,
 }
