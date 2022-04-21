@@ -355,24 +355,6 @@ impl SearchInput for DrugInput {
     }
 }
 
-pub fn fetch_drugs(class_id: &str, rela_source: &str) -> Vec<Drug> {
-    let url = format!(
-        "https://rxnav.nlm.nih.gov/REST/rxclass/classMembers.json?classId={}&relaSource={}",
-        class_id, rela_source
-    );
-    let res = reqwest::blocking::get(url).unwrap().json::<Root>().unwrap();
-    res.drug_member_group
-        .drug_member
-        .iter()
-        .map(|item| Drug {
-            name: item.min_concept.name.to_string(),
-            rx_id: item.min_concept.rxcui.to_string(),
-            group_name: "Opioid".to_string(),
-            class_id: class_id.to_string(),
-        })
-        .collect::<Vec<Drug>>()
-}
-
 pub fn initialize_searcher(
     algorithm: Algorithm,
     distance: fn(&str, &str) -> f64,
