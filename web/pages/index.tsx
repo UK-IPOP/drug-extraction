@@ -1,21 +1,10 @@
 import type { NextPage } from 'next';
-import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '../styles/Home.module.css';
-
 import * as drug_core from 'extract-drugs-core';
 
-const RustComponent = dynamic({
-	loader: async () => {
-		// Import the wasm module
-		const rustModule = await import('../pkg/extract_drugs_core');
-		// Return a React component that calls the add_one method on the wasm module
-		const output = () => <div>FROM RUST: 🦀 -- {rustModule.hi()}</div>;
-		output.displayName = 'RustComponent';
-		return output;
-	},
-});
+const core = await import('../pkg/extract_drugs_core');
 
 const Home: NextPage = () => {
 	return (
@@ -31,10 +20,7 @@ const Home: NextPage = () => {
 					Welcome to <a href="https://nextjs.org">Next.js!</a>
 				</h1>
 
-				<h3>
-					<RustComponent />
-					{drug_core.hi()} -- also from RUST
-				</h3>
+				<h3>{core.hi()} from RUST! 🙂 🦀 🕸</h3>
 
 				<p className={styles.description}>
 					Get started by editing <code className={styles.code}>pages/index.tsx</code>
