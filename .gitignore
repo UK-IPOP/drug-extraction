@@ -86,3 +86,42 @@ core/data/sample_opioids.json
 extracted.jsonl
 extracted_drugs.csv
 extracted_drugs.jsonl
+
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+web/coverage
+
+# next.js
+web/.next/
+web/out/
+
+# production
+web//build
+
+# misc
+.DS_Store
+web/*.pem
+
+# debug
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+web/.pnpm-debug.log*
+
+# local env files
+web/.env*.local
+
+# vercel
+web/.vercel
+
+# typescript
+*.tsbuildinfo
+web/.next
+web/node_modules
