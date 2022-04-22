@@ -34,6 +34,9 @@ type Result<T> = std::result::Result<T, ValueError>;
 // TODO: these functions could probably be better implemented using a closure or something
 // since they currently take 2 function calls to execute
 fn my_damerau(a: &str, b: &str) -> f64 {
+    println!("Hello theyre bby!");
+    println!("hi");
+    println!("WOW this is cool!");
     damerau_levenshtein(a, b) as f64
 }
 
@@ -307,31 +310,33 @@ impl SearchInput for DrugInput {
         let mut results: Vec<DrugOutput> = Vec::new();
         for word in words {
             for target in &self.targets {
-                let d = (self.distance)(target.name.to_uppercase().as_str(), word);
-                let res = DrugOutput {
-                    record_id: record.clone(),
-                    matched_term: word.to_string(),
-                    algorithm: self.algorithm,
-                    edits: if self.algorithm.is_edits() {
-                        Some(d as i32)
-                    } else {
-                        None
-                    },
-                    similarity: if self.algorithm.is_edits() {
-                        1.0 - (d / (target.name.chars().count().max(word.chars().count()) as f64))
-                    } else {
-                        d
-                    },
-                    drug: target.to_owned(),
-                };
-                results.push(res);
+                for t in target.name.split('/') {
+                    let d = (self.distance)(t.to_uppercase().as_str(), word);
+                    let res = DrugOutput {
+                        record_id: record.clone(),
+                        matched_term: word.to_string(),
+                        algorithm: self.algorithm,
+                        edits: if self.algorithm.is_edits() {
+                            Some(d as i32)
+                        } else {
+                            None
+                        },
+                        similarity: if self.algorithm.is_edits() {
+                            1.0 - (d / (t.chars().count().max(word.chars().count()) as f64))
+                        } else {
+                            d
+                        },
+                        drug: target.to_owned(),
+                    };
+                    results.push(res);
+                }
             }
         }
-        for r in &results {
-            if r.edits.unwrap() < 4 {
-                println!("{:?}", r);
-            }
-        }
+        // for r in &results {
+        //     if r.edits.unwrap() < 4 {
+        //         println!("{:?}", r);
+        //     }
+        // }
         if self.max_edits.is_some() {
             // filter by edits
             let edits = self.max_edits.unwrap();

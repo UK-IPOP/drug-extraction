@@ -3,7 +3,7 @@ use clap::{Parser, Subcommand};
 use csv::StringRecord;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{Confirm, Input, Select};
-use drug_core::{fetch_drugs, initialize_searcher};
+use drug_core::{initialize_searcher};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::collections::HashMap;
 use std::error::Error;
@@ -17,7 +17,7 @@ use std::{env, path::Path};
 use walkdir::WalkDir;
 
 use extract_drugs_core as drug_core;
-use extract_drugs_core::SearchInput;
+use extract_drugs_core::{Drug, Root, SearchInput};
 
 #[derive(Parser)]
 #[clap(args_override_self = true)]
@@ -201,7 +201,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             bar.finish();
         }
         Commands::Run {
-            file,
+            file ,
             id_column,
             target_column,
             search_words,
@@ -292,9 +292,9 @@ fn run() -> Result<(), Box<dyn Error>> {
                     continue;
                 }
                 let res = searcher.scan(text, record_id);
-                if !res.is_empty() {
-                    println!("{:?}", res);
-                }
+                // if !res.is_empty() {
+                //     println!("{:?}", res);
+                // }
                 let output_list = drug_core::format(res, user_format);
                 let mut output = output_list.iter().peekable();
                 while let Some(out) = output.next() {
