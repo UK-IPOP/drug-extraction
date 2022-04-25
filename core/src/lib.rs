@@ -14,8 +14,6 @@ use std::str::FromStr;
 
 use strsim::{damerau_levenshtein, jaro_winkler, levenshtein, osa_distance, sorensen_dice};
 
-use wasm_bindgen::prelude::*;
-
 /// ValueError occurs when an invalid value was provided
 #[derive(Debug)]
 pub struct ValueError;
@@ -539,13 +537,13 @@ pub fn initialize_searcher(
 /// let drugs = fetch_drugs("N02A", "ATC");
 /// ```
 ///
-pub async fn fetch_drugs(class_id: &str, rela_source: &str) -> Vec<Drug> {
+pub fn fetch_drugs(class_id: &str, rela_source: &str) -> Vec<Drug> {
     let url = format!(
         "https://rxnav.nlm.nih.gov/REST/rxclass/classMembers.json?classId={}&relaSource={}",
         class_id, rela_source
     );
-    let res = reqwest::get(url).await.unwrap();
-    let data = res.json::<Root>().await.unwrap();
+    let res = reqwest::blocking::get(url).unwrap();
+    let data = res.json::<Root>().unwrap();
     data.drug_member_group
         .drug_member
         .iter()
