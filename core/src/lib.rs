@@ -35,32 +35,32 @@ type Result<T> = std::result::Result<T, ValueError>;
 
 /// Damerau Levenshtein Algorithm
 /// https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
-fn my_damerau(a: String, b: String) -> f64 {
-    damerau_levenshtein(&a, &b) as f64
+fn my_damerau(a: &str, b: &str) -> f64 {
+    damerau_levenshtein(a, b) as f64
 }
 
 /// Levenshtein Algorithm
 /// https://en.wikipedia.org/wiki/Levenshtein_distance
-fn my_leven(a: String, b: String) -> f64 {
-    levenshtein(&a, &b) as f64
+fn my_leven(a: &str, b: &str) -> f64 {
+    levenshtein(a, b) as f64
 }
 
-/// Optimal String Alignment Algorithm (OSA)
+/// Optimal &str Alignment Algorithm (OSA)
 /// https://en.wikipedia.org/wiki/Optimal_string_alignment
-fn my_osa(a: String, b: String) -> f64 {
-    osa_distance(&a, &b) as f64
+fn my_osa(a: &str, b: &str) -> f64 {
+    osa_distance(a, b) as f64
 }
 
 /// Jaro-Winkler Algorithm
 /// https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance
-fn my_jw(a: String, b: String) -> f64 {
-    jaro_winkler(&a, &b) as f64
+fn my_jw(a: &str, b: &str) -> f64 {
+    jaro_winkler(a, b) as f64
 }
 
 /// Sorensen-Dice Algorithm
 /// https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
-fn my_sd(a: String, b: String) -> f64 {
-    sorensen_dice(&a, &b) as f64
+fn my_sd(a: &str, b: &str) -> f64 {
+    sorensen_dice(a, b) as f64
 }
 
 /// Initialize the distance function based on the selected [`Algorithm`]
@@ -68,9 +68,9 @@ pub fn initialize_distance(a: Algorithm) -> fn(&str, &str) -> f64 {
     match a {
         Algorithm::DAMERAU => my_damerau,
         Algorithm::LEVENSHTEIN => my_leven,
-        Algorithm::JAROWINKLER => jaro_winkler,
+        Algorithm::JAROWINKLER => my_jw,
         Algorithm::OSA => my_osa,
-        Algorithm::SORENSENDICE => sorensen_dice,
+        Algorithm::SORENSENDICE => my_sd,
     }
 }
 
