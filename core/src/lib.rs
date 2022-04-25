@@ -566,20 +566,20 @@ struct Root {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DrugMemberGroup {
+struct DrugMemberGroup {
     pub drug_member: Vec<DrugMember>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DrugMember {
+struct DrugMember {
     pub min_concept: MinConcept,
     pub node_attr: Vec<NodeAttr>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct MinConcept {
+struct MinConcept {
     pub rxcui: String,
     pub name: String,
     pub tty: String,
@@ -587,7 +587,7 @@ pub struct MinConcept {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NodeAttr {
+struct NodeAttr {
     pub attr_name: String,
     pub attr_value: String,
 }
