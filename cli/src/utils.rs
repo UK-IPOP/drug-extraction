@@ -157,7 +157,6 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-// TODO: Could return a Result<()>
 /// This function is used to validate the input parameters.
 fn validate_options(max_edits: Option<i32>, threshold: Option<f64>) {
     if threshold.is_none() && max_edits.is_none() {
@@ -242,16 +241,26 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
         .interact()
         .unwrap();
     let algorithm = drug_core::Algorithm::from_str(&algorithm_options[user_algo]).unwrap();
-    let max_edits = Input::new()
-        .with_prompt("Please enter the maximum number of edits you would like to allow or press enter to move on")
-        .default(3)
-        .interact()
-        .unwrap();
-    let thresh: f64 = Input::new()
-        .with_prompt("Please enter the minimum similarity threshold you would like to filter to")
-        .default(0.9)
-        .interact()
-        .unwrap();
+    let max_edits = if algorithm.is_edits() {
+        let max_edits_select = Select::with_theme(&ColorfulTheme::default())
+            .items(&["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
+            .with_prompt("Please select the maximum number of edits allowed")
+            .default(0)
+            .interact()
+            .unwrap();
+        Some(max_edits_select as i32)
+    } else {
+        None
+    };
+    let threshold = if !algorithm.is_edits() {
+        let threshold_select: f64 = Input::new()
+            .with_prompt("Please enter the threshold (0.0 - 1.0)")
+            .interact()
+            .unwrap();
+        Some(threshold_select)
+    } else {
+        None
+    };
     let format_options = vec!["JSONL", "CSV"];
     let user_format_choice = Select::with_theme(&ColorfulTheme::default())
         .items(&format_options)
@@ -273,8 +282,8 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
         id_column: user_id_col,
         search_words: user_search_words,
         algorithm,
-        max_edits: Some(max_edits),
-        threshold: Some(thresh),
+        max_edits,
+        threshold,
         format: user_format,
     };
     run_simple_searcher(ssi)?;
@@ -315,16 +324,26 @@ fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
         .interact()
         .unwrap();
     let algorithm = drug_core::Algorithm::from_str(&algorithm_options[user_algo]).unwrap();
-    let max_edits = Input::new()
-        .with_prompt("Please enter the maximum number of edits you would like to allow or press enter to move on")
-        .default(3)
-        .interact()
-        .unwrap();
-    let thresh: f64 = Input::new()
-        .with_prompt("Please enter the minimum similarity threshold you would like to filter to")
-        .default(0.9)
-        .interact_text()
-        .unwrap();
+    let max_edits = if algorithm.is_edits() {
+        let max_edits_select = Select::with_theme(&ColorfulTheme::default())
+            .items(&["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
+            .with_prompt("Please select the maximum number of edits allowed")
+            .default(0)
+            .interact()
+            .unwrap();
+        Some(max_edits_select as i32)
+    } else {
+        None
+    };
+    let threshold = if !algorithm.is_edits() {
+        let threshold_select: f64 = Input::new()
+            .with_prompt("Please enter the threshold (0.0 - 1.0)")
+            .interact()
+            .unwrap();
+        Some(threshold_select)
+    } else {
+        None
+    };
     let user_rx_id = Input::new()
         .with_prompt("Please enter your target RxNorm ID")
         .interact_text()
@@ -351,8 +370,8 @@ fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
         rx_class_id: user_rx_id,
         rx_class_relasource: user_rx_relasource,
         algorithm,
-        max_edits: Some(max_edits),
-        threshold: Some(thresh),
+        max_edits,
+        threshold,
         format: user_format,
     };
     run_drug_searcher(dsi)?;
