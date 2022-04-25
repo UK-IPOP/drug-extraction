@@ -1,73 +1,94 @@
-mod models;
+//! This library exists to support the CLI and Web UI applications.
+//!
+//! It exposes a limited API that could be utilized by other applications.
+//!
+//! HOWEVER, its development will always be driven by the needs of the CLI and Web UI applications.
+//!
 
-use csv::StringRecord;
 use csv::WriterBuilder;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::error;
 use std::fmt;
 use std::fmt::Display;
-use std::hash::Hash;
-use std::iter::{Filter, FlatMap};
-use std::str::{FromStr, SplitWhitespace};
+use std::str::FromStr;
 
 use strsim::{damerau_levenshtein, jaro_winkler, levenshtein, osa_distance, sorensen_dice};
-
-/// Will need to be modified/extended to account for drug tags
-/// This will be serialized directly into json so this should
-/// be our final data structure that we want in the output
 
 /// ValueError occurs when an invalid value was provided
 #[derive(Debug)]
 pub struct ValueError;
 
 impl Display for ValueError {
+    /// Formatting for ValueError
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Received an unexpected value")
     }
 }
 
+/// Make ValueError Error type
 impl error::Error for ValueError {}
 
+/// Type Alias for std::result::Result using ValueError
 type Result<T> = std::result::Result<T, ValueError>;
 
-// TODO: these functions could probably be better implemented using a closure or something
-// since they currently take 2 function calls to execute
+/// Damerau Levenshtein Algorithm
+/// https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
 fn my_damerau(a: &str, b: &str) -> f64 {
-    println!("Hello theyre bby!");
-    println!("hi");
-    println!("WOW this is cool!");
     damerau_levenshtein(a, b) as f64
 }
 
+/// Levenshtein Algorithm
+/// https://en.wikipedia.org/wiki/Levenshtein_distance
 fn my_leven(a: &str, b: &str) -> f64 {
     levenshtein(a, b) as f64
 }
 
+/// Optimal &str Alignment Algorithm (OSA)
+/// https://en.wikipedia.org/wiki/Optimal_string_alignment
 fn my_osa(a: &str, b: &str) -> f64 {
     osa_distance(a, b) as f64
 }
 
+/// Jaro-Winkler Algorithm
+/// https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance
+fn my_jw(a: &str, b: &str) -> f64 {
+    jaro_winkler(a, b) as f64
+}
+
+/// Sorensen-Dice Algorithm
+/// https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
+fn my_sd(a: &str, b: &str) -> f64 {
+    sorensen_dice(a, b) as f64
+}
+
+/// Initialize the distance function based on the selected [`Algorithm`]
 pub fn initialize_distance(a: Algorithm) -> fn(&str, &str) -> f64 {
     match a {
         Algorithm::DAMERAU => my_damerau,
         Algorithm::LEVENSHTEIN => my_leven,
-        Algorithm::JAROWINKLER => jaro_winkler,
+        Algorithm::JAROWINKLER => my_jw,
         Algorithm::OSA => my_osa,
-        Algorithm::SORENSENDICE => sorensen_dice,
+        Algorithm::SORENSENDICE => my_sd,
     }
 }
 
+/// Algorithm enum
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub enum Algorithm {
+    /// Damerau Levenshtein Algorithm
     DAMERAU,
+    /// Levenshtein Algorithm
     LEVENSHTEIN,
+    /// Jaro Winkler Algorithm
     JAROWINKLER,
+    /// Optimal String Alignment Algorithm (OSA)
     OSA,
+    /// Sorensen Dice Algorithm
     SORENSENDICE,
 }
 
 impl Algorithm {
+    /// Utility function to see if the select Algorithm is returning an edit distance or similarity score.
     pub fn is_edits(&self) -> bool {
         match self {
             Algorithm::OSA | Algorithm::DAMERAU | Algorithm::LEVENSHTEIN => true,
@@ -75,6 +96,8 @@ impl Algorithm {
         }
     }
 
+    /// Utility function to get a list of the available algorithms as a string
+    /// This is used for the CLI
     pub fn options() -> Vec<String> {
         vec![
             "Levenshtein".to_string(),
@@ -89,6 +112,7 @@ impl Algorithm {
 impl FromStr for Algorithm {
     type Err = ValueError;
     /// Parses an Algorithm type from a string reference.
+    /// Only uses the first character of the string.
     fn from_str(s: &str) -> Result<Algorithm> {
         match s.to_uppercase().chars().next().unwrap() {
             'L' => Ok(Algorithm::LEVENSHTEIN),
@@ -102,6 +126,7 @@ impl FromStr for Algorithm {
 }
 
 impl ToString for Algorithm {
+    /// Converts an Algorithm type to a string representation.
     fn to_string(&self) -> String {
         match self {
             Algorithm::DAMERAU => String::from("Damerau"),
@@ -113,16 +138,33 @@ impl ToString for Algorithm {
     }
 }
 
+/// A struct to hold the results of a [`SimpleSearch::scan()`].
+///
+/// Simple Search focuses on comparing strings which could be anything provided by the user.
+///
+/// Simple Search uses [`SimpleSearch`] and [`SimpleResult`] to hold the input and output data.
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct SimpleOutput {
+pub struct SimpleResult {
+    /// The ID of the record being searched.
+    /// Can be empty if the record flag was not used in the CLI.
     pub record_id: Option<String>,
+    /// The algorithm used to calculate the score.
     pub algorithm: Algorithm,
+    /// The number of edits between the matched words.
+    ///
+    /// Can be empty if the [`Algorithm::is_edits()`] function returns false (thus the algorithm does not have an edit distance).
     pub edits: Option<i32>,
+    /// The similarity score between the matched words.
+    ///
+    /// This will be computed regardless of the [`Algorithm::is_edits()`] function status since edit distance can be converted to similarity.
     pub similarity: f64,
+    /// The search term.
     pub search_term: String,
+    /// The matched word.
     pub matched_term: String,
 }
 
+/// The desired output format.
 #[derive(Clone, Copy, Debug)]
 pub enum OutputFormat {
     JSONL,
@@ -131,7 +173,7 @@ pub enum OutputFormat {
 
 impl FromStr for OutputFormat {
     type Err = ValueError;
-    /// Parses an Algorithm type from a string reference.
+    /// Parses an OutputFormat type from a string reference.
     fn from_str(s: &str) -> Result<OutputFormat> {
         match s.to_uppercase().as_str() {
             "JSONL" => Ok(OutputFormat::JSONL),
@@ -141,6 +183,18 @@ impl FromStr for OutputFormat {
     }
 }
 
+/// Format the data in the desired output format.
+/// This is used for the CLI and the web API.
+/// The output format is determined by the [`OutputFormat`] enum.
+/// This uses serde_json::to_string_pretty for JSONL and csv::WriterBuilder for CSV.
+/// The output is returned as a Vector of Strings.
+/// For CSV, the first row is the column headers and the vector items will need to be string-joined with a comma.
+///
+/// Examples:
+/// TODO: Add examples
+/// ```rust
+/// println!("{}", format_output(output, OutputFormat::JSONL));
+/// ```
 pub fn format(data: Vec<SearchOutput>, format: OutputFormat) -> Vec<String> {
     match format {
         OutputFormat::JSONL => data
@@ -161,26 +215,40 @@ pub fn format(data: Vec<SearchOutput>, format: OutputFormat) -> Vec<String> {
     }
 }
 
-// can duplicate for Drugs later just switching type of targets
-// need to validate (in `::new()`) that everything is valid/aligns
-// i.e. max edits not threshold only applies for `has_edits()` algos
-pub struct SimpleInput {
+/// A struct to hold the input into a Simple Search.
+///
+/// Simple Search focuses on comparing strings which could be anything provided by the user.
+///
+/// Simple Search uses [`SimpleSearch`] and [`SimpleResult`] to hold the input and output data.
+pub struct SimpleSearch {
+    /// The [`Algorithm`] to use.
     pub algorithm: Algorithm,
+    /// The distance function to use, based on the [`Algorithm`] selected.
     pub distance: fn(&str, &str) -> f64,
+    /// The **maximum** number of edits allowed.
+    ///
+    /// This *can* be None if the user does not want to limit the results based on the number of edits.
+    ///
+    /// This *should* be None if the [`Algorithm`] is not an edit distance.
     pub max_edits: Option<i32>,
+    /// The *minimum* similarity score required.
+    ///
+    /// This **can** be None if the user does not want to limit the results based on the similarity score.
     pub similarity_threshold: Option<f64>,
+    /// The target search words in the format of a vector of strings.
     pub targets: Vec<String>,
 }
 
-impl SimpleInput {
+impl SimpleSearch {
+    /// Create a new SimpleSearch struct.
     pub fn new(
         algorithm: Algorithm,
         distance: fn(&str, &str) -> f64,
         max_edits: Option<i32>,
         similarity_threshold: Option<f64>,
         targets: &[String],
-    ) -> SimpleInput {
-        SimpleInput {
+    ) -> SimpleSearch {
+        SimpleSearch {
             algorithm,
             distance,
             max_edits,
@@ -190,26 +258,57 @@ impl SimpleInput {
     }
 }
 
+/// A struct to hold the results of a [`Search::scan()`].
+///
+/// This is used for the CLI and the web API.
+///
+/// The enum will correspond to the type of search run (Simple/Drug).
+///
+/// This will show up in the JSONL and CSV output to assist the user in understanding the results.
+///
+/// TODO: Add examples
+/// ```rust
+/// println!("{}", format_output(output, OutputFormat::JSONL));
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SearchOutput {
-    SimpleOutput(SimpleOutput),
-    DrugOutput(DrugOutput),
+    SimpleResult(SimpleResult),
+    DrugOutput(DrugResult),
 }
-pub trait SearchInput {
+
+/// Search trait.
+pub trait Search {
+    /// Scan the data for matches.
     fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput>;
 }
 
-impl SearchInput for SimpleInput {
+impl Search for SimpleSearch {
+    /// Scanning function to find matches.
+    ///
+    /// Searches the input text for the target words. This also does some pre-processing to remove
+    /// punctuation and other non-alphanumeric characters as well as upper-casing the input text.
+    ///
+    /// The search will be limited by the number of edits and/or similarity threshold (if) provided in the [`SimpleSearch`] struct.
+    ///
+    /// The results will be returned as a vector of [`SimpleResult`] structs.
+    ///
+    /// # Examples
+    /// TODO: Add examples
+    /// ```rust
+    /// let search = SimpleSearch::new(Algorithm::Levenshtein, levenshtein, None, None, &["hello", "world"]);
+    /// let results = search.scan("hello world", None);
+    /// ```
+    ///
     fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput> {
         let clean = text
             .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
             .to_uppercase();
         let words = clean.split_whitespace();
-        let mut results: Vec<SimpleOutput> = Vec::new();
+        let mut results: Vec<SimpleResult> = Vec::new();
         for word in words {
             for target in &self.targets {
                 let d = (self.distance)(target, word);
-                let res = SimpleOutput {
+                let res = SimpleResult {
                     record_id: record.clone(),
                     search_term: target.to_string(),
                     matched_term: word.to_string(),
@@ -234,7 +333,7 @@ impl SearchInput for SimpleInput {
             results
                 .into_iter()
                 .filter(|x| x.edits.unwrap() <= edits)
-                .map(SearchOutput::SimpleOutput)
+                .map(SearchOutput::SimpleResult)
                 .collect::<Vec<SearchOutput>>()
         } else if self.similarity_threshold.is_some() {
             // filter by similarity
@@ -242,46 +341,63 @@ impl SearchInput for SimpleInput {
             results
                 .into_iter()
                 .filter(|x| x.similarity >= thresh)
-                .map(SearchOutput::SimpleOutput)
+                .map(SearchOutput::SimpleResult)
                 .collect::<Vec<SearchOutput>>()
         } else {
             // return all
             results
                 .into_iter()
-                .map(SearchOutput::SimpleOutput)
+                .map(SearchOutput::SimpleResult)
                 .collect()
         }
     }
 }
 
-// /////////////////////////////////////////////////////
-//
-
+/// A struct to hold data regarding a specific Drug.
+///
+/// This is used for the CLI and the web API.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Drug {
+    /// The name of the drug.
     pub name: String,
+    /// The drug's RxNorm ID (RX_CUI).
     pub rx_id: String,
-    pub group_name: String,
+    /// The drug's RxClass ID.
     pub class_id: String,
 }
 
-pub struct DrugInput {
+/// A struct to hold search information for a Drug Search.
+///
+/// Drug Search focuses on comparing drug names to target text.
+///
+/// Drug Search uses [`DrugSearch`] and [`DrugResult`] to hold the input and output data.
+pub struct DrugSearch {
+    /// The [`Algorithm`] to use.
     pub algorithm: Algorithm,
+    /// The distance function to use, based on the [`Algorithm`] selected.
     pub distance: fn(&str, &str) -> f64,
+    /// The **maximum** number of edits allowed.
+    ///
+    /// This *can* be None if the user does not want to limit the results based on the number of edits.
+    ///
+    /// This *should* be None if the [`Algorithm`] is not an edit distance.
     pub max_edits: Option<i32>,
+    /// The *minimum* similarity score required.
     pub similarity_threshold: Option<f64>,
+    /// The target search words in the format of a vector of [`Drug`]s.
     pub targets: Vec<Drug>,
 }
 
-impl DrugInput {
+impl DrugSearch {
+    /// Create a new DrugSearch struct.
     pub fn new(
         algorithm: Algorithm,
         distance: fn(&str, &str) -> f64,
         max_edits: Option<i32>,
         similarity_threshold: Option<f64>,
         targets: &[Drug],
-    ) -> DrugInput {
-        DrugInput {
+    ) -> DrugSearch {
+        DrugSearch {
             algorithm,
             distance,
             max_edits,
@@ -291,8 +407,13 @@ impl DrugInput {
     }
 }
 
+/// A struct to hold the results of a [`Search::scan()`].
+///
+/// Drug Search focuses on comparing drug names to target text.
+///
+/// Drug Search uses [`DrugSearch`] and [`DrugResult`] to hold the input and output data.
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct DrugOutput {
+pub struct DrugResult {
     pub record_id: Option<String>,
     pub algorithm: Algorithm,
     pub edits: Option<i32>,
@@ -301,18 +422,34 @@ pub struct DrugOutput {
     pub drug: Drug,
 }
 
-impl SearchInput for DrugInput {
+impl Search for DrugSearch {
+    /// Scanning function to find matches.
+    ///
+    /// Searches the input text for the target drug names. This also does some pre-processing to remove
+    /// punctuation and other non-alphanumeric characters as well as upper-casing the input text.
+    ///
+    /// The search will be limited by the number of edits and/or similarity threshold (if) provided in the [`DrugSearch`] struct.
+    ///
+    /// The results will be returned as a vector of [`DrugResult`] structs.
+    ///
+    /// # Examples
+    /// TODO: Add examples
+    /// ```rust
+    /// let search = DrugSearch::new(Algorithm::Levenshtein, levenshtein, None, None, &["hello", "world"]);
+    /// let results = search.scan("hello world", None);
+    /// ```
+    ///
     fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput> {
         let clean = text
             .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
             .to_uppercase();
         let words = clean.split_whitespace();
-        let mut results: Vec<DrugOutput> = Vec::new();
+        let mut results: Vec<DrugResult> = Vec::new();
         for word in words {
             for target in &self.targets {
                 for t in target.name.split('/') {
                     let d = (self.distance)(t.to_uppercase().as_str(), word);
-                    let res = DrugOutput {
+                    let res = DrugResult {
                         record_id: record.clone(),
                         matched_term: word.to_string(),
                         algorithm: self.algorithm,
@@ -360,6 +497,9 @@ impl SearchInput for DrugInput {
     }
 }
 
+/// A utility function to initialize the correct Searcher (Drug or Simple) based on user provided data.
+///
+/// Returns a Box<dyn Search> that will need to be unboxed.
 pub fn initialize_searcher(
     algorithm: Algorithm,
     distance: fn(&str, &str) -> f64,
@@ -367,9 +507,9 @@ pub fn initialize_searcher(
     similarity_threshold: Option<f64>,
     search_words: Option<&[String]>,
     drug_list: Option<Vec<Drug>>,
-) -> Box<dyn SearchInput> {
+) -> Box<dyn Search> {
     if let Some(drugs) = drug_list {
-        Box::new(DrugInput::new(
+        Box::new(DrugSearch::new(
             algorithm,
             distance,
             max_edits,
@@ -377,7 +517,7 @@ pub fn initialize_searcher(
             drugs.as_ref(),
         ))
     } else {
-        Box::new(SimpleInput::new(
+        Box::new(SimpleSearch::new(
             algorithm,
             distance,
             max_edits,
@@ -387,11 +527,40 @@ pub fn initialize_searcher(
     }
 }
 
-////// nonesense  for parsing json ////////
+/// A function to fetch a list of [`Drug`]s from RxNorm using the RxClass Rest API.
 ///
+/// This function will return a vector of [`Drug`]s.
+///
+/// # Examples:
+/// ```rust
+/// # use extract_drugs_core::*;
+/// let drugs = fetch_drugs("N02A", "ATC");
+/// ```
+///
+pub fn fetch_drugs(class_id: &str, rela_source: &str) -> Vec<Drug> {
+    let url = format!(
+        "https://rxnav.nlm.nih.gov/REST/rxclass/classMembers.json?classId={}&relaSource={}",
+        class_id, rela_source
+    );
+    let res = reqwest::blocking::get(url).unwrap();
+    let data = res.json::<Root>().unwrap();
+    data.drug_member_group
+        .drug_member
+        .iter()
+        .map(|item| Drug {
+            name: item.min_concept.name.to_string(),
+            rx_id: item.min_concept.rxcui.to_string(),
+            class_id: class_id.to_string(),
+        })
+        .collect::<Vec<Drug>>()
+}
+
+//////////////////////////////////////////////////////
+/// A bunch of non-exported types for parsing the RxClass API.
+/// This series of types was generated using [this tool](https://transform.tools/json-to-rust-serde) by simply pasting the RxClass API JSON output into the tool.
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Root {
+struct Root {
     pub drug_member_group: DrugMemberGroup,
 }
 

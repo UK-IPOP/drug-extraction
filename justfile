@@ -20,7 +20,7 @@ run:
         --format csv \
         --rx-class-id "N02A" \
         --rx-class-source "ATC" \
-        cli/data/Medical_Examiner_Case_Archive.csv
+        cli/data/records.csv
 
 build-prod: format check
     @cargo build --release
