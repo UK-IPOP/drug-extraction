@@ -2,7 +2,6 @@ use clap::{Parser, Subcommand};
 use csv::StringRecord;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{Confirm, Input, Select};
-use drug_core::initialize_searcher;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::error::Error;
 use std::fs::{self, File};
@@ -11,9 +10,9 @@ use std::io::{BufRead, BufReader};
 use std::process::exit;
 use std::str::FromStr;
 
-use extract_drugs_core as drug_core;
+use drug_extraction_core as drug_core;
 
-/// Main entry point for the CLI.
+/// CLI Application to extract drugs from a CSV file
 #[derive(Parser)]
 #[clap(args_override_self = true)]
 #[clap(author, version, about, long_about = None)]
@@ -417,7 +416,7 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
     let line_count = BufReader::new(File::open(&ssi.fpath).unwrap())
         .lines()
         .count();
-    let searcher = initialize_searcher(
+    let searcher = drug_core::initialize_searcher(
         ssi.algorithm,
         distance,
         ssi.max_edits,
@@ -483,7 +482,7 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
     let line_count = BufReader::new(File::open(&dsi.fpath).unwrap())
         .lines()
         .count();
-    let searcher = initialize_searcher(
+    let searcher = drug_core::initialize_searcher(
         dsi.algorithm,
         distance,
         dsi.max_edits,
