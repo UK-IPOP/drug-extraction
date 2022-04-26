@@ -4,6 +4,7 @@
 //!
 //! HOWEVER, its development will always be driven by the needs of the CLI and Web UI applications.
 //!
+//! The main functionality is encompassed in [`Drug`], [`Search`], and [`SearchOutput`].
 
 use csv::WriterBuilder;
 use itertools::Itertools;
@@ -195,9 +196,6 @@ impl FromStr for OutputFormat {
 ///
 /// Examples:
 /// TODO: Add examples
-/// ```rust
-/// println!("{}", format_output(output, OutputFormat::JSONL));
-/// ```
 pub fn format(
     data: Vec<SearchOutput>,
     format: OutputFormat,
@@ -273,9 +271,6 @@ impl SimpleSearch {
 /// This will show up in the JSONL and CSV output to assist the user in understanding the results.
 ///
 /// TODO: Add examples
-/// ```rust
-/// println!("{}", format_output(output, OutputFormat::JSONL));
-/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SearchOutput {
     SimpleResult(SimpleResult),

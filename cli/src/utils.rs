@@ -1,3 +1,8 @@
+//! Utility functions for the CLI.
+//!
+//! This module contains utility functions for the CLI.
+//!
+//!
 use clap::{Parser, Subcommand};
 use csv::StringRecord;
 use dialoguer::theme::ColorfulTheme;
@@ -16,7 +21,7 @@ use drug_extraction_core as drug_core;
 /// CLI Application to extract drugs from a CSV file
 #[derive(Parser)]
 #[clap(args_override_self = true)]
-#[clap(author, version, about, long_about = None)]
+#[clap(version, about, long_about = None)]
 pub struct Cli {
     #[clap(subcommand)]
     command: Commands,
@@ -28,7 +33,7 @@ pub enum Commands {
     /// Interactive mode. Useful for first time users or one-offs.
     Interactive,
 
-    /// Execute mode. Useful for automation/scripts.
+    /// Simple Execute mode. Useful for automation/scripts.
     #[clap(arg_required_else_help = true)]
     SimpleSearch {
         /// File to extract drugs from.
@@ -67,7 +72,7 @@ pub enum Commands {
         #[clap(long)]
         analyze: bool,
     },
-    /// Execute mode. Useful for automation/scripts.
+    /// Drug-based Execute mode. Useful for automation/scripts.
     #[clap(arg_required_else_help = true)]
     DrugSearch {
         /// File to extract drugs from.
@@ -392,7 +397,7 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
 
     println!("Welcome to the UK-IPOP Drug Extraction tool.");
     println!("------------------------------------------");
-    println!("Extracting targets from {} ...", ssi.fpath);
+    println!("Extracting targets from {}", ssi.fpath);
 
     if !ssi.search_words.contains('|') {
         println!("Please enter your search words separated by a `|` symbol");
@@ -497,7 +502,7 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
 
     println!("Welcome to the UK-IPOP Drug Extraction tool.");
     println!("------------------------------------------");
-    println!("Extracting drugs from {} ...", dsi.fpath);
+    println!("Extracting drugs from {}", dsi.fpath);
 
     let drugs = fetch_drugs(&dsi.rx_class_id, &dsi.rx_class_relasource)?;
     let file = File::open(&dsi.fpath)?;

@@ -1,3 +1,6 @@
+//! Primary application for drug extraction
+//!
+//!
 use clap::Parser;
 use std::error::Error;
 mod utils;
