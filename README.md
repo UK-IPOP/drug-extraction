@@ -31,13 +31,6 @@
   </p>
 </div>
 
-- [Getting Started](#getting-started)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
-- [Acknowledgments](#acknowledgments)
-
 [![WEBSITE][play-shield]][play-url]
 
 This project uses string similarity metrics to detect drugs inside text records.
