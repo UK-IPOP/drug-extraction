@@ -133,3 +133,5 @@ web/!.yarn/plugins
 web/!.yarn/releases
 web/!.yarn/sdks
 web/!.yarn/versions
+extracted_drugs_wide.csv
+extracted_drugs_combined.csv
