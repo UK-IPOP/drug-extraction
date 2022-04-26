@@ -10,6 +10,7 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::error;
+use std::error::Error;
 use std::fmt;
 use std::fmt::Display;
 use std::str::FromStr;
@@ -100,13 +101,13 @@ impl Algorithm {
 
     /// Utility function to get a list of the available algorithms as a string
     /// This is used for the CLI
-    pub fn options() -> Vec<String> {
-        vec![
-            "Levenshtein".to_string(),
-            "Damerau".to_string(),
-            "OSA".to_string(),
-            "JaroWinkler".to_string(),
-            "SorensenDice".to_string(),
+    pub fn options() -> &'static [&'static str] {
+        &[
+            "Levenshtein",
+            "Damerau",
+            "OSA",
+            "JaroWinkler",
+            "SorensenDice",
         ]
     }
 }
@@ -116,7 +117,7 @@ impl FromStr for Algorithm {
     /// Parses an Algorithm type from a string reference.
     /// Only uses the first character of the string.
     fn from_str(s: &str) -> Result<Algorithm> {
-        match s.to_uppercase().chars().next().unwrap() {
+        match s.to_uppercase().chars().next().unwrap_or('L') {
             'L' => Ok(Algorithm::LEVENSHTEIN),
             'D' => Ok(Algorithm::DAMERAU),
             'O' => Ok(Algorithm::OSA),
@@ -197,22 +198,25 @@ impl FromStr for OutputFormat {
 /// ```rust
 /// println!("{}", format_output(output, OutputFormat::JSONL));
 /// ```
-pub fn format(data: Vec<SearchOutput>, format: OutputFormat) -> Vec<String> {
+pub fn format(
+    data: Vec<SearchOutput>,
+    format: OutputFormat,
+) -> std::result::Result<Vec<String>, Box<dyn Error>> {
     match format {
-        OutputFormat::JSONL => data
+        OutputFormat::JSONL => Ok(data
             .iter()
-            .map(|x| serde_json::to_string(x).unwrap())
-            .collect::<Vec<String>>(),
+            .map(|x| serde_json::to_string(x).expect("could not deserialize json to string"))
+            .collect::<Vec<String>>()),
         OutputFormat::CSV => {
             let mut wtr = WriterBuilder::new().has_headers(false).from_writer(vec![]);
             for row in data {
-                wtr.serialize(row).unwrap();
+                wtr.serialize(row)?;
             }
-            let csv_data = String::from_utf8(wtr.into_inner().unwrap()).unwrap();
-            csv_data
+            let csv_data = String::from_utf8(wtr.into_inner()?)?;
+            Ok(csv_data
                 .split('\n')
                 .map(|x| x.to_string())
-                .collect::<Vec<String>>()
+                .collect::<Vec<String>>())
         }
     }
 }
@@ -329,17 +333,15 @@ impl Search for SimpleSearch {
                 results.push(res);
             }
         }
-        if self.max_edits.is_some() {
+        if let Some(me) = self.max_edits {
             // filter by edits
-            let edits = self.max_edits.unwrap();
             results
                 .into_iter()
-                .filter(|x| x.edits.unwrap() <= edits)
+                .filter(|x| x.edits.expect("result did not have edits") <= me)
                 .map(SearchOutput::SimpleResult)
                 .collect::<Vec<SearchOutput>>()
-        } else if self.similarity_threshold.is_some() {
+        } else if let Some(thresh) = self.similarity_threshold {
             // filter by similarity
-            let thresh = self.similarity_threshold.unwrap();
             results
                 .into_iter()
                 .filter(|x| x.similarity >= thresh)
@@ -471,17 +473,15 @@ impl Search for DrugSearch {
                 }
             }
         }
-        if self.max_edits.is_some() {
+        if let Some(me) = self.max_edits {
             // filter by edits
-            let edits = self.max_edits.unwrap();
             results
                 .into_iter()
-                .filter(|x| x.edits.unwrap() <= edits)
+                .filter(|x| x.edits.expect("result did not have edits") <= me)
                 .map(SearchOutput::DrugOutput)
                 .collect::<Vec<SearchOutput>>()
-        } else if self.similarity_threshold.is_some() {
+        } else if let Some(thresh) = self.similarity_threshold {
             // filter by similarity
-            let thresh = self.similarity_threshold.unwrap();
             results
                 .into_iter()
                 .filter(|x| x.similarity >= thresh)
@@ -519,7 +519,7 @@ pub fn initialize_searcher(
             distance,
             max_edits,
             similarity_threshold,
-            search_words.unwrap(),
+            search_words.unwrap_or_default(),
         ))
     }
 }
@@ -534,14 +534,18 @@ pub fn initialize_searcher(
 /// let drugs = fetch_drugs("N02A", "ATC");
 /// ```
 ///
-pub fn fetch_drugs(class_id: &str, rela_source: &str) -> Vec<Drug> {
+pub fn fetch_drugs(
+    class_id: &str,
+    rela_source: &str,
+) -> std::result::Result<Vec<Drug>, Box<dyn Error>> {
     let url = format!(
         "https://rxnav.nlm.nih.gov/REST/rxclass/classMembers.json?classId={}&relaSource={}",
         class_id, rela_source
     );
-    let res = reqwest::blocking::get(url).unwrap();
-    let data = res.json::<Root>().unwrap();
-    data.drug_member_group
+    let res = reqwest::blocking::get(url)?;
+    let data = res.json::<Root>()?;
+    let list = data
+        .drug_member_group
         .drug_member
         .iter()
         .map(|item| Drug {
@@ -549,7 +553,8 @@ pub fn fetch_drugs(class_id: &str, rela_source: &str) -> Vec<Drug> {
             rx_id: item.min_concept.rxcui.to_string(),
             class_id: class_id.to_string(),
         })
-        .collect::<Vec<Drug>>()
+        .collect::<Vec<Drug>>();
+    Ok(list)
 }
 
 /// A function to get some nice stats about the drugs in the list.
@@ -559,7 +564,7 @@ pub fn analyze(
     total_records: i32,
     is_drug: bool,
     has_id: bool,
-) -> Vec<String> {
+) -> Result<Vec<String>> {
     let mut results: Vec<String> = Vec::new();
     if is_drug {
         if has_id {
@@ -568,7 +573,12 @@ pub fn analyze(
             for r in data {
                 if let SearchOutput::DrugOutput(drug) = r {
                     found_targets.push(drug.drug.name.clone());
-                    found_ids.push(drug.record_id.as_ref().unwrap().clone());
+                    found_ids.push(
+                        drug.record_id
+                            .as_ref()
+                            .expect("could not reference record id")
+                            .clone(),
+                    );
                 }
             }
             let unique_records = found_ids.clone().into_iter().collect::<HashSet<_>>();
@@ -579,7 +589,10 @@ pub fn analyze(
                 unique_records.len() as f64 / total_targets as f64
             ));
             let counts = found_ids.into_iter().counts();
-            let key_with_max_value = counts.iter().max_by_key(|entry| entry.1).unwrap();
+            let key_with_max_value = counts
+                .iter()
+                .max_by_key(|entry| entry.1)
+                .expect("could not find max");
             results.push(format!(
                 "Most common record: {} (detected {} drugs)",
                 key_with_max_value.0, key_with_max_value.1
@@ -592,7 +605,10 @@ pub fn analyze(
                 unique_targets.len() as f64 / total_targets as f64
             ));
             let counts = unique_targets.into_iter().counts();
-            let key_with_max_value = counts.iter().max_by_key(|entry| entry.1).unwrap();
+            let key_with_max_value = counts
+                .iter()
+                .max_by_key(|entry| entry.1)
+                .expect("could not find max");
             results.push(format!(
                 "The most common drug is {} with {} detections.",
                 key_with_max_value.0, key_with_max_value.1
@@ -613,7 +629,10 @@ pub fn analyze(
                 unique_targets.len() as f64 / total_targets as f64
             ));
             let counts = unique_targets.into_iter().counts();
-            let key_with_max_value = counts.iter().max_by_key(|entry| entry.1).unwrap();
+            let key_with_max_value = counts
+                .iter()
+                .max_by_key(|entry| entry.1)
+                .expect("could not find max");
             results.push(format!(
                 "The most common drug is {} with {} detections.",
                 key_with_max_value.0, key_with_max_value.1
@@ -625,7 +644,13 @@ pub fn analyze(
         for r in data {
             if let SearchOutput::SimpleResult(simple) = r {
                 found_targets.push(simple.search_term.clone());
-                found_ids.push(simple.record_id.as_ref().unwrap().clone());
+                found_ids.push(
+                    simple
+                        .record_id
+                        .as_ref()
+                        .expect("could not reference record id")
+                        .clone(),
+                );
             }
         }
         let unique_records = found_ids.clone().into_iter().collect::<HashSet<_>>();
@@ -636,7 +661,10 @@ pub fn analyze(
             unique_records.len() as f64 / total_records as f64,
         ));
         let counts = found_ids.into_iter().counts();
-        let key_with_max_value = counts.iter().max_by_key(|(_, v)| *v).unwrap();
+        let key_with_max_value = counts
+            .iter()
+            .max_by_key(|(_, v)| *v)
+            .expect("could not find max");
         results.push(format!(
             "Most common record: {} (detected {} targets)",
             key_with_max_value.0, key_with_max_value.1
@@ -649,7 +677,10 @@ pub fn analyze(
             unique_targets.len() as f64 / total_targets as f64
         ));
         let counts = unique_targets.into_iter().counts();
-        let key_with_max_value = counts.iter().max_by_key(|(_, v)| *v).unwrap();
+        let key_with_max_value = counts
+            .iter()
+            .max_by_key(|(_, v)| *v)
+            .expect("could not find max");
         results.push(format!(
             "The most common target is {} with {} detections.",
             key_with_max_value.0, key_with_max_value.1
@@ -670,13 +701,16 @@ pub fn analyze(
             unique_targets.len() as f64 / total_targets as f64
         ));
         let counts = unique_targets.into_iter().counts();
-        let key_with_max_value = counts.iter().max_by_key(|(_, v)| *v).unwrap();
+        let key_with_max_value = counts
+            .iter()
+            .max_by_key(|(_, v)| *v)
+            .expect("could not find max");
         results.push(format!(
             "The most common target is {} with {} detections.",
             key_with_max_value.0, key_with_max_value.1
         ));
     }
-    results
+    Ok(results)
 }
 
 //////////////////////////////////////////////////////
