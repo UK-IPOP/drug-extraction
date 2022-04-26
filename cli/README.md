@@ -2,7 +2,7 @@
 
 This is the CLI application that consumes the [Core](https://github.com/UK-IPOP/drug-extraction/tree/main/core) library.
 
-Full API documentation can be found on [docs.rs](https://docs.rs/drug-extraction-cli/latest/drug-extraction-cli/).
+Full API documentation can be found on [docs.rs](https://docs.rs/crate/drug-extraction-cli/latest).
 
 - [Drug Extraction CLI](#drug-extraction-cli)
   - [Description](#description)

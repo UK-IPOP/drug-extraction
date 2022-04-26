@@ -4,7 +4,7 @@ This is the core library used by the [CLI](https://github.com/UK-IPOP/drug-extra
 
 As noted in the main [ToolBox](https://github.com/UK-IPOP/drug-extraction) documentation, this library's development will be driven heavily by the needs of the CLI application.
 
-Full API documentation can be found on [docs.rs](https://docs.rs/drug-extraction-core/latest/drug-extraction-core/).
+Full API documentation can be found on [docs.rs](https://docs.rs/crate/drug-extraction-core/latest).
 
 - [Drug Extraction Core](#drug-extraction-core)
   - [Description](#description)
