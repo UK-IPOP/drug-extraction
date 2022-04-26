@@ -619,7 +619,7 @@ fn initialize_output_file(
             let my_headers = if is_drugs {
                 "record_id,algorithm,edits,similarity,matched_term,drug_name,rx_id,group_name,class_id".to_string()
             } else {
-                "record_id,algorithm,edits,similarity,matched_term,search_term".to_string()
+                "record_id,algorithm,edits,similarity,search_term,matched_term".to_string()
             };
             let mut f = fs::File::create("extracted_drugs.csv")?;
             f.write_all(my_headers.as_bytes())?;
