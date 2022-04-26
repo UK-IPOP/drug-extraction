@@ -6,7 +6,7 @@ authors = ["Nick Anthony <nicholas.anthony@uky.edu>"]
 description = "A core library for extracting drugs from text records"
 license = "MIT"
 repository = "https://github.com/UK-IPOP/drug-extraction"
-keywords = ["drug", "extraction", "nlp", "text", "nlp", "core"]
+keywords = ["drug", "extraction", "nlp", "text"]
 categories = ["parsing", "command-line-interface"]
 readme = "README.md"
 
