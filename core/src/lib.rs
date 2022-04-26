@@ -524,39 +524,6 @@ pub fn initialize_searcher(
     }
 }
 
-/// A function to fetch a list of [`Drug`]s from RxNorm using the RxClass Rest API.
-///
-/// This function will return a vector of [`Drug`]s.
-///
-/// # Examples:
-/// ```rust
-/// # use extract_drugs_core::*;
-/// let drugs = fetch_drugs("N02A", "ATC");
-/// ```
-///
-pub fn fetch_drugs(
-    class_id: &str,
-    rela_source: &str,
-) -> std::result::Result<Vec<Drug>, Box<dyn Error>> {
-    let url = format!(
-        "https://rxnav.nlm.nih.gov/REST/rxclass/classMembers.json?classId={}&relaSource={}",
-        class_id, rela_source
-    );
-    let res = reqwest::blocking::get(url)?;
-    let data = res.json::<Root>()?;
-    let list = data
-        .drug_member_group
-        .drug_member
-        .iter()
-        .map(|item| Drug {
-            name: item.min_concept.name.to_string(),
-            rx_id: item.min_concept.rxcui.to_string(),
-            class_id: class_id.to_string(),
-        })
-        .collect::<Vec<Drug>>();
-    Ok(list)
-}
-
 /// A function to get some nice stats about the drugs in the list.
 pub fn analyze(
     data: Vec<SearchOutput>,
@@ -723,41 +690,4 @@ pub fn analyze(
         ));
     }
     Ok(results)
-}
-
-//////////////////////////////////////////////////////
-/// A bunch of non-exported types for parsing the RxClass API.
-/// This series of types was generated using [this tool](https://transform.tools/json-to-rust-serde) by simply pasting the RxClass API JSON output into the tool.
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Root {
-    pub drug_member_group: DrugMemberGroup,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct DrugMemberGroup {
-    pub drug_member: Vec<DrugMember>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct DrugMember {
-    pub min_concept: MinConcept,
-    pub node_attr: Vec<NodeAttr>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct MinConcept {
-    pub rxcui: String,
-    pub name: String,
-    pub tty: String,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct NodeAttr {
-    pub attr_name: String,
-    pub attr_value: String,
 }

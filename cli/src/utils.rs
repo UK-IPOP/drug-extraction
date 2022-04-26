@@ -3,6 +3,7 @@ use csv::StringRecord;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{Confirm, Input, Select};
 use indicatif::{ProgressBar, ProgressStyle};
+use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs::{self, File};
 use std::io::Write;
@@ -391,7 +392,7 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
 
     println!("Welcome to the UK-IPOP Drug Extraction tool.");
     println!("------------------------------------------");
-    println!("Extracting targets from {}", ssi.fpath);
+    println!("Extracting targets from {} ...", ssi.fpath);
 
     if !ssi.search_words.contains('|') {
         println!("Please enter your search words separated by a `|` symbol");
@@ -496,9 +497,9 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
 
     println!("Welcome to the UK-IPOP Drug Extraction tool.");
     println!("------------------------------------------");
-    println!("Extracting drugs from {}", dsi.fpath);
+    println!("Extracting drugs from {} ...", dsi.fpath);
 
-    let drugs = drug_core::fetch_drugs(&dsi.rx_class_id, &dsi.rx_class_relasource)?;
+    let drugs = fetch_drugs(&dsi.rx_class_id, &dsi.rx_class_relasource)?;
     let file = File::open(&dsi.fpath)?;
     let mut rdr = csv::Reader::from_reader(file);
     let headers = rdr.headers()?.clone();
@@ -627,4 +628,74 @@ fn initialize_output_file(
         }
     };
     Ok(out_file)
+}
+
+/// A function to fetch a list of [`Drug`]s from RxNorm using the RxClass Rest API.
+///
+/// This function will return a vector of [`Drug`]s.
+///
+/// # Examples:
+/// ```rust
+/// # use extract_drugs_core::*;
+/// let drugs = fetch_drugs("N02A", "ATC");
+/// ```
+///
+pub fn fetch_drugs(
+    class_id: &str,
+    rela_source: &str,
+) -> std::result::Result<Vec<drug_core::Drug>, Box<dyn Error>> {
+    let url = format!(
+        "https://rxnav.nlm.nih.gov/REST/rxclass/classMembers.json?classId={}&relaSource={}",
+        class_id, rela_source
+    );
+    let res = reqwest::blocking::get(url)?;
+    let data = res.json::<Root>()?;
+    let list = data
+        .drug_member_group
+        .drug_member
+        .iter()
+        .map(|item| drug_core::Drug {
+            name: item.min_concept.name.to_string(),
+            rx_id: item.min_concept.rxcui.to_string(),
+            class_id: class_id.to_string(),
+        })
+        .collect::<Vec<drug_core::Drug>>();
+    Ok(list)
+}
+
+//////////////////////////////////////////////////////
+/// A bunch of non-exported types for parsing the RxClass API.
+/// This series of types was generated using [this tool](https://transform.tools/json-to-rust-serde) by simply pasting the RxClass API JSON output into the tool.
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Root {
+    pub drug_member_group: DrugMemberGroup,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DrugMemberGroup {
+    pub drug_member: Vec<DrugMember>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DrugMember {
+    pub min_concept: MinConcept,
+    pub node_attr: Vec<NodeAttr>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MinConcept {
+    pub rxcui: String,
+    pub name: String,
+    pub tty: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct NodeAttr {
+    pub attr_name: String,
+    pub attr_value: String,
 }
