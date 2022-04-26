@@ -130,6 +130,8 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+We use `gh release create` to make new github releases and `cargo release` to release to crates.io.
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## License
