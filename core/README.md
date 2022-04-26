@@ -4,6 +4,18 @@ This is the core library used by the [CLI](https://github.com/UK-IPOP/drug-extra
 
 As noted in the main [ToolBox](https://github.com/UK-IPOP/drug-extraction) documentation, this library's development will be driven heavily by the needs of the CLI application.
 
+Full API documentation can be found on [docs.rs](https://docs.rs/drug-extraction-core/latest/drug-extraction-core/).
+
+- [Drug Extraction Core](#drug-extraction-core)
+  - [Description](#description)
+  - [Requires](#requires)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Example Workflow](#example-workflow)
+  - [Support](#support)
+  - [Contributing](#contributing)
+  - [MIT License](#mit-license)
+
 ## Description
 
 Drugs, as defined by the `Drug` type include a `name`, `rx_cui`, `rx_class_id`, and `rx_class_relasource`. Technically these could be manually compiled, but we recommend fetching from the [RxClass API](https://lhncbc.nlm.nih.gov/RxNav/APIs/RxClassAPIs.html).
@@ -44,8 +56,6 @@ println!("{:?}", results);
 ```
 
 We support both CSV and JSONL output.
-
-Full API documentation can be found on [docs.rs](https://docs.rs/drug-extraction-core/latest/drug-extraction-core/).
 
 ## Example Workflow
 

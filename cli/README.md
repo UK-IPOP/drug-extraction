@@ -2,6 +2,24 @@
 
 This is the CLI application that consumes the [Core](https://github.com/UK-IPOP/drug-extraction/tree/main/core) library.
 
+Full API documentation can be found on [docs.rs](https://docs.rs/drug-extraction-cli/latest/drug-extraction-cli/).
+
+- [Drug Extraction CLI](#drug-extraction-cli)
+  - [Description](#description)
+  - [Requires](#requires)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Interactive](#interactive)
+    - [Simple-Search](#simple-search)
+    - [Drug-Search](#drug-search)
+      - [RxClass/RxNorm Operations](#rxclassrxnorm-operations)
+    - [Help](#help)
+  - [Workflows](#workflows)
+    - [Workflow Examples](#workflow-examples)
+  - [Support](#support)
+  - [Contributing](#contributing)
+  - [MIT License](#mit-license)
+
 ## Description
 
 This application takes a CSV file and parses text records to detect and extract drug mentions using string similarity algorithms to account for common misspellings.
@@ -134,8 +152,6 @@ extract-drugs --help
 ```
 
 ![help-screenshot](../images/help-screenshot.png)
-
-Full API documentation can be found on [docs.rs](https://docs.rs/drug-extraction-cli/latest/drug-extraction-cli/).
 
 ## Workflows
 
