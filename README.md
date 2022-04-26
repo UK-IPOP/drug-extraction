@@ -31,7 +31,11 @@
   </p>
 </div>
 
+<div align="center">
+
 [![WEBSITE][play-shield]][play-url]
+
+</div>
 
 This project uses string similarity metrics to detect drugs inside text records.
 
