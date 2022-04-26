@@ -2,8 +2,13 @@
 name = "drug-extraction-core"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Nick Anthony <nicholas.anthony@uky.edu>"]
+description = "A core library for extracting drugs from text records"
+license = "MIT"
+repository = "https://github.com/UK-IPOP/drug-extraction"
+keywords = ["drug", "extraction", "nlp", "text", "nlp", "core"]
+categories = ["parsing"]
+readme = "README.md"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -14,7 +19,6 @@ strsim = "0.10.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 csv = "1.1.6"
-reqwest = {version = "0.11.10", features = ["json", "blocking"]}
 itertools = "0.10.3"
 
 

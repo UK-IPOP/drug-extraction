@@ -2,6 +2,14 @@
 name = "drug-extraction-cli"
 version = "0.1.0"
 edition = "2021"
+authors = ["Nick Anthony <nicholas.anthony@uky.edu>"]
+description = "A core library for extracting drugs from text records"
+license = "MIT"
+repository = "https://github.com/UK-IPOP/drug-extraction"
+keywords = ["drug", "extraction", "nlp", "text", "nlp", "core"]
+categories = ["parsing", "command-line-interface"]
+readme = "README.md"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [[bin]]
