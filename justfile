@@ -11,16 +11,15 @@ format:
     @cargo fmt
 
 run:
-    @cargo run -p extract-drugs -- run \
+    @cargo run -p drug-extraction-cli -- simple-search \
+        cli/data/records.csv \
         --algorithm "l" \
-        --max-edits 2 \
+        --max-edits 1 \
         --id-column "Case Number" \
         --target-column "Primary Cause" \
-        --search-words "coacine|heroin|Fentanyl" \
+        --search-words "coacine|heroin|Fentanil" \
         --format csv \
-        --rx-class-id "N02A" \
-        --rx-class-source "ATC" \
-        cli/data/records.csv
+        --analyze 
 
 build-prod: format check
     @cargo build --release
