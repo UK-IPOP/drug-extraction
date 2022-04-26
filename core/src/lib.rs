@@ -597,14 +597,18 @@ pub fn analyze(
                 "Most common record: {} (detected {} drugs)",
                 key_with_max_value.0, key_with_max_value.1
             ));
-            let unique_targets = found_targets.into_iter().unique().collect::<HashSet<_>>();
+            let unique_targets = found_targets
+                .clone()
+                .into_iter()
+                .unique()
+                .collect::<HashSet<_>>();
             results.push(format!(
                 "Found {} of {} drugs (~{:.2}%).",
                 unique_targets.len(),
                 total_targets,
                 unique_targets.len() as f64 / total_targets as f64
             ));
-            let counts = unique_targets.into_iter().counts();
+            let counts = found_targets.into_iter().counts();
             let key_with_max_value = counts
                 .iter()
                 .max_by_key(|entry| entry.1)
@@ -660,7 +664,7 @@ pub fn analyze(
             total_records,
             unique_records.len() as f64 / total_records as f64,
         ));
-        let counts = found_ids.into_iter().counts();
+        let counts = found_ids.clone().into_iter().counts();
         let key_with_max_value = counts
             .iter()
             .max_by_key(|(_, v)| *v)
@@ -669,14 +673,18 @@ pub fn analyze(
             "Most common record: {} (detected {} targets)",
             key_with_max_value.0, key_with_max_value.1
         ));
-        let unique_targets = found_targets.into_iter().unique().collect::<HashSet<_>>();
+        let unique_targets = found_targets
+            .clone()
+            .into_iter()
+            .unique()
+            .collect::<HashSet<_>>();
         results.push(format!(
             "Found {} of {} targets (~{:.2}%).",
             unique_targets.len(),
             total_targets,
             unique_targets.len() as f64 / total_targets as f64
         ));
-        let counts = unique_targets.into_iter().counts();
+        let counts = found_targets.into_iter().counts();
         let key_with_max_value = counts
             .iter()
             .max_by_key(|(_, v)| *v)
@@ -693,14 +701,18 @@ pub fn analyze(
                 found_targets.push(simple.search_term.clone());
             }
         }
-        let unique_targets = found_targets.into_iter().unique().collect::<HashSet<_>>();
+        let unique_targets = found_targets
+            .clone()
+            .into_iter()
+            .unique()
+            .collect::<HashSet<_>>();
         results.push(format!(
             "Found {} of {} targets (~{:.2}%).",
             unique_targets.len(),
             total_targets,
             unique_targets.len() as f64 / total_targets as f64
         ));
-        let counts = unique_targets.into_iter().counts();
+        let counts = found_targets.into_iter().counts();
         let key_with_max_value = counts
             .iter()
             .max_by_key(|(_, v)| *v)
