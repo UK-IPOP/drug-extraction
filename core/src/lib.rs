@@ -6,7 +6,9 @@
 //!
 
 use csv::WriterBuilder;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::error;
 use std::fmt;
 use std::fmt::Display;
@@ -469,11 +471,6 @@ impl Search for DrugSearch {
                 }
             }
         }
-        // for r in &results {
-        //     if r.edits.unwrap() < 4 {
-        //         println!("{:?}", r);
-        //     }
-        // }
         if self.max_edits.is_some() {
             // filter by edits
             let edits = self.max_edits.unwrap();
@@ -553,6 +550,133 @@ pub fn fetch_drugs(class_id: &str, rela_source: &str) -> Vec<Drug> {
             class_id: class_id.to_string(),
         })
         .collect::<Vec<Drug>>()
+}
+
+/// A function to get some nice stats about the drugs in the list.
+pub fn analyze(
+    data: Vec<SearchOutput>,
+    total_targets: i32,
+    total_records: i32,
+    is_drug: bool,
+    has_id: bool,
+) -> Vec<String> {
+    let mut results: Vec<String> = Vec::new();
+    if is_drug {
+        if has_id {
+            let mut found_targets: Vec<String> = Vec::new();
+            let mut found_ids: Vec<String> = Vec::new();
+            for r in data {
+                if let SearchOutput::DrugOutput(drug) = r {
+                    found_targets.push(drug.drug.name.clone());
+                    found_ids.push(drug.record_id.as_ref().unwrap().clone());
+                }
+            }
+            let unique_records = found_ids.clone().into_iter().collect::<HashSet<_>>();
+            results.push(format!(
+                "Found drugs in {} of {} records (~{:.2}%).",
+                unique_records.len(),
+                total_records,
+                unique_records.len() as f64 / total_targets as f64
+            ));
+            let counts = found_ids.into_iter().counts();
+            let key_with_max_value = counts.iter().max_by_key(|entry| entry.1).unwrap();
+            results.push(format!(
+                "Most common record: {} (detected {} drugs)",
+                key_with_max_value.0, key_with_max_value.1
+            ));
+            let unique_targets = found_targets.into_iter().unique().collect::<HashSet<_>>();
+            results.push(format!(
+                "Found {} of {} drugs (~{:.2}%).",
+                unique_targets.len(),
+                total_targets,
+                unique_targets.len() as f64 / total_targets as f64
+            ));
+            let counts = unique_targets.into_iter().counts();
+            let key_with_max_value = counts.iter().max_by_key(|entry| entry.1).unwrap();
+            results.push(format!(
+                "The most common drug is {} with {} detections.",
+                key_with_max_value.0, key_with_max_value.1
+            ));
+        } else {
+            let mut found_targets: Vec<String> = Vec::new();
+            results.push("No record ID flag provided.".to_string());
+            for r in data {
+                if let SearchOutput::DrugOutput(drug) = r {
+                    found_targets.push(drug.drug.name.clone());
+                }
+            }
+            let unique_targets = found_targets.into_iter().unique().collect::<HashSet<_>>();
+            results.push(format!(
+                "Found {} of {} drugs (~{:.2}%).",
+                unique_targets.len(),
+                total_targets,
+                unique_targets.len() as f64 / total_targets as f64
+            ));
+            let counts = unique_targets.into_iter().counts();
+            let key_with_max_value = counts.iter().max_by_key(|entry| entry.1).unwrap();
+            results.push(format!(
+                "The most common drug is {} with {} detections.",
+                key_with_max_value.0, key_with_max_value.1
+            ));
+        }
+    } else if has_id {
+        let mut found_targets: Vec<String> = Vec::new();
+        let mut found_ids: Vec<String> = Vec::new();
+        for r in data {
+            if let SearchOutput::SimpleResult(simple) = r {
+                found_targets.push(simple.search_term.clone());
+                found_ids.push(simple.record_id.as_ref().unwrap().clone());
+            }
+        }
+        let unique_records = found_ids.clone().into_iter().collect::<HashSet<_>>();
+        results.push(format!(
+            "Found targets in {} of {} records (~{:.2}%).",
+            unique_records.len(),
+            total_records,
+            unique_records.len() as f64 / total_records as f64,
+        ));
+        let counts = found_ids.into_iter().counts();
+        let key_with_max_value = counts.iter().max_by_key(|(_, v)| *v).unwrap();
+        results.push(format!(
+            "Most common record: {} (detected {} targets)",
+            key_with_max_value.0, key_with_max_value.1
+        ));
+        let unique_targets = found_targets.into_iter().unique().collect::<HashSet<_>>();
+        results.push(format!(
+            "Found {} of {} targets (~{:.2}%).",
+            unique_targets.len(),
+            total_targets,
+            unique_targets.len() as f64 / total_targets as f64
+        ));
+        let counts = unique_targets.into_iter().counts();
+        let key_with_max_value = counts.iter().max_by_key(|(_, v)| *v).unwrap();
+        results.push(format!(
+            "The most common target is {} with {} detections.",
+            key_with_max_value.0, key_with_max_value.1
+        ));
+    } else {
+        let mut found_targets: Vec<String> = Vec::new();
+        results.push("No record ID flag provided.".to_string());
+        for r in data {
+            if let SearchOutput::SimpleResult(simple) = r {
+                found_targets.push(simple.search_term.clone());
+            }
+        }
+        let unique_targets = found_targets.into_iter().unique().collect::<HashSet<_>>();
+        results.push(format!(
+            "Found {} of {} targets (~{:.2}%).",
+            unique_targets.len(),
+            total_targets,
+            unique_targets.len() as f64 / total_targets as f64
+        ));
+        let counts = unique_targets.into_iter().counts();
+        let key_with_max_value = counts.iter().max_by_key(|(_, v)| *v).unwrap();
+        results.push(format!(
+            "The most common target is {} with {} detections.",
+            key_with_max_value.0, key_with_max_value.1
+        ));
+    }
+    results
 }
 
 //////////////////////////////////////////////////////

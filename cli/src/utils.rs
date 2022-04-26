@@ -61,6 +61,10 @@ pub enum Commands {
         /// Output format (JSONL, CSV).
         #[clap(long)]
         format: drug_core::OutputFormat,
+
+        /// Analyze output
+        #[clap(long)]
+        analyze: bool,
     },
     /// Execute mode. Useful for automation/scripts.
     #[clap(arg_required_else_help = true)]
@@ -100,6 +104,10 @@ pub enum Commands {
         /// Output format (JSONL, CSV).
         #[clap(long)]
         format: drug_core::OutputFormat,
+
+        /// Analyze output
+        #[clap(long)]
+        analyze: bool,
     },
 }
 
@@ -115,6 +123,7 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             max_edits,
             threshold,
             format,
+            analyze,
         } => {
             let ssi = SsInput {
                 fpath: file,
@@ -125,6 +134,7 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
                 max_edits,
                 threshold,
                 format,
+                analyze,
             };
             run_simple_searcher(ssi)?;
         }
@@ -138,6 +148,7 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             max_edits,
             threshold,
             format,
+            analyze,
         } => {
             let dsi = DsInput {
                 fpath: file,
@@ -149,6 +160,7 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
                 max_edits,
                 threshold,
                 format,
+                analyze,
             };
             run_drug_searcher(dsi)?;
         }
@@ -275,6 +287,10 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
     let user_format =
         drug_core::OutputFormat::from_str(format_options[user_format_choice]).unwrap();
 
+    let analyze = Confirm::new()
+        .with_prompt("Would you like to analyze the results?")
+        .interact()
+        .unwrap();
     let ssi = SsInput {
         fpath: file_path,
         target_column: target_col,
@@ -284,6 +300,7 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
         max_edits,
         threshold,
         format: user_format,
+        analyze,
     };
     run_simple_searcher(ssi)?;
     Ok(())
@@ -362,6 +379,10 @@ fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
     let user_format =
         drug_core::OutputFormat::from_str(format_options[user_format_choice]).unwrap();
 
+    let analyze = Confirm::new()
+        .with_prompt("Would you like to analyze the results?")
+        .interact()
+        .unwrap();
     let dsi = DsInput {
         fpath: file_path,
         target_column: target_col,
@@ -372,6 +393,7 @@ fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
         max_edits,
         threshold,
         format: user_format,
+        analyze,
     };
     run_drug_searcher(dsi)?;
     Ok(())
@@ -386,10 +408,16 @@ struct SsInput {
     max_edits: Option<i32>,
     threshold: Option<f64>,
     format: drug_core::OutputFormat,
+    analyze: bool,
 }
 
 fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
     validate_options(ssi.max_edits, ssi.threshold);
+
+    println!("Welcome to the UK-IPOP Drug Extraction tool.");
+    println!("------------------------------------------");
+    println!("Extracting targets from {}", ssi.fpath);
+
     if !ssi.search_words.contains('|') {
         println!("Please enter your search words separated by a `|` symbol");
         exit(1);
@@ -425,6 +453,7 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
         None,
     );
     let bar = initialize_progress(line_count as u64);
+    let mut results: Vec<drug_core::SearchOutput> = Vec::new();
     for result in rdr.records() {
         let record = result?;
         if record.is_empty() {
@@ -440,13 +469,29 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
         if text.is_empty() {
             continue;
         }
-        let res = searcher.scan(text, record_id);
-        let output_list = drug_core::format(res, ssi.format);
+        let mut res = searcher.scan(text, record_id);
+        let output_list = drug_core::format(res.clone(), ssi.format);
         write_output(output_list, &mut out_file);
+        if ssi.analyze {
+            results.append(&mut res);
+        }
         bar.inc(1);
     }
     bar.finish();
-
+    // analyze
+    if ssi.analyze {
+        let analysis = drug_core::analyze(
+            results,
+            search_words.len() as i32,
+            line_count as i32,
+            false,
+            has_id,
+        );
+        for a in analysis {
+            println!("{}", a);
+        }
+    }
+    println!("Done!");
     Ok(())
 }
 
@@ -460,9 +505,14 @@ struct DsInput {
     max_edits: Option<i32>,
     threshold: Option<f64>,
     format: drug_core::OutputFormat,
+    analyze: bool,
 }
 fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
     validate_options(dsi.max_edits, dsi.threshold);
+
+    println!("Welcome to the UK-IPOP Drug Extraction tool.");
+    println!("------------------------------------------");
+    println!("Extracting drugs from {}", dsi.fpath);
 
     let drugs = drug_core::fetch_drugs(&dsi.rx_class_id, &dsi.rx_class_relasource);
     let file = File::open(&dsi.fpath)?;
@@ -488,9 +538,11 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
         dsi.max_edits,
         dsi.threshold,
         None,
-        Some(drugs),
+        Some(drugs.clone()),
     );
     let bar = initialize_progress(line_count as u64);
+
+    let mut results: Vec<drug_core::SearchOutput> = Vec::new();
     for result in rdr.records() {
         let record = result?;
         if record.is_empty() {
@@ -506,13 +558,25 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
         if text.is_empty() {
             continue;
         }
-        let res = searcher.scan(text, record_id);
-        let output_list = drug_core::format(res, dsi.format);
+        let mut res = searcher.scan(text, record_id);
+        let output_list = drug_core::format(res.clone(), dsi.format);
         write_output(output_list, &mut out_file);
+        if dsi.analyze {
+            results.append(&mut res);
+        }
+
         bar.inc(1);
     }
     bar.finish();
-
+    // analyze
+    if dsi.analyze {
+        let analysis =
+            drug_core::analyze(results, drugs.len() as i32, line_count as i32, true, has_id);
+        for a in analysis {
+            println!("{}", a);
+        }
+    }
+    println!("Done!");
     Ok(())
 }
 
