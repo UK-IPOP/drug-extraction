@@ -171,9 +171,9 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
 /// This function is used to validate the input parameters.
 fn validate_options(max_edits: Option<i32>, threshold: Option<f64>) {
     if threshold.is_none() && max_edits.is_none() {
-        let confirmed = Confirm::new().with_prompt("You have not specified a threshold or max edits. This will return ALL items in ALL records. Are you sure you want to continue?").interact().unwrap();
-        if !confirmed {
-            exit(1);
+        let confirmed = Confirm::new().with_prompt("You have not specified a threshold or max edits. This will return ALL items in ALL records. Are you sure you want to continue?").interact();
+        if confirmed.is_err() && !confirmed.unwrap() {
+            exit(0);
         } else {
             println!("Continuing...");
         }
@@ -221,12 +221,9 @@ fn run_interactive() -> Result<(), Box<dyn Error>> {
 fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
     let file_path: String = Input::new()
         .with_prompt("Please enter the path to your data file")
-        .interact_text()
-        .unwrap();
+        .interact_text()?;
     let mut columns = String::new();
-    BufReader::new(File::open(&file_path).unwrap())
-        .read_line(&mut columns)
-        .unwrap();
+    BufReader::new(File::open(&file_path)?).read_line(&mut columns)?;
     let column_choices = columns.split(',').collect::<Vec<&str>>();
     let id_col_select = Select::with_theme(&ColorfulTheme::default())
         .items(&column_choices)
@@ -234,31 +231,27 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
             "Please select your ID column or press `Esc` or `q` to move on with NO ID specified",
         )
         .default(0)
-        .interact_opt()
-        .unwrap();
+        .interact_opt()?;
     let user_id_col = id_col_select.map(|id_sel| column_choices[id_sel].to_string());
     let target_col_select = Select::with_theme(&ColorfulTheme::default())
         .items(&column_choices)
         .with_prompt("Please select your target text column (required)")
         .default(0)
-        .interact()
-        .unwrap();
+        .interact()?;
     let target_col = column_choices[target_col_select].to_string();
     let algorithm_options = drug_core::Algorithm::options();
     let user_algo = Select::with_theme(&ColorfulTheme::default())
-        .items(&algorithm_options)
+        .items(algorithm_options)
         .with_prompt("Please select your algorithm")
         .default(0)
-        .interact()
-        .unwrap();
-    let algorithm = drug_core::Algorithm::from_str(&algorithm_options[user_algo]).unwrap();
+        .interact()?;
+    let algorithm = drug_core::Algorithm::from_str(algorithm_options[user_algo])?;
     let max_edits = if algorithm.is_edits() {
         let max_edits_select = Select::with_theme(&ColorfulTheme::default())
             .items(&["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
             .with_prompt("Please select the maximum number of edits allowed")
             .default(0)
-            .interact()
-            .unwrap();
+            .interact()?;
         Some(max_edits_select as i32)
     } else {
         None
@@ -266,8 +259,7 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
     let threshold = if !algorithm.is_edits() {
         let threshold_select: f64 = Input::new()
             .with_prompt("Please enter the threshold (0.0 - 1.0)")
-            .interact()
-            .unwrap();
+            .interact()?;
         Some(threshold_select)
     } else {
         None
@@ -277,20 +269,16 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
         .items(&format_options)
         .with_prompt("Please enter the output format you would prefer")
         .default(0)
-        .interact()
-        .unwrap();
+        .interact()?;
     let user_search_words: String = Input::new()
         .with_prompt("Please enter your search words separated by a `|` symbol")
-        .interact()
-        .unwrap();
+        .interact()?;
 
-    let user_format =
-        drug_core::OutputFormat::from_str(format_options[user_format_choice]).unwrap();
+    let user_format = drug_core::OutputFormat::from_str(format_options[user_format_choice])?;
 
     let analyze = Confirm::new()
         .with_prompt("Would you like to analyze the results?")
-        .interact()
-        .unwrap();
+        .interact()?;
     let ssi = SsInput {
         fpath: file_path,
         target_column: target_col,
@@ -309,12 +297,9 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
 fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
     let file_path: String = Input::new()
         .with_prompt("Please enter the path to your data file")
-        .interact_text()
-        .unwrap();
+        .interact_text()?;
     let mut columns = String::new();
-    BufReader::new(File::open(&file_path).unwrap())
-        .read_line(&mut columns)
-        .unwrap();
+    BufReader::new(File::open(&file_path)?).read_line(&mut columns)?;
     let column_choices = columns.split(',').collect::<Vec<&str>>();
     let id_col_select = Select::with_theme(&ColorfulTheme::default())
         .items(&column_choices)
@@ -322,31 +307,27 @@ fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
             "Please select your ID column or press `Esc` or `q` to move on with NO ID specified",
         )
         .default(0)
-        .interact_opt()
-        .unwrap();
+        .interact_opt()?;
     let user_id_col = id_col_select.map(|id_sel| column_choices[id_sel].to_string());
     let target_col_select = Select::with_theme(&ColorfulTheme::default())
         .items(&column_choices)
         .with_prompt("Please select your target text column (required)")
         .default(0)
-        .interact()
-        .unwrap();
+        .interact()?;
     let target_col = column_choices[target_col_select].to_string();
     let algorithm_options = drug_core::Algorithm::options();
     let user_algo = Select::with_theme(&ColorfulTheme::default())
-        .items(&algorithm_options)
+        .items(algorithm_options)
         .with_prompt("Please select your algorithm")
         .default(0)
-        .interact()
-        .unwrap();
-    let algorithm = drug_core::Algorithm::from_str(&algorithm_options[user_algo]).unwrap();
+        .interact()?;
+    let algorithm = drug_core::Algorithm::from_str(algorithm_options[user_algo])?;
     let max_edits = if algorithm.is_edits() {
         let max_edits_select = Select::with_theme(&ColorfulTheme::default())
             .items(&["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
             .with_prompt("Please select the maximum number of edits allowed")
             .default(0)
-            .interact()
-            .unwrap();
+            .interact()?;
         Some(max_edits_select as i32)
     } else {
         None
@@ -354,35 +335,29 @@ fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
     let threshold = if !algorithm.is_edits() {
         let threshold_select: f64 = Input::new()
             .with_prompt("Please enter the threshold (0.0 - 1.0)")
-            .interact()
-            .unwrap();
+            .interact()?;
         Some(threshold_select)
     } else {
         None
     };
     let user_rx_id = Input::new()
         .with_prompt("Please enter your target RxNorm ID")
-        .interact_text()
-        .unwrap();
+        .interact_text()?;
     let user_rx_relasource = Input::new()
         .with_prompt("Please enter your RxNorm relationship source")
-        .interact_text()
-        .unwrap();
+        .interact_text()?;
     let format_options = vec!["JSONL", "CSV"];
     let user_format_choice = Select::with_theme(&ColorfulTheme::default())
         .items(&format_options)
         .with_prompt("Please enter the output format you would prefer")
         .default(0)
-        .interact()
-        .unwrap();
+        .interact()?;
 
-    let user_format =
-        drug_core::OutputFormat::from_str(format_options[user_format_choice]).unwrap();
+    let user_format = drug_core::OutputFormat::from_str(format_options[user_format_choice])?;
 
     let analyze = Confirm::new()
         .with_prompt("Would you like to analyze the results?")
-        .interact()
-        .unwrap();
+        .interact()?;
     let dsi = DsInput {
         fpath: file_path,
         target_column: target_col,
@@ -432,18 +407,20 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
     let headers = rdr.headers()?.clone();
 
     let distance = drug_core::initialize_distance(ssi.algorithm);
-    let target_col_index = get_header_index(&headers, ssi.target_column).unwrap();
+    let target_col_index =
+        get_header_index(&headers, ssi.target_column).expect("could not find target column");
     let has_id = ssi.id_column.is_some();
     let id_col_index = if has_id {
-        Some(get_header_index(&headers, ssi.id_column.unwrap()).unwrap())
+        Some(
+            get_header_index(&headers, ssi.id_column.expect("no id column found"))
+                .expect("header index inaccessible"),
+        )
     } else {
         None
     };
-    let mut out_file = initialize_output_file(ssi.format, false);
+    let mut out_file = initialize_output_file(ssi.format, false)?;
 
-    let line_count = BufReader::new(File::open(&ssi.fpath).unwrap())
-        .lines()
-        .count();
+    let line_count = BufReader::new(File::open(&ssi.fpath)?).lines().count();
     let searcher = drug_core::initialize_searcher(
         ssi.algorithm,
         distance,
@@ -460,18 +437,25 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
             continue;
         }
         let record_id = if has_id {
-            Some(record.get(id_col_index.unwrap()).unwrap().to_string())
+            Some(
+                record
+                    .get(id_col_index.expect("no id column found"))
+                    .expect("couldn't get record id")
+                    .to_string(),
+            )
         } else {
             None
         };
 
-        let text = record.get(target_col_index).unwrap();
+        let text = record
+            .get(target_col_index)
+            .expect("couldn't get record text");
         if text.is_empty() {
             continue;
         }
         let mut res = searcher.scan(text, record_id);
-        let output_list = drug_core::format(res.clone(), ssi.format);
-        write_output(output_list, &mut out_file);
+        let output_list = drug_core::format(res.clone(), ssi.format)?;
+        write_output(output_list, &mut out_file)?;
         if ssi.analyze {
             results.append(&mut res);
         }
@@ -486,7 +470,7 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
             line_count as i32,
             false,
             has_id,
-        );
+        )?;
         for a in analysis {
             println!("{}", a);
         }
@@ -514,24 +498,26 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
     println!("------------------------------------------");
     println!("Extracting drugs from {}", dsi.fpath);
 
-    let drugs = drug_core::fetch_drugs(&dsi.rx_class_id, &dsi.rx_class_relasource);
+    let drugs = drug_core::fetch_drugs(&dsi.rx_class_id, &dsi.rx_class_relasource)?;
     let file = File::open(&dsi.fpath)?;
     let mut rdr = csv::Reader::from_reader(file);
     let headers = rdr.headers()?.clone();
 
     let distance = drug_core::initialize_distance(dsi.algorithm);
-    let target_col_index = get_header_index(&headers, dsi.target_column).unwrap();
+    let target_col_index =
+        get_header_index(&headers, dsi.target_column).expect("could not find target column");
     let has_id = dsi.id_column.is_some();
     let id_col_index = if has_id {
-        Some(get_header_index(&headers, dsi.id_column.unwrap()).unwrap())
+        Some(
+            get_header_index(&headers, dsi.id_column.expect("id column not found"))
+                .expect("header index inaccessible"),
+        )
     } else {
         None
     };
-    let mut out_file = initialize_output_file(dsi.format, true);
+    let mut out_file = initialize_output_file(dsi.format, true)?;
 
-    let line_count = BufReader::new(File::open(&dsi.fpath).unwrap())
-        .lines()
-        .count();
+    let line_count = BufReader::new(File::open(&dsi.fpath)?).lines().count();
     let searcher = drug_core::initialize_searcher(
         dsi.algorithm,
         distance,
@@ -549,18 +535,25 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
             continue;
         }
         let record_id = if has_id {
-            Some(record.get(id_col_index.unwrap()).unwrap().to_string())
+            Some(
+                record
+                    .get(id_col_index.expect("id col inaccessible"))
+                    .expect("record did not contain id")
+                    .to_string(),
+            )
         } else {
             None
         };
 
-        let text = record.get(target_col_index).unwrap();
+        let text = record
+            .get(target_col_index)
+            .expect("couldn't get record text");
         if text.is_empty() {
             continue;
         }
         let mut res = searcher.scan(text, record_id);
-        let output_list = drug_core::format(res.clone(), dsi.format);
-        write_output(output_list, &mut out_file);
+        let output_list = drug_core::format(res.clone(), dsi.format)?;
+        write_output(output_list, &mut out_file)?;
         if dsi.analyze {
             results.append(&mut res);
         }
@@ -571,7 +564,7 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
     // analyze
     if dsi.analyze {
         let analysis =
-            drug_core::analyze(results, drugs.len() as i32, line_count as i32, true, has_id);
+            drug_core::analyze(results, drugs.len() as i32, line_count as i32, true, has_id)?;
         for a in analysis {
             println!("{}", a);
         }
@@ -580,15 +573,19 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn write_output(data: Vec<String>, output_file: &mut File) {
+fn write_output(
+    data: Vec<String>,
+    output_file: &mut File,
+) -> std::result::Result<(), Box<dyn Error>> {
     let mut output = data.iter().peekable();
     while let Some(out) = output.next() {
         // check for last item
         if output.peek().is_some() {
-            output_file.write_all(out.as_bytes()).unwrap();
-            output_file.write_all(b"\n").unwrap();
+            output_file.write_all(out.as_bytes())?;
+            output_file.write_all(b"\n")?;
         }
     }
+    Ok(())
 }
 
 fn get_header_index(headers: &StringRecord, search: String) -> Option<usize> {
@@ -611,20 +608,23 @@ fn initialize_progress(items: u64) -> ProgressBar {
     pb
 }
 
-fn initialize_output_file(format: drug_core::OutputFormat, is_drugs: bool) -> fs::File {
+fn initialize_output_file(
+    format: drug_core::OutputFormat,
+    is_drugs: bool,
+) -> std::result::Result<fs::File, Box<dyn Error>> {
     let out_file = match format {
-        drug_core::OutputFormat::JSONL => fs::File::create("extracted_drugs.jsonl").unwrap(),
+        drug_core::OutputFormat::JSONL => fs::File::create("extracted_drugs.jsonl")?,
         drug_core::OutputFormat::CSV => {
             let my_headers = if is_drugs {
                 "record_id,algorithm,edits,similarity,matched_term,drug_name,rx_id,group_name,class_id".to_string()
             } else {
                 "record_id,algorithm,edits,similarity,matched_term,search_term".to_string()
             };
-            let mut f = fs::File::create("extracted_drugs.csv").unwrap();
-            f.write_all(my_headers.as_bytes()).unwrap();
-            f.write_all(b"\n").unwrap();
+            let mut f = fs::File::create("extracted_drugs.csv")?;
+            f.write_all(my_headers.as_bytes())?;
+            f.write_all(b"\n")?;
             f
         }
     };
-    out_file
+    Ok(out_file)
 }
