@@ -4,6 +4,8 @@ This is the CLI application that consumes the [Core](https://github.com/UK-IPOP/
 
 Full API documentation can be found on [docs.rs](https://docs.rs/crate/drug-extraction-cli/latest).
 
+![logo](../images/logo.png)
+
 - [Drug Extraction CLI](#drug-extraction-cli)
   - [Description](#description)
   - [Requires](#requires)
@@ -50,6 +52,8 @@ This will install an executable called `extract-drugs`.
 ## Usage
 
 This application has three primary commands: `interactive`, `simple-search`, and `drug-search`. Both of the search commands share similar flags/options while the interactive command guides users through selecting options.
+
+> In any of the commands, you can set `max-edits` to 0 or `threshold` to 1.0 to return only _exact_ matches 🙂
 
 ### Interactive
 
