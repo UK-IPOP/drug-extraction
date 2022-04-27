@@ -189,8 +189,8 @@ fn validate_options(max_edits: Option<i32>, threshold: Option<f64>) {
     }
     if max_edits.is_some() {
         if let Some(me) = max_edits {
-            if !(0..=10).contains(&me) {
-                println!("Max edits must be between 0 and 10");
+            if !(0..=5).contains(&me) {
+                println!("Max edits must be between 0 and 5");
                 exit(1);
             }
         }
