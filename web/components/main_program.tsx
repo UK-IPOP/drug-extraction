@@ -31,8 +31,8 @@ const Execute = (inputData: AlgorithmInput): AlgorithmOutputDense[] => {
     inputData.data.map((row) => {
         const text = row[inputData.targetColumnIndex];
         const id = row[inputData.idColumnIndex];
-        const targets = inputData.searchWords;
-        const searchResults = SearchSimple(text, targets, inputData.maxEdits, id);
+        const targets = inputData.searchWords ? inputData.searchWords : [];
+        const searchResults = SearchSimple(text, targets, inputData.maxEdits ? inputData.maxEdits : 1, id);
         results.push(...searchResults);
     });
     console.log(results[0]);

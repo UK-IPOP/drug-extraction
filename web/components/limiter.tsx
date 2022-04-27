@@ -1,10 +1,10 @@
 import * as React from "react";
-import Select from 'react-select'
+import Select, { SingleValue } from 'react-select'
 
 
 interface LimiterProps {
     algorithm: string,
-    onSelected: (newValue: { value: number, label: number, kind: string }) => void
+    onSelected: (newValue: SingleValue<{ value: number, label: number, kind: string }>) => void
 };
 
 
@@ -39,6 +39,8 @@ const Limiter = ({ algorithm, onSelected }: LimiterProps): JSX.Element => {
                 <Select options={options} isSearchable={true} placeholder="Threshold" onChange={onSelected} />
             </div>
         )
+    } else {
+        return <div>Error</div>
     }
 
 }

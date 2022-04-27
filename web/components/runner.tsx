@@ -4,17 +4,16 @@ import * as React from "react";
 import { AlgorithmInput, AlgorithmOutputDense } from "./types";
 import Execute from "./main_program";
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 interface RunnerProps {
     inputData: AlgorithmInput;
 };
 
-const run_program = async (inputData: AlgorithmInput): Promise<AlgorithmOutputDense[]> => {
+const run_program = async (inputData: AlgorithmInput) => {
     // this is where we could insert wasm code
     // but for now we'll just sleep for a bit
     await sleep(5000);
-
     return;
 };
 

@@ -13,20 +13,22 @@ const Phase1Component = ({ dataHandler }: Phase1Props): JSX.Element => {
     const [headerRow, setHeaderRow] = React.useState<string[]>([]);
 
     const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = () => {
-            const text = reader.result as string;
-            text.split('\n').map((line, i) => {
-                if (i == 0) {
-                    setHeaderRow(line.split(','));
-                } else {
-                    const row = line.split(',');
-                    data.push(row);
-                }
-            });
-        };
-        reader.readAsText(file);
+        if (e.target.files) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                const text = reader.result as string;
+                text.split('\n').map((line, i) => {
+                    if (i == 0) {
+                        setHeaderRow(line.split(','));
+                    } else {
+                        const row = line.split(',');
+                        data.push(row);
+                    }
+                });
+            };
+            reader.readAsText(file);
+        }
     }
 
     return (

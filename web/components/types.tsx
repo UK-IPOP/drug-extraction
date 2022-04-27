@@ -43,7 +43,7 @@ interface AlgorithmOutputDense {
     matchedTerm: string,
 }
 
-export {
+export type {
     Drug,
     Phase2Options,
     Phase3Options,

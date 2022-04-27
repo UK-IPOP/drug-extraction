@@ -7,7 +7,7 @@ import Runner from './runner';
 import { Phase2Options, Drug, Phase3Options } from './types';
 
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 
 const Interactive = (): JSX.Element => {
@@ -56,10 +56,10 @@ const Interactive = (): JSX.Element => {
     };
 
     const handlePhase3 = (data: Phase3Options) => {
-        setMaxEdits(data.maxEdits);
-        setMinThresh(data.minThresh);
-        setSearchWords(data.searchWords);
-        setDrugList(data.drugList);
+        setMaxEdits(data.maxEdits ? data.maxEdits : 0);
+        setMinThresh(data.minThresh ? data.minThresh : 0.9);
+        setSearchWords(data.searchWords ? data.searchWords : []);
+        setDrugList(data.drugList ? data.drugList : []);
         setPhase3(false);
         setPrepPhase(true);
         setProgress(90);
@@ -93,7 +93,7 @@ const Interactive = (): JSX.Element => {
     if (prepPhase) {
         return (
             <div>
-                // TODO: CLEANUP this messaging
+                {/* // TODO: CLEANUP this messaging */}
                 <Progress status="primary" value={progress} />
 
                 <h1>Options</h1>
@@ -105,16 +105,16 @@ const Interactive = (): JSX.Element => {
                 <p>You chose {outputFormat} as your output format</p>
                 <p>You chose {analyze ? "Analyze" : "Don't Analyze"}</p>
 
-                // modify this based on algorithm to show only edits or thresh
+                {/* // modify this based on algorithm to show only edits or thresh */}
                 <p>You chose {maxEdits} as your max edits</p>
                 <p>You chose {minThresh} as your min threshold</p>
 
-                // again should only show one based on mode
-                // for search words handle grammar if only one submitted (word vs words)
+                {/* // again should only show one based on mode */}
+                {/* // for search words handle grammar if only one submitted (word vs words) */}
                 <p>You chose {searchWords.length ? searchWords.join(', ') : "None"} as your search word(s)</p>
                 <p>You chose {drugList.length ? drugList.map((x) => x.name).join(", ") : "None"} as your drugs</p>
 
-                // these should be next to each other
+                {/* // these should be next to each other */}
                 <Button onClick={() => { setPrepPhase(false); setPhase1(true) }}>Restart</Button>
                 <Button onClick={() => {
                     setProgress(100);
@@ -127,7 +127,6 @@ const Interactive = (): JSX.Element => {
         )
     }
     if (runPhase) {
-
         return (
             <div>
                 <Runner inputData={
@@ -149,6 +148,12 @@ const Interactive = (): JSX.Element => {
             </div>
         )
     }
+    return (
+        <div>
+            <h1>Interactive</h1>
+            <p>This is an interactive version of the program.  You can upload a file, and then choose the options to run the program.</p>
+        </div>
+    )
 };
 
 export default Interactive;

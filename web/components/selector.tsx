@@ -1,5 +1,5 @@
 import * as React from "react";
-import Select from 'react-select'
+import Select, { SingleValue } from 'react-select'
 
 
 // https://react-select.com/props
@@ -8,7 +8,7 @@ interface SelectorProps {
     optionsList: string[],
     placeholder: string,
     clearable?: boolean,
-    onSelected: (newValue: { value: number, label: string }) => void
+    onSelected: (newValue: SingleValue<{ value: number, label: string }>) => void
 };
 
 

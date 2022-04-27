@@ -1,5 +1,6 @@
 import { Button, Switch } from "@nextui-org/react";
 import * as React from "react";
+import { SingleValue } from "react-select";
 import Selector from "../selector";
 import { Phase2Options } from "../types";
 
@@ -16,27 +17,26 @@ interface Phase2Props {
 const Phase2Component = ({ headerOptions, dataHandler }: Phase2Props): JSX.Element => {
     const [idColumn, setIdColumn] = React.useState<number>(-1);
     const [targetCol, setTargetCol] = React.useState<number>(-1);
-    const [algorithm, setAlgorithm] = React.useState<string>('Levenshtein');
     const [searchType, setSearchType] = React.useState<string>('simple');
     const [outputFormat, setOutputFormat] = React.useState<string>('dense');
     const [analyze, setAnalyze] = React.useState<boolean>(false);
 
-    const handleOutputFormatSelect = (e: { value: number; label: string }) => {
-        setOutputFormat(e.label);
+    const handleOutputFormatSelect = (e: SingleValue<{ value: number; label: string }>) => {
+        e ? setOutputFormat(e.label) : null;
     };
-    const handleIDSelect = (e: { value: number; label: string }) => {
+    const handleIDSelect = (e: SingleValue<{ value: number; label: string }>) => {
         if (e) {
             setIdColumn(e.value);
         } else {
-            setIdColumn(null);
+            setIdColumn(-1);
         }
     };
-    const handleTargetSelect = (e: { value: number; label: string }) => {
-        setTargetCol(e.value);
+    const handleTargetSelect = (e: SingleValue<{ value: number; label: string }>) => {
+        if (e) {
+            setTargetCol(e.value);
+        }
     };
-    const handleAlgorithmSelect = (e: { value: number; label: string }) => {
-        setAlgorithm(e.label);
-    };
+
     return (
         <div>
             <h1>Phase 2</h1>
@@ -56,19 +56,11 @@ const Phase2Component = ({ headerOptions, dataHandler }: Phase2Props): JSX.Eleme
                 onSelected={handleTargetSelect}
             />
 
-            <p>More algorithms coming soon... ('Damerau', 'OSA', 'JaroWinkler', 'SorensenDice')</p>
-            <label>Algorithm: (recommended Levenshtein)</label>
-            <Selector
-                optionsList={['Levenshtein',]}
-                placeholder="Select an Algorithm"
-                onSelected={handleAlgorithmSelect}
-            />
-
             <label>Search Type: (simple/custom or RxNorm-based Drug)</label>
             <Selector
                 optionsList={['simple', 'drug']}
                 placeholder="Select a Search Type"
-                onSelected={(e) => setSearchType(e.label)}
+                onSelected={(e) => e ? setSearchType(e.label) : null}
             />
 
 
@@ -86,7 +78,7 @@ const Phase2Component = ({ headerOptions, dataHandler }: Phase2Props): JSX.Eleme
                 dataHandler({
                     idColumnIndex: idColumn,
                     targetColumnIndex: targetCol,
-                    algorithm: algorithm,
+                    algorithm: "Levenshtein",
                     searchType: searchType,
                     outputFormat: outputFormat,
                     analyze: analyze
