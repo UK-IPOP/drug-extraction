@@ -17,13 +17,12 @@ const Runner = ({ inputData }: RunnerProps): JSX.Element => {
     console.log("running execute")
     const results = Execute(inputData)
 
-    console.log("results", results.length);
-
-    postFile(results).then(json => {
-        console.log(json);
+    postFile(results).then(res => {
+        console.log(res)
         setCompleted(true);
-    });
+    })
 
+    console.log("results", results.length);
 
     if (completed) {
         return (
@@ -44,14 +43,14 @@ const Runner = ({ inputData }: RunnerProps): JSX.Element => {
                         borderWeight="light"
                         rounded
                         onClick={() => {
-                            fetch("/api/extract")
+                            fetch("/api/results")
                                 .then(res => res.blob())
                                 .then(blob => {
                                     // hacky but i don't care
                                     const url = window.URL.createObjectURL(blob);
                                     const a = document.createElement("a");
                                     a.href = url;
-                                    a.download = "extracted_drugs.csv";
+                                    a.download = "results.csv";
                                     a.click();
                                 })
                                 .finally(() => {
@@ -74,18 +73,13 @@ const Runner = ({ inputData }: RunnerProps): JSX.Element => {
 }
 
 const postFile = async (data: AlgorithmOutputSimple[] | AlgorithmOutputDrug[]) => {
-    const response = await fetch("/api/dump-to-file", {
+    await fetch("/api/extract", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
     });
-    if (response.status !== 201) {
-        throw new Error("Failed to post file");
-    }
-    const json = await response.json();
-    return json;
 }
 
 export default Runner;

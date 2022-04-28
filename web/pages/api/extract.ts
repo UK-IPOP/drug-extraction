@@ -1,13 +1,20 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-import fs from 'fs';
 import path from 'path';
+import fs from 'fs';
 
-export default function handler(_: NextApiRequest, res: NextApiResponse) {
-	res.setHeader('Content-Type', 'text/csv');
-	res.setHeader('Content-Disposition', 'attachment; filename=extracted_drugs.csv');
-	const filePath = path.resolve(process.cwd(), 'results/extracted_drugs.csv');
-	const fileBuffer = fs.readFileSync(filePath, { encoding: 'utf8' });
-	res.send(fileBuffer);
+import { AlgorithmOutputDrug, AlgorithmOutputSimple } from '../../components/types';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+	if (req.method === 'POST') {
+		const headers = Object.keys(req.body[0]);
+		const csvString = [
+			[headers.join(',')],
+			...req.body.map((row: AlgorithmOutputSimple[] | AlgorithmOutputDrug[]) =>
+				[...Object.values(row)].join(',')
+			),
+		].join('\n');
+		res.send(csvString);
+		return;
+	}
 }
