@@ -3,7 +3,6 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-import StarIcon from '@mui/icons-material/Star';
 
 const EndPage: NextPage = () => {
     return (
@@ -18,7 +17,7 @@ const EndPage: NextPage = () => {
                 <Text h2>Program finished.</Text>
                 <Text>
                     Thank you.
-                    If you enjoyed this, please consider giving us a star <StarIcon /> on
+                    If you enjoyed this, please consider giving us a star on
                     <a href="https://github.com/UK-IPOP/drug-extraction"> GitHub</a>.
                 </Text>
                 <Link href="/" icon>
