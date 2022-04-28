@@ -7,7 +7,7 @@ import csv
 # this section is a `simple-search`` example
 # command
 command_list = [
-    "./target/release/extract-drugs",
+    "extract-drugs",
     "simple-search",
     "./cli/data/records.csv",
     "--algorithm",

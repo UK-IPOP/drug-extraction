@@ -9,7 +9,7 @@ import os
 # this section is a `simple-search`` example
 # command
 command_list1 = [
-    "./target/release/extract-drugs",
+    "extract-drugs",
     "simple-search",
     "./cli/data/records.csv",
     "--algorithm",
@@ -32,7 +32,7 @@ shutil.copy("./extracted_drugs.csv", "./extracted_drugs_col1.csv")
 
 # command
 command_list2 = [
-    "./target/release/extract-drugs",
+    "extract-drugs",
     "simple-search",
     "./cli/data/records.csv",
     "--algorithm",
