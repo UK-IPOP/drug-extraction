@@ -1,9 +1,10 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
-import Link from 'next/link'
 import styles from '../styles/Home.module.css'
 import { Spacer, Text } from '@nextui-org/react'
+import Button from '@mui/material/Button';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 
 const Home: NextPage = () => {
   return (
@@ -22,7 +23,7 @@ const Home: NextPage = () => {
         <Image src="/images/logo.png" alt="Logo" height="300" width="300" objectFit="cover" />
         <Spacer />
         <div className={styles.title}>
-          <Link href="/interactive" >Get Started</Link>
+          <Button endIcon={<RocketLaunchIcon />} color="primary" variant="outlined" size="large" href="/interactive">Get Started</Button>
         </div>
         <Text className={styles.description}>
           This is a website to search for and extract drugs from text records.

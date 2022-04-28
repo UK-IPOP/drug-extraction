@@ -1,6 +1,7 @@
-import { Button, Card, FormElement, Grid, Input, Link, Spacer, Text } from "@nextui-org/react";
+import { Card, FormElement, Grid, Input, Link, Spacer, Text } from "@nextui-org/react";
 import * as React from "react";
 import { Drug } from "./types";
+import Button from '@mui/material/Button';
 
 interface DrugInputProps {
     submitted: boolean;
@@ -56,7 +57,7 @@ const DrugInput = ({ submitted, drugHandler }: DrugInputProps): JSX.Element => {
             <Spacer y={2} />
             <Input color="primary" readOnly={disabled} label={label2} placeholder="RxClass RelaSource" onChange={handleRelaSource} helperText="RelaSource from RxClass (usually either ATC or MESH)" />
             <Spacer y={2} />
-            {!submitted && <Button bordered color="success" onClick={handleSubmit}>Fetch Drugs</Button>}
+            {!submitted && <Button variant="outlined" color="success" onClick={handleSubmit}>Fetch Drugs</Button>}
         </Card>
     )
 }

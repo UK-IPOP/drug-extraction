@@ -1,5 +1,7 @@
-import { Button, Card, FormElement, Spacer, Textarea } from "@nextui-org/react";
+import { Card, FormElement, Spacer, Textarea } from "@nextui-org/react";
 import * as React from "react";
+import CheckIcon from '@mui/icons-material/Check';
+import Button from '@mui/material/Button'
 
 interface SimpleInputProps {
     submitted: boolean;
@@ -40,7 +42,7 @@ const SimpleInput = ({ submitted, wordHandler }: SimpleInputProps): JSX.Element 
             />
             <Spacer y={2} />
             {!submitted &&
-                <Button bordered color="success" onClick={handleSubmit}>Accept Search Words</Button>
+                <Button variant="outlined" color="success" onClick={handleSubmit}>Accept Search Words</Button>
             }
         </Card >
     )

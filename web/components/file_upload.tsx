@@ -13,10 +13,12 @@ const DataFileUpload = ({ onFileSubmit }: FileProps): JSX.Element => {
         <Grid>
             <Grid>
                 <Button
-                    variant="contained"
+                    variant="outlined"
                     component="label"
+                    endIcon={<CloudUpload />}
+                    size="large"
                 >
-                    Upload File <Spacer /><CloudUpload />
+                    Upload File
                     <input
                         type="file"
                         accept=".csv"
@@ -28,7 +30,7 @@ const DataFileUpload = ({ onFileSubmit }: FileProps): JSX.Element => {
             <Grid>
 
             </Grid>
-        </Grid>)
+        </Grid >)
 }
 
 

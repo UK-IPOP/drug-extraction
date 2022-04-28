@@ -6,7 +6,7 @@ const levenshtein = require("fast-levenshtein");
 const SearchSimple = (text: string, targets: string[], id: string, maxEdits?: number, threshold?: number): AlgorithmOutputSimple[] => {
     const results: AlgorithmOutputSimple[] = [];
     targets.forEach((target) => {
-        text.split(" ").forEach((word) => {
+        text.replace(/[&\/\\#^+()$~%.'":*?<>{}!@]/g, '').split(" ").forEach((word) => {
             const cleanWord = word.toLocaleUpperCase().trim();
             const cleanTarget = target.toLocaleUpperCase().trim();
             const distance = levenshtein.get(cleanWord, cleanTarget);
@@ -42,7 +42,7 @@ const SearchDrug = (text: string, targets: Drug[], id: string, maxEdits?: number
     targets.forEach((target) => {
         const drugNames = target.name.split("/").map((name) => name.trim().toLocaleUpperCase());
         drugNames.forEach((drugName) => {
-            text.split(" ").forEach((word) => {
+            text.replace(/[&\/\\#^+()$~%.'":*?<>{}!@]/g, '').split(" ").forEach((word) => {
                 const cleanWord = word.toLocaleUpperCase().trim();
                 const distance = levenshtein.get(cleanWord, drugName);
                 const similarity = 1 - (distance / (Math.max(cleanWord.length, drugName.length)));
@@ -51,6 +51,7 @@ const SearchDrug = (text: string, targets: Drug[], id: string, maxEdits?: number
                         recordId: id,
                         algorithm: "LEVENSHTEIN",
                         edits: distance,
+                        similarity: similarity,
                         drugName: drugName,
                         drugRxID: target.rxID,
                         drugClassID: target.classID,
@@ -62,6 +63,7 @@ const SearchDrug = (text: string, targets: Drug[], id: string, maxEdits?: number
                         recordId: id,
                         algorithm: "LEVENSHTEIN",
                         edits: distance,
+                        similarity: similarity,
                         drugName: drugName,
                         drugRxID: target.rxID,
                         drugClassID: target.classID,

@@ -17,4 +17,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		res.send(csvString);
 		return;
 	}
+	if (req.method === 'GET') {
+		const filePath = path.join(process.cwd(), 'results.csv');
+		const file = fs.readFileSync(filePath);
+		res.setHeader('Content-Type', 'text/csv');
+		res.setHeader('Content-Disposition', 'attachment; filename=results.csv');
+		res.send(file);
+		return;
+	}
 }
