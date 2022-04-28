@@ -3,8 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import fs from 'fs';
 import path from 'path';
-
-import { stringify } from 'csv-stringify';
+import { AlgorithmOutputDrug, AlgorithmOutputSimple } from '../../components/types';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	if (req.method !== 'POST') {
@@ -13,17 +12,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	}
 	const filePath = path.resolve(process.cwd(), 'results/extracted_drugs.csv');
 
-	stringify(
-		req.body,
-		{
-			header: true,
-		},
-		function (err, output) {
-			if (err) {
-				res.status(500).json({ error: err });
-			}
-			fs.writeFileSync(filePath, output);
-		}
-	);
+	if ('drugName' in Object.keys(req.body[0])) {
+		console.log('drugRelated');
+	} else {
+		console.log('drugNotRelated');
+		const headers = Object.keys(req.body[0]);
+		const csvString = [
+			[headers.join(',')],
+			...req.body.map((row: AlgorithmOutputSimple[] | AlgorithmOutputDrug[]) =>
+				[...Object.values(row)].join(',')
+			),
+		].join('\n');
+		const csvWrite = fs.promises.writeFile(filePath, csvString, { encoding: 'utf8' });
+		await csvWrite;
+	}
 	res.status(201).json({ success: true, message: 'File written' });
 }
