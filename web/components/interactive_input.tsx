@@ -1,11 +1,11 @@
-import { Button, Progress, Switch } from '@nextui-org/react';
+import { Button, Col, Container, Grid, Link, Progress, Row, Spacer, Switch } from '@nextui-org/react';
 import React from 'react';
 import Phase1Component from './phases/phase1';
 import Phase2Component from './phases/phase2';
 import Phase3Component from './phases/phase3';
 import Runner from './runner';
 import { Phase2Options, Drug, Phase3Options } from './types';
-
+import { Text } from "@nextui-org/react";
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -16,12 +16,11 @@ const Interactive = (): JSX.Element => {
 
     const [idColumnIndex, setIdColumnIndex] = React.useState<number>(-1);
     const [targetColumnIndex, setTargetColumnIndex] = React.useState<number>(-1);
-    const [algorithm, setAlgorithm] = React.useState<string>('Levenshtein');
-    const [searchType, setSearchType] = React.useState<string>('simple');
-    const [outputFormat, setOutputFormat] = React.useState<string>('CSV');
-    const [analyze, setAnalyze] = React.useState<boolean>(false);
 
-    const [maxEdits, setMaxEdits] = React.useState<number>(0);
+    const [searchType, setSearchType] = React.useState<string>('simple');
+    const [filterEdits, setFilterEdits] = React.useState<boolean>(true);
+
+    const [maxEdits, setMaxEdits] = React.useState<number>(1);
     const [minThresh, setMinThresh] = React.useState<number>(0.9);
     const [searchWords, setSearchWords] = React.useState<string[]>([]);
     const [drugList, setDrugList] = React.useState<Drug[]>([]);
@@ -34,8 +33,6 @@ const Interactive = (): JSX.Element => {
     const [progress, setProgress] = React.useState<number>(0);
 
     const handleFileData = (data: string[][], headerRow: string[]) => {
-        console.log(data[0]);
-        console.log(headerRow);
         setFileData(data);
         setHeaders(headerRow);
         setPhase1(false);
@@ -46,10 +43,8 @@ const Interactive = (): JSX.Element => {
     const handlePhase2 = (data: Phase2Options) => {
         setIdColumnIndex(data.idColumnIndex);
         setTargetColumnIndex(data.targetColumnIndex);
-        setAlgorithm(data.algorithm);
         setSearchType(data.searchType);
-        setOutputFormat(data.outputFormat);
-        setAnalyze(data.analyze);
+        setFilterEdits(data.filterType == 'edits' ? true : false);
         setPhase2(false);
         setPhase3(true);
         setProgress(60);
@@ -67,76 +62,121 @@ const Interactive = (): JSX.Element => {
 
     if (phase1) {
         return (
-            <div>
-                <Progress status="primary" value={progress} />
-                <Phase1Component dataHandler={handleFileData} />
-            </div>
+            <Grid.Container justify="center">
+                <Grid xs={8} justify="center">
+                    <Progress status="primary" value={progress} />
+                </Grid>
+                <Grid xs={12} justify="center">
+                    <Phase1Component dataHandler={handleFileData} />
+                </Grid>
+            </Grid.Container>
         )
     };
 
     if (phase2) {
+        if (fileData.length == 0) {
+            return (
+                <Grid.Container justify="center">
+                    <Grid xs={8} justify="center">
+                        <Progress status="primary" value={progress} />
+                    </Grid>
+                    <Grid xs={12} justify="center">
+                        <Link icon onClick={() => { setPhase1(true); setPhase2(false) }}><Text color="error">Please go back and input a file</Text></Link>
+                    </Grid>
+                </Grid.Container>
+            )
+        }
         return (
-            <div>
-                <Progress status="primary" value={progress} />
-                <Phase2Component headerOptions={headers} dataHandler={handlePhase2} />
-            </div>
+            <Grid.Container justify="center">
+                <Grid xs={8} justify="center">
+                    <Progress status="primary" value={progress} />
+                </Grid>
+                <Grid xs={12} justify="center">
+                    <Phase2Component headerOptions={headers} dataHandler={handlePhase2} />
+                </Grid>
+            </Grid.Container>
         )
     }
     if (phase3) {
+        if (idColumnIndex < 0 || targetColumnIndex < 0) {
+            return (
+                <Grid.Container justify="center">
+                    <Grid xs={8} justify="center">
+                        <Progress status="primary" value={progress} />
+                    </Grid>
+                    <Grid xs={12} justify="center">
+                        <Link icon onClick={() => { setPhase2(true); setPhase3(false) }}><Text color="error">Please select the columns containing the ID and target values.</Text></Link>
+                    </Grid>
+                </Grid.Container>
+            )
+        }
         return (
-            <div>
-                <Progress status="primary" value={progress} />
-                <Phase3Component algorithm={algorithm} searchType={searchType} dataHandler={handlePhase3} />
-            </div>
+            <Grid.Container justify="center">
+                <Grid xs={8} justify="center">
+                    <Progress status="primary" value={progress} />
+                </Grid>
+                <Grid xs={12} justify="center">
+                    <Phase3Component edits={filterEdits} searchType={searchType} dataHandler={handlePhase3} />
+                </Grid>
+            </Grid.Container>
         )
     }
     if (prepPhase) {
         return (
-            <div>
-                {/* // TODO: CLEANUP this messaging */}
-                <Progress status="primary" value={progress} />
+            <Grid.Container gap={2} justify="center">
+                <Grid xs={8} justify="center">
+                    <Progress status="primary" value={progress} />
+                </Grid>
+                <Grid xs={12} justify="center">
+                    <Text h2>Selected Options</Text>
+                </Grid>
+                <Grid xs={12} justify="center">
+                    <Text>Take this time to verify your options before continuing and running the program.</Text>
+                </Grid>
+                <Grid xs={12} justify="center">
+                    <Text h5>ID Column: {headers[idColumnIndex]}</Text>
+                </Grid>
+                <Grid xs={12} justify="center">
+                    <Text h5>Target Text Column: {headers[targetColumnIndex]}</Text>
+                </Grid>
 
-                <h1>Options</h1>
-
-                <p>You chose: {idColumnIndex > 0 ? headers[idColumnIndex] : "Nothing"} as your index column.</p>
-                <p>You chose {headers[targetColumnIndex]} as your Target Column</p>
-
-                <p>You chose {algorithm} as your algorithm</p>
-                <p>You chose {outputFormat} as your output format</p>
-                <p>You chose {analyze ? "Analyze" : "Don't Analyze"}</p>
-
-                {/* // modify this based on algorithm to show only edits or thresh */}
-                <p>You chose {maxEdits} as your max edits</p>
-                <p>You chose {minThresh} as your min threshold</p>
-
-                {/* // again should only show one based on mode */}
-                {/* // for search words handle grammar if only one submitted (word vs words) */}
-                <p>You chose {searchWords.length ? searchWords.join(', ') : "None"} as your search word(s)</p>
-                <p>You chose {drugList.length ? drugList.map((x) => x.name).join(", ") : "None"} as your drugs</p>
-
-                {/* // these should be next to each other */}
-                <Button onClick={() => { setPrepPhase(false); setPhase1(true) }}>Restart</Button>
-                <Button onClick={() => {
-                    setProgress(100);
-                    sleep(500).then(() => {
-                        setPrepPhase(false);
-                        setRunPhase(true);
-                    });
-                }}>Continue</Button>
-            </div>
+                <Grid xs={12} justify="center">
+                    <Text h5>Search Type: {searchType}</Text>
+                </Grid>
+                <Grid xs={12} justify="center">
+                    <Text h5>Limiter: {filterEdits ? "Edits <= " + maxEdits : "Similarity >=" + minThresh}</Text>
+                </Grid>
+                <Grid xs={12} justify="center">
+                    {searchWords.length > 0 &&
+                        <Text h5>Search Words: {searchWords.join(', ')}</Text>
+                    }
+                    {drugList.length > 0 &&
+                        <Text h5>Drug List: {drugList.map(d => d.name).join(', ')}</Text>
+                    }
+                </Grid>
+                <Grid xs={6} justify="flex-end">
+                    <Button rounded onClick={() => { setPrepPhase(false); setPhase1(true) }}>Restart</Button>
+                </Grid>
+                <Grid xs={6} justify="flex-start">
+                    <Button rounded onClick={() => {
+                        setProgress(100);
+                        sleep(500).then(() => {
+                            setPrepPhase(false);
+                            setRunPhase(true);
+                        });
+                    }}>Run</Button>
+                </Grid>
+            </Grid.Container >
         )
     }
     if (runPhase) {
         return (
-            <div>
+            <Grid.Container justify="center">
                 <Runner inputData={
                     {
                         idColumnIndex,
                         targetColumnIndex,
-                        algorithm,
                         searchType,
-                        outputFormat,
-                        analyze,
                         maxEdits,
                         minThresh,
                         searchWords,
@@ -145,7 +185,7 @@ const Interactive = (): JSX.Element => {
                         data: fileData,
                     }
                 } />
-            </div>
+            </Grid.Container>
         )
     }
     return (

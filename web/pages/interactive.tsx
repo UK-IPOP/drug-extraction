@@ -3,6 +3,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import Interactive from '../components/interactive_input'
 import styles from '../styles/Home.module.css'
+import { Text } from "@nextui-org/react";
 
 const InteractivePage: NextPage = () => {
     return (
@@ -14,6 +15,9 @@ const InteractivePage: NextPage = () => {
             </Head>
 
             <main className={styles.main}>
+                <Text h2 className={styles.title}>
+                    Interactive Input
+                </Text>
                 <Interactive />
             </main>
 

@@ -1,4 +1,4 @@
-import { Button, FormElement, Textarea } from "@nextui-org/react";
+import { Button, Card, FormElement, Spacer, Textarea } from "@nextui-org/react";
 import * as React from "react";
 
 interface SimpleInputProps {
@@ -24,10 +24,25 @@ const SimpleInput = ({ submitted, wordHandler }: SimpleInputProps): JSX.Element 
     }
 
     return (
-        <div>
-            <Textarea disabled={disabled} label={label} placeholder="covid|alcohol|cocaine" initialValue="covid|alcohol|cocaine" onChange={handleText} />
-            {!submitted && <Button onClick={handleSubmit}>Accept Search Words</Button>}
-        </div>
+        <Card>
+            <Textarea
+                readOnly={disabled}
+                label={label}
+                onChange={handleText}
+                bordered
+                borderWeight="light"
+                size="xl"
+                helperText="Separate words with a pipe '|' character (i.e. 'alcohol|heroin')."
+                minRows={2}
+                maxRows={10}
+                fullWidth={true}
+                color="primary"
+            />
+            <Spacer y={2} />
+            {!submitted &&
+                <Button bordered color="success" onClick={handleSubmit}>Accept Search Words</Button>
+            }
+        </Card >
     )
 }
 

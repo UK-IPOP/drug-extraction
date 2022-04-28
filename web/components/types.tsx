@@ -9,8 +9,7 @@ interface Phase2Options {
     targetColumnIndex: number;
     algorithm: string;
     searchType: string;
-    outputFormat: string;
-    analyze: boolean;
+    filterType: string;
 }
 
 interface Phase3Options {
@@ -25,21 +24,30 @@ interface AlgorithmInput {
     headers: string[];
     idColumnIndex: number;
     targetColumnIndex: number;
-    algorithm: string;
     searchType: string;
-    outputFormat: string;
-    analyze: boolean;
     maxEdits?: number;
     minThresh?: number;
     searchWords?: string[];
     drugList?: Drug[];
 }
 
-interface AlgorithmOutputDense {
+interface AlgorithmOutputSimple {
     recordId: string,
     algorithm: string,
     edits: number,
+    similarity: number,
     searchTerm: string,
+    matchedTerm: string,
+}
+
+interface AlgorithmOutputDrug {
+    recordId: string,
+    algorithm: string,
+    edits?: number,
+    similarity?: number,
+    drugName: string,
+    drugRxID: string,
+    drugClassID: string,
     matchedTerm: string,
 }
 
@@ -48,5 +56,6 @@ export type {
     Phase2Options,
     Phase3Options,
     AlgorithmInput,
-    AlgorithmOutputDense,
+    AlgorithmOutputSimple,
+    AlgorithmOutputDrug,
 }

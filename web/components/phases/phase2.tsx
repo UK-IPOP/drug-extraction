@@ -1,8 +1,9 @@
-import { Button, Switch } from "@nextui-org/react";
+import { Button, Card, Col, Container, Grid, Row, Spacer, Text } from "@nextui-org/react";
 import * as React from "react";
 import { SingleValue } from "react-select";
 import Selector from "../selector";
 import { Phase2Options } from "../types";
+import styles from '../../styles/Home.module.css'
 
 interface Phase2Props {
     headerOptions: string[];
@@ -10,20 +11,12 @@ interface Phase2Props {
 
 };
 
-
-// TODO: fill in the placeholders with their corresponding defaults
-
-
 const Phase2Component = ({ headerOptions, dataHandler }: Phase2Props): JSX.Element => {
     const [idColumn, setIdColumn] = React.useState<number>(-1);
     const [targetCol, setTargetCol] = React.useState<number>(-1);
     const [searchType, setSearchType] = React.useState<string>('simple');
-    const [outputFormat, setOutputFormat] = React.useState<string>('dense');
-    const [analyze, setAnalyze] = React.useState<boolean>(false);
+    const [filterType, setFilterType] = React.useState<string>('edits');
 
-    const handleOutputFormatSelect = (e: SingleValue<{ value: number; label: string }>) => {
-        e ? setOutputFormat(e.label) : null;
-    };
     const handleIDSelect = (e: SingleValue<{ value: number; label: string }>) => {
         if (e) {
             setIdColumn(e.value);
@@ -38,53 +31,65 @@ const Phase2Component = ({ headerOptions, dataHandler }: Phase2Props): JSX.Eleme
     };
 
     return (
-        <div>
-            <h1>Phase 2</h1>
+        <Container gap={3} justify="center">
+            <Row justify="center">
+                <Text h2 className={styles.subtitle}>Now select some options for the search process:</Text>
+            </Row>
 
-            <label>ID Column: (leave blank for no ID)</label>
-            <Selector
-                optionsList={headerOptions}
-                placeholder="Select an ID column"
-                onSelected={handleIDSelect}
-                clearable={true}
-            />
+            <Row gap={2} justify="center">
+                <Col span={6}>
+                    <Text h5>ID Column:</Text>
+                    <Selector
+                        optionsList={headerOptions}
+                        placeholder="Select an ID column"
+                        onSelected={handleIDSelect}
+                        clearable={true}
+                    />
+                </Col>
+                <Col span={6}>
+                    <Text h5>Target Column:</Text>
+                    <Selector
+                        optionsList={headerOptions}
+                        placeholder="Select a Target column"
+                        onSelected={handleTargetSelect}
+                    />
+                </Col>
+            </Row>
 
-            <label>Target Column:</label>
-            <Selector
-                optionsList={headerOptions}
-                placeholder="Select a Target column"
-                onSelected={handleTargetSelect}
-            />
+            <Row gap={2} justify="center">
+                <Col span={6}>
+                    <Text h5>Search Type: (simple/custom OR drug/RxNorm)</Text>
+                    <Selector
+                        optionsList={['simple', 'drug']}
+                        placeholder="simple"
+                        onSelected={(e) => e ? setSearchType(e.label) : null}
+                    />
+                </Col>
+                <Col span={6}>
+                    <Text h5>Limiter/Filter Type:</Text>
+                    <Selector
+                        optionsList={['edits', 'similarity']}
+                        placeholder="edits"
+                        onSelected={(e) => e ? setFilterType(e.label) : null}
+                    />
+                </Col>
+            </Row>
 
-            <label>Search Type: (simple/custom or RxNorm-based Drug)</label>
-            <Selector
-                optionsList={['simple', 'drug']}
-                placeholder="Select a Search Type"
-                onSelected={(e) => e ? setSearchType(e.label) : null}
-            />
-
-
-            <label>Output Format: (wide = record-level, dense = counts)</label>
-            <Selector
-                optionsList={['dense', 'wide']}
-                placeholder="Select an Output Format"
-                onSelected={handleOutputFormatSelect}
-            />
-
-            <label>Would you like some brief analytical quips?</label>
-            <Switch onChange={(x) => setAnalyze(x.target.checked)} />
-
-            <Button onClick={() => {
-                dataHandler({
-                    idColumnIndex: idColumn,
-                    targetColumnIndex: targetCol,
-                    algorithm: "Levenshtein",
-                    searchType: searchType,
-                    outputFormat: outputFormat,
-                    analyze: analyze
-                });
-            }}>Continue</Button>
-        </div>
+            <Spacer y={2} />
+            <Row justify="center">
+                <Col offset={2} span={4}>
+                    <Button rounded onClick={() => {
+                        dataHandler({
+                            idColumnIndex: idColumn,
+                            targetColumnIndex: targetCol,
+                            algorithm: "Levenshtein",
+                            searchType: searchType,
+                            filterType: filterType,
+                        });
+                    }}>Continue</Button>
+                </Col>
+            </Row >
+        </Container >
     );
 
 };

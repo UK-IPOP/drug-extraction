@@ -1,46 +1,28 @@
+import { Card, FormElement, Input } from "@nextui-org/react";
 import * as React from "react";
-import Select, { SingleValue } from 'react-select'
-
+import { Text } from "@nextui-org/react";
 
 interface LimiterProps {
-    algorithm: string,
-    onSelected: (newValue: SingleValue<{ value: number, label: number, kind: string }>) => void
+    edits: boolean,
+    onSelected: (newValue: React.ChangeEvent<FormElement>) => void
 };
 
 
-const Limiter = ({ algorithm, onSelected }: LimiterProps): JSX.Element => {
-    if (algorithm == "Levenshtein" || algorithm == "Damerau" || algorithm == "OSA") {
-        const options = [
-            { value: 0, label: 0, kind: "distance" },
-            { value: 1, label: 1, kind: "distance" },
-            { value: 2, label: 2, kind: "distance" },
-            { value: 3, label: 3, kind: "distance" },
-            { value: 4, label: 4, kind: "distance" },
-            { value: 5, label: 5, kind: "distance" },
-        ];
+const Limiter = ({ edits, onSelected }: LimiterProps): JSX.Element => {
+    if (edits) {
         return (
-            <div>
-                <label>Maximum edits:</label>
-                <Select options={options} isSearchable={true} placeholder="Distance" onChange={onSelected} />
-            </div>
-        )
-    } else if (algorithm == "JaroWinkler" || algorithm == "SorensenDice") {
-        const options = [
-            { value: 0.5, label: 0.5, kind: "similarity" },
-            { value: 0.6, label: 0.6, kind: "similarity" },
-            { value: 0.7, label: 0.7, kind: "similarity" },
-            { value: 0.8, label: 0.8, kind: "similarity" },
-            { value: 0.9, label: 0.9, kind: "similarity" },
-            { value: 1.0, label: 1.0, kind: "similarity" },
-        ];
-        return (
-            <div>
-                <label>Minimum similarity:</label>
-                <Select options={options} isSearchable={true} placeholder="Threshold" onChange={onSelected} />
-            </div>
+            <Card>
+                <Text small em>Setting to 0 will return only exact matches</Text>
+                <Input type="number" fullWidth size="lg" underlined color="primary" label="Maximum edits:" labelLeft="Edits:" helperText="Select a value between 0-5" onChange={onSelected} initialValue={"1"} />
+            </Card>
         )
     } else {
-        return <div>Error</div>
+        return (
+            <Card>
+                <Text small em>Setting to 1.0 will return only exact matches</Text>
+                <Input underlined fullWidth size="lg" color="primary" label="Minimum similarity:" labelLeft="Similarity:" type="number" helperText="Select a value between 0.0-1.0" onChange={onSelected} initialValue={"0.9"} />
+            </Card>
+        )
     }
 
 }

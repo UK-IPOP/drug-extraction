@@ -1,6 +1,8 @@
-import { Button } from "@nextui-org/react";
+import { Button, Col, Container, Grid, Row, Spacer } from "@nextui-org/react";
 import * as React from "react";
 import DataFileUpload from "../file_upload";
+import styles from '../../styles/Home.module.css';
+import { Text } from "@nextui-org/react";
 
 interface Phase1Props {
     dataHandler: (data: string[][], headerRow: string[]) => void
@@ -32,11 +34,18 @@ const Phase1Component = ({ dataHandler }: Phase1Props): JSX.Element => {
     }
 
     return (
-        <div>
-            <h1>Get started by uploading a file:</h1>
-            <DataFileUpload onFileSubmit={handleFile} />
-            <Button onClick={() => dataHandler(data, headerRow)}>Continue</Button>
-        </div>
+        <Grid.Container justify="center">
+            <Grid xs={12} justify="center">
+                <Text h2 className={styles.subtitle}>Get started by uploading a file:</Text>
+            </Grid>
+            <Grid xs={12} justify="center">
+                <DataFileUpload onFileSubmit={handleFile} />
+            </Grid>
+            <Spacer x={2} />
+            <Grid xs={12} justify="center">
+                <Button rounded onClick={() => dataHandler(data, headerRow)}>Continue</Button>
+            </Grid>
+        </Grid.Container >
     );
 
 }

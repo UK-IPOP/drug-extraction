@@ -1,32 +1,36 @@
-import { Button } from "@nextui-org/react";
+import { Button, Container, FormElement, Spacer } from "@nextui-org/react";
 import * as React from "react";
-import { SingleValue } from "react-select";
 import DrugInput from "../drug_input";
 import Limiter from "../limiter";
 import SimpleInput from "../simple_input";
+import { Text } from "@nextui-org/react";
 import { Drug, Phase3Options } from "../types";
+import styles from '../../styles/Home.module.css'
+import { Link, Grid } from '@nextui-org/react';
 
 interface Phase3Props {
-    algorithm: string;
+    edits: boolean,
     searchType: string,
     dataHandler: (data: Phase3Options) => void
 
 };
 
 
-const Phase3Component = ({ algorithm, searchType, dataHandler }: Phase3Props): JSX.Element => {
-    const [maxEdits, setMaxEdits] = React.useState<number>(0);
+const Phase3Component = ({ edits, searchType, dataHandler }: Phase3Props): JSX.Element => {
+    const [maxEdits, setMaxEdits] = React.useState<number>(1);
     const [minThresh, setMinThresh] = React.useState<number>(0.9);
     const [searchWords, setSearchWords] = React.useState<string[]>([]);
     const [drugList, setDrugList] = React.useState<Drug[]>([]);
     const [submitted, setSubmitted] = React.useState<boolean>(false);
 
-    const handleDistanceSelect = (e: SingleValue<{ value: number; label: number; kind: string }>) => {
-        if (e) {
-            if (e.kind === 'distance') {
-                setMaxEdits(e.value);
+    const handleDistanceSelect = (e: React.ChangeEvent<FormElement>) => {
+        if (e && e.target && e.target.value) {
+            if (edits) {
+                const num = parseInt(e.target.value);
+                setMaxEdits(num);
             } else {
-                setMinThresh(e.value);
+                const num = parseFloat(e.target.value);
+                setMinThresh(num);
             }
         }
     };
@@ -41,30 +45,38 @@ const Phase3Component = ({ algorithm, searchType, dataHandler }: Phase3Props): J
     }
 
     return (
-        <div>
-            <h1>Phase 3</h1>
+        <Grid.Container gap={2} justify="center">
+            <Grid xs={12} justify="center">
+                <Text h2 className={styles.subtitle}>Finally enter your search limiter and search terms:</Text>
+            </Grid>
 
-            <Limiter algorithm={algorithm} onSelected={handleDistanceSelect} />
+            <Grid xs={6} justify="center">
+                <Limiter edits={edits} onSelected={handleDistanceSelect} />
+            </Grid>
 
-            {/* // the search buttons and the continue button look VERY
-            // similar. if they are still as similar in new UI,
-            // make one of them different size/color. */}
-            {searchType === "simple" &&
-                <SimpleInput submitted={submitted} wordHandler={handleWords} />
-            }
+            <Grid xs={6} justify="center">
+                {searchType === "simple" &&
+                    <SimpleInput submitted={submitted} wordHandler={handleWords} />
+                }
+                {/* // renders one or the other */}
+                {
+                    searchType === "drug" &&
+                    <DrugInput submitted={submitted} drugHandler={handleDrugInput} />
+                }
+            </Grid>
 
-            {
-                searchType === "drug" &&
-                <DrugInput submitted={submitted} drugHandler={handleDrugInput} />
-            }
+            <Grid xs={12} justify="center">
+                {submitted &&
+                    <Button
+                        rounded
+                        color="primary"
+                        onClick={() => dataHandler({ maxEdits, minThresh, searchWords, drugList })}>
+                        Continue
+                    </Button>
+                }
+            </Grid>
 
-            {submitted &&
-                <Button onClick={() => dataHandler({ maxEdits, minThresh, searchWords, drugList })}>
-                    Continue
-                </Button>
-            }
-
-        </div >
+        </Grid.Container >
     );
 }
 

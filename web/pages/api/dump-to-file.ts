@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		res.status(405).json({ error: 'Method not allowed' });
 		return;
 	}
-	const filePath = path.resolve(process.cwd(), 'public/results/extracted_drugs.csv');
+	const filePath = path.resolve(process.cwd(), 'results/extracted_drugs.csv');
 
 	stringify(
 		req.body,

@@ -7,7 +7,7 @@ import path from 'path';
 export default function handler(_: NextApiRequest, res: NextApiResponse) {
 	res.setHeader('Content-Type', 'text/csv');
 	res.setHeader('Content-Disposition', 'attachment; filename=extracted_drugs.csv');
-	const filePath = path.resolve(process.cwd(), 'public/results/extracted_drugs.csv');
+	const filePath = path.resolve(process.cwd(), 'results/extracted_drugs.csv');
 	const fileBuffer = fs.readFileSync(filePath, { encoding: 'utf8' });
 	res.send(fileBuffer);
 }

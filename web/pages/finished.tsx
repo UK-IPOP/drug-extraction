@@ -1,4 +1,4 @@
-import { Button } from '@nextui-org/react'
+import { Button, Link, Text } from '@nextui-org/react'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
@@ -15,10 +15,15 @@ const EndPage: NextPage = () => {
             </Head>
 
             <main className={styles.main}>
-                <h1>final page</h1>
-                <p>thank user, provide return to home/start button</p>
-
-
+                <Text h2>Program finished.</Text>
+                <Text>
+                    Thank you.
+                    If you enjoyed this, please consider giving us a star on
+                    <a href="https://github.com/UK-IPOP/drug-extraction"> GitHub</a>.
+                </Text>
+                <Link href="/" icon>
+                    Back to Home
+                </Link>
             </main>
 
             <footer className={styles.footer}>

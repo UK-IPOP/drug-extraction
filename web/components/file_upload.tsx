@@ -1,3 +1,4 @@
+import { Spacer } from "@nextui-org/react";
 import React from "react";
 
 type FileProps = {
@@ -8,7 +9,7 @@ const DataFileUpload = ({ onFileSubmit }: FileProps): JSX.Element => {
 
     return (
         <div>
-            <label>File:</label>
+            <br />
             <input
                 type="file"
                 accept=".csv"

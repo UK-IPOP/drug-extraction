@@ -1,4 +1,4 @@
-import { Button, FormElement, Input } from "@nextui-org/react";
+import { Button, Card, FormElement, Grid, Input, Link, Spacer, Text } from "@nextui-org/react";
 import * as React from "react";
 import { Drug } from "./types";
 
@@ -50,11 +50,14 @@ const DrugInput = ({ submitted, drugHandler }: DrugInputProps): JSX.Element => {
     }
 
     return (
-        <div>
-            <Input disabled={disabled} label={label1} placeholder="RxCUI ID" onChange={handleDrugCode} />
-            <Input disabled={disabled} label={label2} placeholder="RxClass RelaSource" onChange={handleRelaSource} />
-            {!submitted && <Button onClick={handleSubmit}>Fetch Drugs</Button>}
-        </div>
+        <Card>
+            <Text h5>Consult <Link href="https://mor.nlm.nih.gov/RxNav/" target="_blank" icon>RxNav</Link> or our <Link href="https://github.com/UK-IPOP/drug-extraction" target="_blank" icon>Documentation</Link> for help.</Text>
+            <Input color="primary" readOnly={disabled} label={label1} placeholder="RxCUI ID" onChange={handleDrugCode} helperText="RxCUI from RxNorm" />
+            <Spacer y={2} />
+            <Input color="primary" readOnly={disabled} label={label2} placeholder="RxClass RelaSource" onChange={handleRelaSource} helperText="RelaSource from RxClass (usually either ATC or MESH)" />
+            <Spacer y={2} />
+            {!submitted && <Button bordered color="success" onClick={handleSubmit}>Fetch Drugs</Button>}
+        </Card>
     )
 }
 
