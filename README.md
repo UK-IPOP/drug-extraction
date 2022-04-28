@@ -83,6 +83,8 @@ This toolbox contains multiple projects:
 
 We utilize string similarity algorithms as defined and implemented by [Danny Guo](https://github.com/dguo) in the [str-sim](https://github.com/dguo/strsim-rs) package. For more information on string similarity algorithms, please consult [this](https://en.wikipedia.org/wiki/String_metric) Wikipedia page for a **comparison/list** of algorithms and [this](https://en.wikipedia.org/wiki/Edit_distance) page for an explanation of string metrics more generally.
 
+The decision to use Rust was based on a series of performance comparison benchmarks and analysis which can be found on the `perf-comp` [branch](https://github.com/UK-IPOP/drug-extraction/tree/perf-comp) 📊.
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Roadmap
