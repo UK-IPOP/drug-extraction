@@ -1,10 +1,10 @@
-import { Button, Grid, Loading, Text } from "@nextui-org/react";
+import { Button, Grid, Loading, Spacer, Text } from "@nextui-org/react";
 import Link from "next/link";
 import * as React from "react";
 import { AlgorithmInput, AlgorithmOutputDrug, AlgorithmOutputSimple } from "./types";
 import Execute from "./main_program";
-
-const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import HomeIcon from '@mui/icons-material/Home';
 
 interface RunnerProps {
     inputData: AlgorithmInput;
@@ -33,7 +33,8 @@ const Runner = ({ inputData }: RunnerProps): JSX.Element => {
                 </Grid>
                 <Grid xs={6} justify="flex-end">
                     <Link href="/" passHref={true}>
-                        <Button rounded size="lg" bordered borderWeight="light">Home</Button>
+                        <Button rounded size="lg" bordered borderWeight="light">
+                            <HomeIcon /><Spacer />Home</Button>
                     </Link>
                 </Grid>
                 <Grid xs={6} justify="flex-start">
@@ -57,8 +58,7 @@ const Runner = ({ inputData }: RunnerProps): JSX.Element => {
                                     window.location.href = "/finished";
                                 });
                         }}
-                    > Download results
-                    </Button>
+                    > Download results <Spacer /> <CloudDownloadIcon /> </Button>
                 </Grid>
             </Grid.Container >
         )

@@ -7,6 +7,10 @@ import Runner from './runner';
 import { Phase2Options, Drug, Phase3Options } from './types';
 import { Text } from "@nextui-org/react";
 
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 
@@ -82,6 +86,7 @@ const Interactive = (): JSX.Element => {
                     </Grid>
                     <Grid xs={12} justify="center">
                         <Link icon onClick={() => { setPhase1(true); setPhase2(false) }}><Text color="error">Please go back and input a file</Text></Link>
+                        <Button icon onClick={() => { setPhase1(true); setPhase2(false) }} color="warning"><ArrowBackIcon /></Button>
                     </Grid>
                 </Grid.Container>
             )
@@ -106,6 +111,9 @@ const Interactive = (): JSX.Element => {
                     </Grid>
                     <Grid xs={12} justify="center">
                         <Link icon onClick={() => { setPhase2(true); setPhase3(false) }}><Text color="error">Please select the columns containing the ID and target values.</Text></Link>
+                    </Grid>
+                    <Grid xs={12} justify="center">
+                        <Button icon onClick={() => { setPhase2(true); setPhase3(false) }} color="warning"><ArrowBackIcon /></Button>
                     </Grid>
                 </Grid.Container>
             )
@@ -155,7 +163,8 @@ const Interactive = (): JSX.Element => {
                     }
                 </Grid>
                 <Grid xs={6} justify="flex-end">
-                    <Button rounded onClick={() => { setPrepPhase(false); setPhase1(true) }}>Restart</Button>
+                    <Button rounded onClick={() => { setPrepPhase(false); setPhase1(true) }}>
+                        <RestartAltIcon /><Spacer />Restart</Button>
                 </Grid>
                 <Grid xs={6} justify="flex-start">
                     <Button rounded onClick={() => {
@@ -164,7 +173,7 @@ const Interactive = (): JSX.Element => {
                             setPrepPhase(false);
                             setRunPhase(true);
                         });
-                    }}>Run</Button>
+                    }}>Run <Spacer /><PlayCircleOutlineIcon /></Button>
                 </Grid>
             </Grid.Container >
         )
@@ -191,7 +200,7 @@ const Interactive = (): JSX.Element => {
     return (
         <div>
             <h1>Interactive</h1>
-            <p>This is an interactive version of the program.  You can upload a file, and then choose the options to run the program.</p>
+            <p>This is an interactive version of the program...</p>
         </div>
     )
 };

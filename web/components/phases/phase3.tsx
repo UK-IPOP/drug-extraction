@@ -6,7 +6,8 @@ import SimpleInput from "../simple_input";
 import { Text } from "@nextui-org/react";
 import { Drug, Phase3Options } from "../types";
 import styles from '../../styles/Home.module.css'
-import { Link, Grid } from '@nextui-org/react';
+import { Grid } from '@nextui-org/react';
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 interface Phase3Props {
     edits: boolean,
@@ -71,7 +72,7 @@ const Phase3Component = ({ edits, searchType, dataHandler }: Phase3Props): JSX.E
                         rounded
                         color="primary"
                         onClick={() => dataHandler({ maxEdits, minThresh, searchWords, drugList })}>
-                        Continue
+                        <ArrowForwardIcon />
                     </Button>
                 }
             </Grid>

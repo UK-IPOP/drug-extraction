@@ -4,6 +4,7 @@ import { SingleValue } from "react-select";
 import Selector from "../selector";
 import { Phase2Options } from "../types";
 import styles from '../../styles/Home.module.css'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 interface Phase2Props {
     headerOptions: string[];
@@ -86,7 +87,7 @@ const Phase2Component = ({ headerOptions, dataHandler }: Phase2Props): JSX.Eleme
                             searchType: searchType,
                             filterType: filterType,
                         });
-                    }}>Continue</Button>
+                    }}><ArrowForwardIcon /></Button>
                 </Col>
             </Row >
         </Container >

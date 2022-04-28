@@ -24,13 +24,15 @@ const Home: NextPage = () => {
         <div className={styles.title}>
           <Link href="/interactive" >Get Started</Link>
         </div>
-        <p className={styles.description}>
+        <Text className={styles.description}>
           This is a website to search for and extract drugs from text records.
           <br />
           It is a companion to the command-line <a href="https://github.com/UK-IPOP/drug-extraction/tree/main/cli" target="_blank>">tool</a>.
           <br />
           If you have questions on specific details please see the <a href="https://github.com/UK-IPOP/drug-extraction" target="_blank>">documentation</a>.
-        </p>
+          <br />
+          <Text b>Please use either Chrome or Firefox for this program to work properly.</Text>
+        </Text>
 
       </main>
 
