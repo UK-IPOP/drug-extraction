@@ -46,9 +46,9 @@ Researchers at the University of Kentucky had a need for a simple, fast, intuiti
 ### Built With
 
 - [Rust](https://www.rust-lang.org) 🦀
-- [wasm-pack](https://github.com/rustwasm/wasm-pack) 🕸
+- [wasm-pack](https://github.com/rustwasm/wasm-pack)? 🕸
 - [Next.js](https://nextjs.org/)
-- [Bootstrap](https://getbootstrap.com)
+- [NextUI](https://nextui.org) / [MUI](https://mui.com)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -75,8 +75,7 @@ This toolbox contains multiple projects:
 - A command line tool (available via cargo install)
 - A core Rust library for parsing strings and comparing them to common drugs
   - This is also configurable for custom search options and integration with the popular [RxNorm](https://www.nlm.nih.gov/research/umls/rxnorm/index.html) library from the National Library of Medicine ([NLMS](https://www.nlm.nih.gov))
-  - This also contains web assembly bindings
-- A website utilizing the core Web Assembly bindings
+- A website containing a smaller feature-set
 
 > **The command-line application will always be given priority bug and feature support as it is the most versatile. The website will always come second as it is simply a thin interface-wrapper around the CLI/Core libraries for non-technical researchers. Core library development will be driven _strongly_ by the needs of the CLI and thus may introduce breaking changes so please be sure to pin your version.**
 >
