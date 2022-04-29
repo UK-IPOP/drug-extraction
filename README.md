@@ -85,6 +85,9 @@ We utilize string similarity algorithms as defined and implemented by [Danny Guo
 
 The decision to use Rust was based on a series of performance comparison benchmarks and analysis which can be found on the `perf-comp` [branch](https://github.com/UK-IPOP/drug-extraction/tree/perf-comp) 📊.
 
+Take a quick look 👀:
+![screen recording](images/recording.gif)
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Roadmap
