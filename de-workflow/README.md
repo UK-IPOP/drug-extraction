@@ -6,7 +6,7 @@ It is effectively a convenience wrapper for us and our typical use-case.
 
 Benefits over the standard CLI:
 
-- Multi-column support
+- Multi-column support (it _expects_ two columns -- a primary and a secondary)
 - Wide form data created automatically
 - Wide form data attached to source data ready for analysis
 - Automated report generation

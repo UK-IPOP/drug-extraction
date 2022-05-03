@@ -53,12 +53,6 @@ This page contains information and quick analysis about the detected drugs. Brou
 {{records_group}}
 """
 
-header_section = dp.Group(
-    dp.Media("./images/IPOP-logo.png"),
-    dp.Media("./images/COP-logo.png"),
-    columns=2,
-)
-
 
 def make_kpis(data: pd.DataFrame) -> dp.Group:
     # expects dense data
@@ -140,7 +134,7 @@ def primary_vs_secondary_plot(data: pd.DataFrame) -> dp.Plot:
     return dp.Plot(fig)
 
 
-def make_tab1(dense: pd.DataFrame) -> dp.Text:
+def make_tab1(dense: pd.DataFrame) -> dp.Group:
     tab = dp.Text(page1_md, label="Report").format(
         kpis=make_kpis(dense),
         drug_counts_group=dp.Group(
@@ -157,7 +151,7 @@ def make_tab1(dense: pd.DataFrame) -> dp.Text:
     return tab
 
 
-def make_tab2(dense: pd.DataFrame, merged: pd.DataFrame) -> dp.Text:
+def make_tab2(dense: pd.DataFrame, merged: pd.DataFrame) -> dp.Group:
     tab = dp.Text(page2_md, label="Data").format(
         table1=dp.DataTable(dense),
         table2=merged,
@@ -169,7 +163,7 @@ def make_report() -> dp.Report:
     dense, merged = load_data()
 
     report = dp.Report(
-        header_section,
+        "# UK-IPOP Drug Extraction Tool Work Flow Report",
         dp.Select(
             blocks=[
                 make_tab1(dense),
