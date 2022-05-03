@@ -188,6 +188,8 @@ We provide some convenience scripts on the main Toolbox page for a few key workf
    4. After this you can join both files on the ID columns using an analytic tool like [pandas](https://pandas.pydata.org)
 2. [Running on multiple columns and combining results](../scripts/multiple-columns.py)
 3. [Running `drug-search` then `simple-search` and combining results](../scripts/drugs-then-simple.py)
+4. ✨ [de-workflow](../../de-workflow/README.md) ✨
+   1. A simple wrapper around this project to automate multi-column runs, wide-form data creation, and report generation.
 
 ## Support
 
