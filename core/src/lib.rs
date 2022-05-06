@@ -18,6 +18,7 @@ use std::str::FromStr;
 
 use strsim::{damerau_levenshtein, jaro_winkler, levenshtein, osa_distance, sorensen_dice};
 
+println!("Helloe");
 /// ValueError occurs when an invalid value was provided
 #[derive(Debug)]
 pub struct ValueError;
