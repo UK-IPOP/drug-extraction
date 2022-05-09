@@ -18,7 +18,6 @@ use std::str::FromStr;
 
 use strsim::{damerau_levenshtein, jaro_winkler, levenshtein, osa_distance, sorensen_dice};
 
-println!("Helloe");
 /// ValueError occurs when an invalid value was provided
 #[derive(Debug)]
 pub struct ValueError;
@@ -29,6 +28,7 @@ impl Display for ValueError {
         write!(f, "Received an unexpected value")
     }
 }
+
 
 /// Make ValueError Error type
 impl error::Error for ValueError {}
@@ -403,6 +403,7 @@ impl DrugSearch {
             max_edits,
             similarity_threshold,
             targets: targets.to_vec(),
+            name: "nick",
         }
     }
 }
