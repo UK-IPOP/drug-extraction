@@ -34,6 +34,7 @@ def command(
     id_column: str,
     target_columns: tuple[str, str],
     search_data: dict[str, list[str]],
+    algorithm: str,
 ):
     for i, target_column in enumerate(target_columns):
         command_list = [
@@ -45,7 +46,7 @@ def command(
             "--id-column",
             id_column,
             "--algorithm",
-            "osa",
+            algorithm,
             "--threshold",
             "0.9",
             "--format",
@@ -126,6 +127,7 @@ def run(
     analyze: bool,
     live: bool,
     search_file: Optional[str],
+    algorithm: str,
 ):
     # TODO: turn live on
     search_data = load_search_data(live=live, search_file=search_file)
@@ -134,6 +136,7 @@ def run(
         id_column=id_column,
         target_columns=target_columns,
         search_data=search_data,
+        algorithm=algorithm,
     )
     combine_outputs(tag_lookup=search_data)
     make_wide()

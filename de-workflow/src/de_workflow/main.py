@@ -40,6 +40,13 @@ app = click.Group()
     required=False,
     help="Custom search file. Must provide if live is false.",
 )
+@click.option(
+    "--algorithm",
+    default="levenshtein",
+    type=click.Choice(["levenshtein", "osa"]),
+    required=False,
+    help="Algorithm to use for matching.",
+)
 def execute(
     file_name: pathlib.Path,
     id_column: str,
@@ -47,7 +54,10 @@ def execute(
     report: bool,
     live: bool,
     search_file: Optional[str],
+    algorithm: str,
 ):
     print("[cyan]Running wrapper program...")
-    utils.run(file_name, id_column, target_columns, report, live, search_file)
+    utils.run(
+        file_name, id_column, target_columns, report, live, search_file, algorithm
+    )
     print("[green]Finished wrapper program!")
