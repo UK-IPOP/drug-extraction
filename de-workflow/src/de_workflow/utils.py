@@ -45,7 +45,7 @@ def command(
             "--id-column",
             id_column,
             "--algorithm",
-            "damerau",
+            "osa",
             "--threshold",
             "0.9",
             "--format",
