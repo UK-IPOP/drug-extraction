@@ -9,12 +9,12 @@
 use csv::WriterBuilder;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::error;
 use std::error::Error;
 use std::fmt;
 use std::fmt::Display;
 use std::str::FromStr;
-use std::{collections::HashSet, string};
 
 use strsim::{damerau_levenshtein, jaro_winkler, levenshtein, osa_distance, sorensen_dice};
 
