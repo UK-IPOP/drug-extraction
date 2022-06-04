@@ -53,8 +53,9 @@ def command(
         # after it runs we need to move the file so it doesn't get overwritten
         # by the next command
         df = pd.read_csv("extracted_drugs.csv")
-        df["source_column"] = target_column
+        df["source_column"] = i
         df.to_csv(f"extracted_drugs_{i}.csv", index=False)
+        pathlib.Path("extracted_drugs.csv").unlink()
 
 
 # expects the files to have been created
@@ -65,6 +66,7 @@ def combine_outputs(tag_lookup: dict[str, list[str]]):
         for p in pathlib.Path(".").iterdir()
         if p.name.startswith("extracted_drugs") and p.name.endswith(".csv")
     ]
+    print(paths)
 
     combined = pd.concat([pd.read_csv(p) for p in paths])
     combined["tags"] = combined.search_term.apply(
@@ -73,7 +75,6 @@ def combine_outputs(tag_lookup: dict[str, list[str]]):
         else tag_lookup[x.lower()][0]
     )
     combined.drop(columns=["edits"], inplace=True)
-    combined.to_csv("./extracted_drugs_combined.csv", index=False)
     combined.to_csv("./dense_results.csv", index=False)
 
 
@@ -81,7 +82,7 @@ def make_wide():
     records: collections.defaultdict[str, dict[str, int]] = collections.defaultdict(
         dict
     )
-    source = pd.read_csv("./extracted_drugs_combined.csv")
+    source = pd.read_csv("./dense_results.csv")
     for row in source.itertuples():
         column_name = f"{row.search_term}_{row.source_column}"
         records[row.record_id][column_name] = row.count
