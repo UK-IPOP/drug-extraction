@@ -9,12 +9,12 @@
 use csv::WriterBuilder;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 use std::error;
 use std::error::Error;
 use std::fmt;
 use std::fmt::Display;
 use std::str::FromStr;
+use std::{collections::HashSet, string};
 
 use strsim::{damerau_levenshtein, jaro_winkler, levenshtein, osa_distance, sorensen_dice};
 
@@ -201,10 +201,17 @@ pub fn format(
     format: OutputFormat,
 ) -> std::result::Result<Vec<String>, Box<dyn Error>> {
     match format {
-        OutputFormat::JSONL => Ok(data
-            .iter()
-            .map(|x| serde_json::to_string(x).expect("could not deserialize json to string"))
-            .collect::<Vec<String>>()),
+        OutputFormat::JSONL => {
+            Ok(data
+                .iter()
+                .map(|x| match x {
+                    SearchOutput::DrugOutput(y) => serde_json::to_string(y)
+                        .expect("could not deserialize drug result to string"),
+                    SearchOutput::SimpleResult(y) => serde_json::to_string(y)
+                        .expect("could not deserialize simple result to string"),
+                })
+                .collect::<Vec<String>>())
+        }
         OutputFormat::CSV => {
             let mut wtr = WriterBuilder::new().has_headers(false).from_writer(vec![]);
             for row in data {
