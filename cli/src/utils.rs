@@ -399,10 +399,6 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
     println!("------------------------------------------");
     println!("Extracting targets from {}", ssi.fpath);
 
-    if !ssi.search_words.contains('|') {
-        println!("Please enter your search words separated by a `|` symbol");
-        exit(1);
-    }
     let search_words = ssi
         .search_words
         .split('|')
