@@ -205,7 +205,7 @@ pub fn format(
             Ok(data
                 .iter()
                 .map(|x| match x {
-                    SearchOutput::DrugOutput(y) => serde_json::to_string(y)
+                    SearchOutput::DrugResult(y) => serde_json::to_string(y)
                         .expect("could not deserialize drug result to string"),
                     SearchOutput::SimpleResult(y) => serde_json::to_string(y)
                         .expect("could not deserialize simple result to string"),
@@ -281,7 +281,7 @@ impl SimpleSearch {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SearchOutput {
     SimpleResult(SimpleResult),
-    DrugOutput(DrugResult),
+    DrugResult(DrugResult),
 }
 
 /// Search trait.
@@ -480,18 +480,18 @@ impl Search for DrugSearch {
             results
                 .into_iter()
                 .filter(|x| x.edits.expect("result did not have edits") <= me)
-                .map(SearchOutput::DrugOutput)
+                .map(SearchOutput::DrugResult)
                 .collect::<Vec<SearchOutput>>()
         } else if let Some(thresh) = self.similarity_threshold {
             // filter by similarity
             results
                 .into_iter()
                 .filter(|x| x.similarity >= thresh)
-                .map(SearchOutput::DrugOutput)
+                .map(SearchOutput::DrugResult)
                 .collect::<Vec<SearchOutput>>()
         } else {
             // return all
-            results.into_iter().map(SearchOutput::DrugOutput).collect()
+            results.into_iter().map(SearchOutput::DrugResult).collect()
         }
     }
 }
@@ -540,7 +540,7 @@ pub fn analyze(
             let mut found_targets: Vec<String> = Vec::new();
             let mut found_ids: Vec<String> = Vec::new();
             for r in data {
-                if let SearchOutput::DrugOutput(drug) = r {
+                if let SearchOutput::DrugResult(drug) = r {
                     found_targets.push(drug.drug.name.clone());
                     found_ids.push(
                         drug.record_id
@@ -590,7 +590,7 @@ pub fn analyze(
             let mut found_targets: Vec<String> = Vec::new();
             results.push("No record ID flag provided.".to_string());
             for r in data {
-                if let SearchOutput::DrugOutput(drug) = r {
+                if let SearchOutput::DrugResult(drug) = r {
                     found_targets.push(drug.drug.name.clone());
                 }
             }
