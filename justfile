@@ -17,8 +17,8 @@ run:
         --max-edits 1 \
         --id-column "Case Number" \
         --target-column "Primary Cause" \
-        --search-words "coacine|heroin|Fentanil" \
-        --format csv \
+        --search-words "heroin" \
+        --format jsonl \
         --analyze 
 
 build-prod: format check
