@@ -440,6 +440,7 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
     for result in rdr.records() {
         let record = result?;
         if record.is_empty() {
+            bar.inc(1);
             continue;
         }
         let record_id = if has_id {
@@ -457,6 +458,7 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
             .get(target_col_index)
             .expect("couldn't get record text");
         if text.is_empty() {
+            bar.inc(1);
             continue;
         }
         let mut res = searcher.scan(text, record_id);
@@ -467,7 +469,7 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
         }
         bar.inc(1);
     }
-    bar.finish();
+    bar.finish_with_message("Done.");
     // analyze
     if ssi.analyze {
         let analysis = drug_core::analyze(
@@ -538,6 +540,7 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
     for result in rdr.records() {
         let record = result?;
         if record.is_empty() {
+            bar.inc(1);
             continue;
         }
         let record_id = if has_id {
@@ -555,6 +558,7 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
             .get(target_col_index)
             .expect("couldn't get record text");
         if text.is_empty() {
+            bar.inc(1);
             continue;
         }
         let mut res = searcher.scan(text, record_id);
@@ -566,7 +570,7 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
 
         bar.inc(1);
     }
-    bar.finish();
+    bar.finish_with_message("Done.");
     // analyze
     if dsi.analyze {
         let analysis =
