@@ -254,7 +254,7 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
     let algorithm = drug_core::Algorithm::from_str(algorithm_options[user_algo])?;
     let max_edits = if algorithm.is_edits() {
         let max_edits_select = Select::with_theme(&ColorfulTheme::default())
-            .items(&["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
+            .items(&["0", "1", "2", "3", "4", "5"])
             .with_prompt("Please select the maximum number of edits allowed")
             .default(0)
             .interact()?;
@@ -330,7 +330,7 @@ fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
     let algorithm = drug_core::Algorithm::from_str(algorithm_options[user_algo])?;
     let max_edits = if algorithm.is_edits() {
         let max_edits_select = Select::with_theme(&ColorfulTheme::default())
-            .items(&["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
+            .items(&["0", "1", "2", "3", "4", "5"])
             .with_prompt("Please select the maximum number of edits allowed")
             .default(0)
             .interact()?;
