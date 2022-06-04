@@ -12,21 +12,14 @@ from rich import print
 from . import report
 
 
-def load_search_data(live: bool, search_file: Optional[str]) -> dict[str, list[str]]:
-    if live:
-        response = requests.get(
-            "https://raw.githubusercontent.com/UK-IPOP/drug-extraction/main/de-workflow/data/drug_info.json"
-        )
-        if response.status_code == 200:
-            return json.loads(response.text)
-        else:
-            raise ConnectionError(f"Failed to fetch search data from {response.url}")
+def load_search_data() -> dict[str, list[str]]:
+    response = requests.get(
+        "https://raw.githubusercontent.com/UK-IPOP/drug-extraction/main/de-workflow/data/drug_info.json"
+    )
+    if response.status_code == 200:
+        return json.loads(response.text)
     else:
-        if search_file:
-            with open(search_file, "r") as f:
-                return json.load(f)
-        else:
-            raise ValueError("No search file provided, must provide if live is false")
+        raise ConnectionError(f"Failed to fetch search data from {response.url}")
 
 
 def command(
@@ -59,16 +52,19 @@ def command(
 
         # after it runs we need to move the file so it doesn't get overwritten
         # by the next command
-        label = "primary" if i == 0 else "secondary"
         df = pd.read_csv("extracted_drugs.csv")
-        df["source_column"] = label
-        df.to_csv(f"extracted_drugs_{label}.csv", index=False)
+        df["source_column"] = target_column
+        df.to_csv(f"extracted_drugs_{i}.csv", index=False)
 
 
 # expects the files to have been created
 def combine_outputs(tag_lookup: dict[str, list[str]]):
     # can hardcode as dependency
-    paths = ["extracted_drugs_primary.csv", "extracted_drugs_secondary.csv"]
+    paths = [
+        p
+        for p in pathlib.Path(".").iterdir()
+        if p.name.startswith("extracted_drugs") and p.name.endswith(".csv")
+    ]
 
     combined = pd.concat([pd.read_csv(p) for p in paths])
     combined["tags"] = combined.search_term.apply(
@@ -124,13 +120,9 @@ def run(
     file_name: pathlib.Path,
     id_column: str,
     target_columns: tuple[str, str],
-    analyze: bool,
-    live: bool,
-    search_file: Optional[str],
     algorithm: str,
 ):
-    # TODO: turn live on
-    search_data = load_search_data(live=live, search_file=search_file)
+    search_data = load_search_data()
     command(
         file_name=file_name,
         id_column=id_column,
@@ -141,7 +133,6 @@ def run(
     combine_outputs(tag_lookup=search_data)
     make_wide()
     merge_to_source(source_file=file_name, id_column=id_column)
-    if analyze:
-        print("[cyan]Generating report...")
-        report.generate_report()
+    print("[cyan]Generating report...")
+    report.generate_report()
     cleanup()

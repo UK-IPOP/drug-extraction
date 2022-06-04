@@ -19,45 +19,25 @@ app = click.Group()
     "target-columns",
     type=click.STRING,
     required=True,
-    nargs=2,
-)
-@click.option(
-    "--report/--no-report",
-    default=True,
-    is_flag=True,
-    help="Analyze the data and generate a report. Default: True",
-)
-@click.option(
-    "--live/--no-live",
-    default=True,
-    is_flag=True,
-    help="Live mode, use our live template. Default: True.",
-)
-@click.option(
-    "--search-file",
-    default=None,
-    type=click.Path(exists=True),
-    required=False,
-    help="Custom search file. Must provide if live is false. Default: None.",
+    nargs=-1,
 )
 @click.option(
     "--algorithm",
-    default="levenshtein",
+    default="osa",
     type=click.Choice(["levenshtein", "osa"]),
     required=False,
-    help="Algorithm to use for matching. Default: levenshtein.",
 )
 def execute(
     file_name: pathlib.Path,
     id_column: str,
     target_columns: tuple[str, str],
-    report: bool,
-    live: bool,
-    search_file: Optional[str],
     algorithm: str,
 ):
     print("[cyan]Running wrapper program...")
     utils.run(
-        file_name, id_column, target_columns, report, live, search_file, algorithm
+        file_name=file_name,
+        id_column=id_column,
+        target_columns=target_columns,
+        algorithm=algorithm,
     )
     print("[green]Finished wrapper program!")
