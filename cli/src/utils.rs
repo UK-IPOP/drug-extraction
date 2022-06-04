@@ -618,7 +618,8 @@ fn initialize_output_file(
         drug_core::OutputFormat::JSONL => fs::File::create("extracted_drugs.jsonl")?,
         drug_core::OutputFormat::CSV => {
             let my_headers = if is_drugs {
-                "record_id,algorithm,edits,similarity,matched_term,drug_name,rx_id,group_name,class_id".to_string()
+                "record_id,algorithm,edits,similarity,matched_term,drug_name,rx_id,class_id"
+                    .to_string()
             } else {
                 "record_id,algorithm,edits,similarity,search_term,matched_term".to_string()
             };
