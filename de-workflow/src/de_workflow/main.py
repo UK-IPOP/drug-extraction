@@ -25,27 +25,27 @@ app = click.Group()
     "--report/--no-report",
     default=True,
     is_flag=True,
-    help="Analyze the data and generate a report",
+    help="Analyze the data and generate a report. Default: True",
 )
 @click.option(
     "--live/--no-live",
     default=True,
     is_flag=True,
-    help="Live mode, use our live template.",
+    help="Live mode, use our live template. Default: True.",
 )
 @click.option(
     "--search-file",
     default=None,
     type=click.Path(exists=True),
     required=False,
-    help="Custom search file. Must provide if live is false.",
+    help="Custom search file. Must provide if live is false. Default: None.",
 )
 @click.option(
     "--algorithm",
     default="levenshtein",
     type=click.Choice(["levenshtein", "osa"]),
     required=False,
-    help="Algorithm to use for matching.",
+    help="Algorithm to use for matching. Default: levenshtein.",
 )
 def execute(
     file_name: pathlib.Path,
