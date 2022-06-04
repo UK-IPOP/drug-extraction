@@ -309,7 +309,7 @@ impl Search for SimpleSearch {
     ///
     fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput> {
         let clean = text
-            .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
+            .replace(&['(', ')', ',', '\"', '.', ';', ':', ']', '['][..], "")
             .to_uppercase();
         let words = clean.split_whitespace();
         let mut results: Vec<SimpleResult> = Vec::new();
