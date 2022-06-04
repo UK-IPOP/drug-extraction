@@ -583,13 +583,9 @@ fn write_output(
     data: Vec<String>,
     output_file: &mut File,
 ) -> std::result::Result<(), Box<dyn Error>> {
-    let mut output = data.iter().peekable();
-    while let Some(out) = output.next() {
-        // check for last item
-        if output.peek().is_some() {
-            output_file.write_all(out.as_bytes())?;
-            output_file.write_all(b"\n")?;
-        }
+    let output = data.iter().peekable();
+    for out in output {
+        writeln!(output_file, "{}", out)?;
     }
     Ok(())
 }

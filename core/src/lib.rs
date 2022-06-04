@@ -221,6 +221,7 @@ pub fn format(
             Ok(csv_data
                 .split('\n')
                 .map(|x| x.to_string())
+                .filter(|x| !x.is_empty())
                 .collect::<Vec<String>>())
         }
     }
