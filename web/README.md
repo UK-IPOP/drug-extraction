@@ -1,12 +1,10 @@
-# Drug Extraction CLI
+# Drug Extraction Web App
 
-This is the CLI application that consumes the [Core](https://github.com/UK-IPOP/drug-extraction/tree/main/core) library.
-
-Full API documentation can be found on [docs.rs](https://docs.rs/crate/drug-extraction-cli/latest).
+This is the web application that consumes the [Core](https://github.com/UK-IPOP/drug-extraction/tree/main/core) library.
 
 ![logo](../images/logo.png)
 
-- [Drug Extraction CLI](#drug-extraction-cli)
+- [Drug Extraction Web App](#drug-extraction-web-app)
   - [Description](#description)
   - [Comparison with the CLI Tool](#comparison-with-the-cli-tool)
     - [Feature Comparison](#feature-comparison)
@@ -54,15 +52,15 @@ The feature disparity could also be resolved by WASM integration.
 
 |                               Feature                               |    CLI    | Website |
 | :-----------------------------------------------------------------: | :-------: | :-----: |
-|                         Multiple Algorithms                         |  ✅ (x5)  |   ❌    |
+|                         Multiple Algorithms                         |  ✅ (x5)   |    ❌    |
 |                             Output Type                             | CSV/JSONL |   CSV   |
-|                      Dynamic Column Selection                       |    ✅     |   ✅    |
-|                        Simple Custom Search                         |    ✅     |   ✅    |
-|                        Drug (Rx❌rm) Search                         |    ✅     |   ✅    |
-|                       Limit Results on Edits                        |    ✅     |   ✅    |
-|                     Limit Results on Similarity                     |    ✅     |   ✅    |
-|                      Simple Analytical Output                       |    ✅     |   ❌    |
-| [Concurrency](https://github.com/UK-IPOP/drug-extraction/issues/19) |    ❌     |   ❌    |
+|                      Dynamic Column Selection                       |     ✅     |    ✅    |
+|                        Simple Custom Search                         |     ✅     |    ✅    |
+|                         Drug (Rx❌rm) Search                         |     ✅     |    ✅    |
+|                       Limit Results on Edits                        |     ✅     |    ✅    |
+|                     Limit Results on Similarity                     |     ✅     |    ✅    |
+|                      Simple Analytical Output                       |     ✅     |    ❌    |
+| [Concurrency](https://github.com/UK-IPOP/drug-extraction/issues/19) |     ❌     |    ❌    |
 
 ### Simple-Search
 
