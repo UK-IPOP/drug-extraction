@@ -29,7 +29,6 @@ impl Display for ValueError {
     }
 }
 
-
 /// Make ValueError Error type
 impl error::Error for ValueError {}
 
@@ -403,7 +402,6 @@ impl DrugSearch {
             max_edits,
             similarity_threshold,
             targets: targets.to_vec(),
-            name: "nick",
         }
     }
 }
