@@ -177,21 +177,27 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
 /// This function is used to validate the input parameters.
 fn validate_options(max_edits: Option<i32>, threshold: Option<f64>) {
     if threshold.is_none() && max_edits.is_none() {
-        let confirmed = Confirm::new().with_prompt("You have not specified a threshold or max edits. This will return ALL items in ALL records. Are you sure you want to continue?").interact();
+        println!("You have not specified a threshold or max edits. This will return ALL items in ALL records.");
+        println!("Please specify a threshold or max edits.");
+        println!("Exiting...");
+        exit(0);
+    }
+    if threshold.is_some() && max_edits.is_some() {
+        println!("You have specified both a threshold and max edits. Max edits takes precedence.");
+        let confirmed = Confirm::new()
+            .with_prompt("Are you sure you want to continue?")
+            .interact();
         if confirmed.is_err() && !confirmed.unwrap() {
             exit(0);
         } else {
             println!("Continuing...");
         }
     }
-    if threshold.is_some() && max_edits.is_some() {
-        println!("You have specified both a threshold and max edits. Max edits takes precedence.");
-    }
     if max_edits.is_some() {
         if let Some(me) = max_edits {
             if !(0..=5).contains(&me) {
                 println!("Max edits must be between 0 and 5");
-                exit(1);
+                exit(0);
             }
         }
     }
@@ -199,7 +205,7 @@ fn validate_options(max_edits: Option<i32>, threshold: Option<f64>) {
         if let Some(th) = threshold {
             if !(0.0..=1.0).contains(&th) {
                 println!("Threshold must be between 0.0 and 1.0");
-                exit(1);
+                exit(0);
             }
         }
     }
