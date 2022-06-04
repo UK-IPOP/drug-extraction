@@ -555,7 +555,7 @@ pub fn analyze(
                 "Found drugs in {} of {} records (~{:.2}%).",
                 unique_records.len(),
                 total_records,
-                unique_records.len() as f64 / total_targets as f64
+                100.0 * unique_records.len() as f64 / total_targets as f64
             ));
             let counts = found_ids.into_iter().counts();
             let key_with_max_value = counts
@@ -575,7 +575,7 @@ pub fn analyze(
                 "Found {} of {} drugs (~{:.2}%).",
                 unique_targets.len(),
                 total_targets,
-                unique_targets.len() as f64 / total_targets as f64
+                100.0 * unique_targets.len() as f64 / total_targets as f64
             ));
             let counts = found_targets.into_iter().counts();
             let key_with_max_value = counts
@@ -599,7 +599,7 @@ pub fn analyze(
                 "Found {} of {} drugs (~{:.2}%).",
                 unique_targets.len(),
                 total_targets,
-                unique_targets.len() as f64 / total_targets as f64
+                100.0 * unique_targets.len() as f64 / total_targets as f64
             ));
             let counts = unique_targets.into_iter().counts();
             let key_with_max_value = counts
@@ -631,7 +631,7 @@ pub fn analyze(
             "Found targets in {} of {} records (~{:.2}%).",
             unique_records.len(),
             total_records,
-            unique_records.len() as f64 / total_records as f64,
+            100.0 * unique_records.len() as f64 / total_records as f64,
         ));
         let counts = found_ids.clone().into_iter().counts();
         let key_with_max_value = counts
@@ -651,7 +651,7 @@ pub fn analyze(
             "Found {} of {} targets (~{:.2}%).",
             unique_targets.len(),
             total_targets,
-            unique_targets.len() as f64 / total_targets as f64
+            100.0 * unique_targets.len() as f64 / total_targets as f64
         ));
         let counts = found_targets.into_iter().counts();
         let key_with_max_value = counts
@@ -679,7 +679,7 @@ pub fn analyze(
             "Found {} of {} targets (~{:.2}%).",
             unique_targets.len(),
             total_targets,
-            unique_targets.len() as f64 / total_targets as f64
+            100.0 * unique_targets.len() as f64 / total_targets as f64
         ));
         let counts = found_targets.into_iter().counts();
         let key_with_max_value = counts
