@@ -120,15 +120,18 @@ def record_counts_plot(data: pd.DataFrame) -> dp.Plot:
     return dp.Plot(fig)
 
 
-def primary_vs_secondary_plot(data: pd.DataFrame) -> dp.Plot:
+def target_column_distribution(data: pd.DataFrame) -> dp.Plot:
     # expects to get dense data
     counts = data.source_column.value_counts().reset_index()
     counts.columns = ["source_columns", "counts"]
-    fig = px.bar(
-        counts, x="source_columns", y="counts", title="Primary vs Secondary Detections"
+    fig = px.histogram(
+        data,
+        x="source_column",
+        title="Target Column Detection Distribution",
     )
+    fig.update_xaxes(type="category")
     fig.update_layout(
-        xaxis_title="Source Column",
+        xaxis_title="Source Column (numeric)",
         yaxis_title="Count",
     )
     return dp.Plot(fig)
@@ -144,7 +147,7 @@ def make_tab1(dense: pd.DataFrame) -> dp.Group:
         ),
         records_group=dp.Group(
             record_counts_plot(dense),
-            primary_vs_secondary_plot(dense),
+            target_column_distribution(dense),
             columns=2,
         ),
     )
