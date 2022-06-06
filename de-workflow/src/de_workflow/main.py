@@ -30,7 +30,7 @@ app = click.Group()
 def execute(
     file_name: pathlib.Path,
     id_column: str,
-    target_columns: tuple[str, str],
+    target_columns: list[str],
     algorithm: str,
 ):
     print("[cyan]Running wrapper program...")

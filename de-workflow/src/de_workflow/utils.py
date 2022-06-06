@@ -25,7 +25,7 @@ def load_search_data() -> dict[str, list[str]]:
 def command(
     file_name: pathlib.Path,
     id_column: str,
-    target_columns: tuple[str, str],
+    target_columns: list[str],
     search_data: dict[str, list[str]],
     algorithm: str,
 ):
@@ -120,7 +120,7 @@ def cleanup():
 def run(
     file_name: pathlib.Path,
     id_column: str,
-    target_columns: tuple[str, str],
+    target_columns: list[str],
     algorithm: str,
 ):
     search_data = load_search_data()
