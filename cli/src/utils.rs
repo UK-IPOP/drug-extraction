@@ -599,7 +599,10 @@ fn write_output(
 fn get_header_index(headers: &StringRecord, search: String) -> Option<usize> {
     let s = search.to_uppercase();
     for (i, h) in headers.iter().enumerate() {
-        if h.to_ascii_uppercase() == s {
+        // remove BOM
+        if h.to_ascii_uppercase().trim().trim_start_matches('\u{feff}')
+            == s.trim().trim_start_matches('\u{feff}')
+        {
             return Some(i);
         }
     }
