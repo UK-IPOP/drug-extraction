@@ -90,11 +90,10 @@ Take a quick look 👀:
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-## Roadmap
+## RoadMap
 
-- [ ] Add Changelog
 - [ ] Add tests
-- [ ] Add CI/CD
+- [x] Add CI/CD
 - [ ] Add Additional Examples
 - [ ] For more, see [Issues](https://github.com/uk-ipop/drug-extraction/issues)
 
