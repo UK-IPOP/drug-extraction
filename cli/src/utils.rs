@@ -9,6 +9,7 @@ use dialoguer::theme::ColorfulTheme;
 use dialoguer::{Confirm, Input, Select};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs::{self, File};
 use std::io::Write;
@@ -67,6 +68,10 @@ pub enum Commands {
         /// Output format (JSONL, CSV).
         #[clap(long)]
         format: drug_core::OutputFormat,
+
+        /// Disable caching. Not recommended, but will decrease memory usage.
+        #[clap(long)]
+        no_cache: bool,
     },
     /// Drug-based Execute mode. Useful for automation/scripts.
     #[clap(arg_required_else_help = true)]
@@ -106,6 +111,10 @@ pub enum Commands {
         /// Output format (JSONL, CSV).
         #[clap(long)]
         format: drug_core::OutputFormat,
+
+        /// Disable caching. Not recommended, but will decrease memory usage.
+        #[clap(long)]
+        no_cache: bool,
     },
 }
 
@@ -121,6 +130,7 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             max_edits,
             threshold,
             format,
+            no_cache,
         } => {
             let ssi = SsInput {
                 fpath: file,
@@ -131,6 +141,7 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
                 max_edits,
                 threshold,
                 format,
+                no_cache,
             };
             run_simple_searcher(ssi)?;
         }
@@ -144,6 +155,7 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
             max_edits,
             threshold,
             format,
+            no_cache,
         } => {
             let dsi = DsInput {
                 fpath: file,
@@ -155,6 +167,7 @@ pub fn run(cli: Cli) -> Result<(), Box<dyn Error>> {
                 max_edits,
                 threshold,
                 format,
+                no_cache,
             };
             run_drug_searcher(dsi)?;
         }
@@ -275,6 +288,9 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
         .interact()?;
 
     let user_format = drug_core::OutputFormat::from_str(format_options[user_format_choice])?;
+    let cache_choice = Confirm::new()
+        .with_prompt("Would you like to use caching?")
+        .interact()?;
 
     let ssi = SsInput {
         fpath: file_path,
@@ -285,6 +301,7 @@ fn interactive_simple_search() -> Result<(), Box<dyn Error>> {
         max_edits,
         threshold,
         format: user_format,
+        no_cache: !cache_choice,
     };
     run_simple_searcher(ssi)?;
     Ok(())
@@ -350,6 +367,9 @@ fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
         .interact()?;
 
     let user_format = drug_core::OutputFormat::from_str(format_options[user_format_choice])?;
+    let cache_choice = Confirm::new()
+        .with_prompt("Would you like to use caching?")
+        .interact()?;
 
     let dsi = DsInput {
         fpath: file_path,
@@ -361,6 +381,7 @@ fn interactive_drug_search() -> Result<(), Box<dyn Error>> {
         max_edits,
         threshold,
         format: user_format,
+        no_cache: !cache_choice,
     };
     run_drug_searcher(dsi)?;
     Ok(())
@@ -375,6 +396,7 @@ struct SsInput {
     max_edits: Option<i32>,
     threshold: Option<f64>,
     format: drug_core::OutputFormat,
+    no_cache: bool,
 }
 
 fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
@@ -382,6 +404,14 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
 
     println!("Welcome to the UK-IPOP Drug Extraction tool.");
     println!("------------------------------------------");
+    let mut state = if !ssi.no_cache {
+        println!("Establishing cache...");
+        let map: HashMap<(String, String), f64> = HashMap::new();
+        Some(map)
+    } else {
+        println!("No cache will be used");
+        None
+    };
     println!("Extracting targets from {}", ssi.fpath);
 
     let search_words = ssi
@@ -442,7 +472,7 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
             bar.inc(1);
             continue;
         }
-        let mut res = searcher.scan(text, record_id);
+        let mut res = searcher.scan(text, record_id, &mut state);
         let output_list = drug_core::format(res.clone(), ssi.format)?;
         write_output(output_list, &mut out_file)?;
         results.append(&mut res);
@@ -475,13 +505,21 @@ struct DsInput {
     max_edits: Option<i32>,
     threshold: Option<f64>,
     format: drug_core::OutputFormat,
+    no_cache: bool,
 }
 fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
     validate_options(dsi.max_edits, dsi.threshold);
 
     println!("Welcome to the UK-IPOP Drug Extraction tool.");
     println!("------------------------------------------");
-    println!("Extracting drugs from {}", dsi.fpath);
+    let mut state = if !dsi.no_cache {
+        println!("Establishing cache...");
+        let map: HashMap<(String, String), f64> = HashMap::new();
+        Some(map)
+    } else {
+        println!("No cache will be used");
+        None
+    };
 
     let drugs = fetch_drugs(&dsi.rx_class_id, &dsi.rx_class_relasource)?;
     let file = File::open(&dsi.fpath)?;
@@ -538,7 +576,7 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
             bar.inc(1);
             continue;
         }
-        let mut res = searcher.scan(text, record_id);
+        let mut res = searcher.scan(text, record_id, &mut state);
         let output_list = drug_core::format(res.clone(), dsi.format)?;
         write_output(output_list, &mut out_file)?;
         results.append(&mut res);

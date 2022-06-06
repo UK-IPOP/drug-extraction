@@ -9,7 +9,7 @@
 use csv::WriterBuilder;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::error;
 use std::error::Error;
 use std::fmt;
@@ -268,6 +268,21 @@ impl SimpleSearch {
             targets: targets.to_vec(),
         }
     }
+
+    fn manage_state(
+        &self,
+        state: &mut Option<HashMap<(String, String), f64>>,
+        word1: &str,
+        word2: &str,
+    ) -> f64 {
+        if let Some(state) = state {
+            *state
+                .entry((word1.to_string(), word2.to_string()))
+                .or_insert_with(|| (self.distance)(word1, word2))
+        } else {
+            (self.distance)(word1, word2)
+        }
+    }
 }
 
 /// A struct to hold the results of a [`Search::scan()`].
@@ -288,7 +303,12 @@ pub enum SearchOutput {
 /// Search trait.
 pub trait Search {
     /// Scan the data for matches.
-    fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput>;
+    fn scan(
+        &self,
+        text: &str,
+        record: Option<String>,
+        state: &mut Option<HashMap<(String, String), f64>>,
+    ) -> Vec<SearchOutput>;
 }
 
 impl Search for SimpleSearch {
@@ -308,7 +328,12 @@ impl Search for SimpleSearch {
     /// let results = search.scan("hello world", None);
     /// ```
     ///
-    fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput> {
+    fn scan(
+        &self,
+        text: &str,
+        record: Option<String>,
+        state: &mut Option<HashMap<(String, String), f64>>,
+    ) -> Vec<SearchOutput> {
         let clean = text
             .replace(&['(', ')', ',', '\"', '.', ';', ':', ']', '['][..], "")
             .to_uppercase();
@@ -316,7 +341,9 @@ impl Search for SimpleSearch {
         let mut results: Vec<SimpleResult> = Vec::new();
         for word in words {
             for target in &self.targets {
-                let d = (self.distance)(target, word);
+                let mut word_pair = vec![word.to_string(), target.to_string()];
+                word_pair.sort();
+                let d = self.manage_state(state, &word_pair[0], &word_pair[1]);
                 let res = SimpleResult {
                     record_id: record.clone(),
                     search_term: target.to_string(),
@@ -412,6 +439,20 @@ impl DrugSearch {
             targets: targets.to_vec(),
         }
     }
+    fn manage_state(
+        &self,
+        state: &mut Option<HashMap<(String, String), f64>>,
+        word1: &str,
+        word2: &str,
+    ) -> f64 {
+        if let Some(state) = state {
+            *state
+                .entry((word1.to_string(), word2.to_string()))
+                .or_insert_with(|| (self.distance)(word1, word2))
+        } else {
+            (self.distance)(word1, word2)
+        }
+    }
 }
 
 /// A struct to hold the results of a [`Search::scan()`].
@@ -446,7 +487,12 @@ impl Search for DrugSearch {
     /// let results = search.scan("hello world", None);
     /// ```
     ///
-    fn scan(&self, text: &str, record: Option<String>) -> Vec<SearchOutput> {
+    fn scan(
+        &self,
+        text: &str,
+        record: Option<String>,
+        state: &mut Option<HashMap<(String, String), f64>>,
+    ) -> Vec<SearchOutput> {
         let clean = text
             .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
             .to_uppercase();
@@ -455,7 +501,9 @@ impl Search for DrugSearch {
         for word in words {
             for target in &self.targets {
                 for t in target.name.split('/') {
-                    let d = (self.distance)(t.to_uppercase().as_str(), word);
+                    let mut word_pair = vec![word.to_string(), t.to_uppercase()];
+                    word_pair.sort();
+                    let d = self.manage_state(state, &word_pair[0], &word_pair[1]);
                     let res = DrugResult {
                         record_id: record.clone(),
                         matched_term: word.to_string(),
