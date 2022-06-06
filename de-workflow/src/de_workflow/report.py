@@ -1,3 +1,6 @@
+import collections
+import itertools
+import numpy as np
 import pandas as pd
 import datapane as dp
 import plotly.express as px
@@ -38,19 +41,17 @@ This table is useful for analyses that utilize data from the original table.
 page1_md = """
 This page contains information and quick analysis about the detected drugs. Brought to you by 
 [UK-IPOP](https://pharmacy.uky.edu/office-research-operations/cornerstones/research-centers/ipop) 
-[GitHub](https://github.com/UK-IPOP).
-
-## KPIs
+-- [GitHub](https://github.com/UK-IPOP).
 
 {{kpis}}
 
-## Drug Counts
-
 {{drug_counts_group}}
 
-## Records and Levels
 
 {{records_group}}
+
+## Drug Combinations
+{{drug_combinations}}
 """
 
 
@@ -124,9 +125,10 @@ def target_column_distribution(data: pd.DataFrame) -> dp.Plot:
     # expects to get dense data
     counts = data.source_column.value_counts().reset_index()
     counts.columns = ["source_columns", "counts"]
-    fig = px.histogram(
-        data,
-        x="source_column",
+    fig = px.bar(
+        counts,
+        x="source_columns",
+        y="counts",
         title="Target Column Detection Distribution",
     )
     fig.update_xaxes(type="category")
@@ -137,7 +139,7 @@ def target_column_distribution(data: pd.DataFrame) -> dp.Plot:
     return dp.Plot(fig)
 
 
-def make_tab1(dense: pd.DataFrame) -> dp.Group:
+def make_tab1(dense: pd.DataFrame, combo_df: pd.DataFrame) -> dp.Group:
     tab = dp.Text(page1_md, label="Report").format(
         kpis=make_kpis(dense),
         drug_counts_group=dp.Group(
@@ -150,6 +152,7 @@ def make_tab1(dense: pd.DataFrame) -> dp.Group:
             target_column_distribution(dense),
             columns=2,
         ),
+        drug_combinations=dp.Group(dp.DataTable(combo_df)),
     )
     return tab
 
@@ -165,11 +168,13 @@ def make_tab2(dense: pd.DataFrame, merged: pd.DataFrame) -> dp.Group:
 def make_report() -> dp.Report:
     dense, merged = load_data()
 
+    combo_df = drug_combinations(dense)
+
     report = dp.Report(
         "# UK-IPOP Drug Extraction Tool Work Flow Report",
         dp.Select(
             blocks=[
-                make_tab1(dense),
+                make_tab1(dense, combo_df),
                 make_tab2(dense, merged),
             ]
         ),
@@ -189,6 +194,37 @@ def generate_report():
         ),
         open=True,
     )
+
+
+def drug_combinations(dense: pd.DataFrame) -> pd.DataFrame:
+    # pull out drug columns
+    data = collections.defaultdict(list)
+    for _, row in dense.iterrows():
+        data[row["record_id"]].append(row["search_term"])
+
+    combos = []
+    for row in data.values():
+        row_combos = []
+        row2 = sorted(set(row))
+        if len(row2) == 1:
+            row_combos.append(tuple(row2))
+        else:
+            for i in range(1, len(row2) + 1):
+                for combo in itertools.combinations(row2, i):
+                    row_combos.append(tuple(sorted(combo)))
+        combos.extend(row_combos)
+
+    combo_counts = collections.Counter(combos).most_common()
+    max_combo = max(len(c[0]) for c in combo_counts)
+    flat = []
+    for combo in combo_counts:
+        parts = [x for x in combo[0] if x]
+        parts.insert(0, combo[1])
+        flat.append(parts)
+    columns = [f"drug_{i + 1}" for i in range(max_combo)]
+    columns.insert(0, "count")
+    df = pd.DataFrame(flat, columns=columns)
+    return df
 
 
 if __name__ == "__main__":
