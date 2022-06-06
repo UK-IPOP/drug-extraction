@@ -536,6 +536,10 @@ pub fn analyze(
     has_id: bool,
 ) -> Result<Vec<String>> {
     let mut results: Vec<String> = Vec::new();
+    if data.is_empty() {
+        results.push("Unable to analyze, no matches found.".to_string());
+        return Ok(results);
+    }
     if is_drug {
         if has_id {
             let mut found_targets: Vec<String> = Vec::new();
