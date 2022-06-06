@@ -47,14 +47,15 @@ def command(
             "--search-words",
             "|".join(search_data.keys()),
         ]
+        print(f"[cyan]Running on column: '{target_column}'...")
         # runs the command on each column
         subprocess.call(command_list)
 
         # after it runs we need to move the file so it doesn't get overwritten
         # by the next command
         df = pd.read_csv("extracted_drugs.csv")
-        df["source_column"] = i
-        df.to_csv(f"extracted_drugs_{i}.csv", index=False)
+        df["source_column"] = i + 1
+        df.to_csv(f"extracted_drugs_{i + 1}.csv", index=False)
         pathlib.Path("extracted_drugs.csv").unlink()
 
 
@@ -66,7 +67,6 @@ def combine_outputs(tag_lookup: dict[str, list[str]]):
         for p in pathlib.Path(".").iterdir()
         if p.name.startswith("extracted_drugs") and p.name.endswith(".csv")
     ]
-    print(paths)
 
     combined = pd.concat([pd.read_csv(p) for p in paths])
     combined["tags"] = combined.search_term.apply(
