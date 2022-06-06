@@ -1,6 +1,6 @@
 [package]
 name = "drug-extraction-core"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Nick Anthony <nicholas.anthony@uky.edu>"]
 description = "A core library for extracting drugs from text records"
