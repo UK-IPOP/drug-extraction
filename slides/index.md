@@ -16,8 +16,8 @@ theme: gaia
 Nick Anthony
 Data Engineer - University of Kentucky - College of Pharmacy
 
-Twitter: @nanthony95
 GitHub: @nanthony007 / @UK-IPOP
+Twitter: @nanthony95
 Email: nicholas.anthony@uky.edu
 
 ---
@@ -49,7 +49,7 @@ health records data.  -->
 - Chicago Medical Examiner’s Case Archive
   - Open Data provided by Cook County
   - Contains lots of useful death information for pharmaceutical and public health researchers
-  - Primary Cause of Death (field)
+  - Primary Cause of Death
     - Ex 1: “NOVEL CORONA (COVID-19) VIRAL INFECTION”
     - Ex 2: “COMBINED DRUG (COCAINE, FENTANYL, HEROIN, CLONAZEPAM)"
 
@@ -90,11 +90,6 @@ For those of you who don’t know, SS is how close one string is to another, usu
 
 ---
 
-<!-- _class: lead -->
-
-## There must be a better way...
-
----
 
 ## Golang to the rescue
 
@@ -181,7 +176,8 @@ Rules:
 	No “speed” libraries (i.e. python libraries relying on C)
 	MUST use external libs for algorithm implementation
 	Must be compared using same drug list.
-	Must use same search list (60k records from Chicago ME)
+	Must use same search list (~60k records from Chicago ME)
+  Utilize docker for all runs
 
 Interfaces:
   Web
@@ -193,7 +189,7 @@ Interfaces:
 
 ## Standard Testing Program Flow
 
-![bg contain 60%](./imgs/data-flow.png)
+![bg contain 60%](./imgs/data-flow.jpeg)
 
 <!--
 Drug search terms come from an rx-class-id
@@ -287,7 +283,7 @@ RxNorm great for some use cases, but opioid research involves illicit substances
 
 <!-- _class: lead -->
 
-![bg contain bottom 95%](imgs/program-flow.jpeg)
+![bg contain](imgs/program-flow.jpeg)
 
 ---
 
