@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: "Nicholas"
-  given-names: "Anthony"
+- family-names: "Anthony"
+  given-names: "Nicholas"
   orcid: "https://orcid.org/my-orcid?orcid=0000-0002-6692-3401"
 title: "drug-extraction"
 version: 1.0.0
