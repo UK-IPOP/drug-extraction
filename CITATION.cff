@@ -4,7 +4,7 @@ authors:
 - family-names: "Anthony"
   given-names: "Nicholas"
   orcid: "https://orcid.org/my-orcid?orcid=0000-0002-6692-3401"
-title: "drug-extraction"
+title: "Drug Extraction ToolBox"
 version: 1.0.0
 date-released: 2022-04-28
 url: "https://github.com/UK-IPOP/drug-extraction"
