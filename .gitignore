@@ -66,3 +66,8 @@ src/.DS_Store
 data/*
 docs/site/
 uploads/
+rust-lang/
+de-workflow/
+target/
+web/
+Cargo.lock

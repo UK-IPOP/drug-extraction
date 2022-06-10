@@ -63,6 +63,20 @@ Drugs:
       - drug
       - nonfentanyl_opioid
       - opiate
+  - Name: Protonitazene
+    Search Terms:
+      - Protonitazene
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
+  - Name: Etodesnitazene
+    Search Terms:
+      - Etodesnitazene
+    Tags:
+      - drug
+      - nonfentanyl_opioid
+      - opiate
   - Name: Metodesnitazene
     Search Terms:
       - Metodesnitazene
