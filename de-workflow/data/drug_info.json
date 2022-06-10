@@ -263,6 +263,26 @@
         "nonfentanyl_opioid",
         "opiate"
     ],
+    "etodesnitazene": [
+        "drug",
+        "nonfentanyl_opioid",
+        "opiate"
+    ],
+    "protonitazene": [
+        "drug",
+        "nonfentanyl_opioid",
+        "opiate"
+    ],
+    "butonitazene": [
+        "drug",
+        "nonfentanyl_opioid",
+        "opiate"
+    ],
+    "etonitazepyne": [
+        "drug",
+        "nonfentanyl_opioid",
+        "opiate"
+    ],
     "ketamine": [
         "drug",
         "hallucinogen"
