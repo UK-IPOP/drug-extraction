@@ -104,7 +104,9 @@ def make_wide():
 def merge_to_source(source_file: pathlib.Path, id_column: str):
     df_wide = pd.read_csv("./extracted_drugs_wide.csv")
     df_source = pd.read_csv(source_file, low_memory=False)
-    df_merged = df_source.merge(df_wide, left_on=id_column, right_on="record_id")
+    df_merged = df_source.merge(
+        df_wide, left_on=id_column, right_on="record_id", how="left"
+    )
     df_merged.drop(columns=["record_id"], inplace=True)
     df_merged.to_csv("./extracted_drugs_merged.csv", index=False)
     df_merged.to_csv("./merged_results.csv", index=False)
