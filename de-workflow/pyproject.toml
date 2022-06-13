@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "de-workflow"
-version = "0.2.1"
+version = "0.2.2"
 description = ""
 authors = ["Nick Anthony <nanthony007@gmail.com>"]
 readme = "README.md"

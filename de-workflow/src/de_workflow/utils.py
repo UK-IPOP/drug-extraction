@@ -101,6 +101,13 @@ def make_wide():
     df.to_csv("./extracted_drugs_wide.csv", index=False)
 
 
+def rollup(row: pd.Series, fields: list[str]) -> int:
+    for field in fields:
+        if row[field] == 1:
+            return 1
+    return 0
+
+
 def merge_to_source(source_file: pathlib.Path, id_column: str):
     df_wide = pd.read_csv("./extracted_drugs_wide.csv")
     df_source = pd.read_csv(source_file, low_memory=False)
@@ -108,6 +115,35 @@ def merge_to_source(source_file: pathlib.Path, id_column: str):
         df_wide, left_on=id_column, right_on="record_id", how="left"
     )
     df_merged.drop(columns=["record_id"], inplace=True)
+
+    drug_cols = [
+        col for col in df_merged.columns if col.endswith("_1") or col.endswith("_2")
+    ]
+    df_merged.rename(
+        columns={
+            c: c.replace("_1", "_primary").replace("_2", "_secondary")
+            for c in drug_cols
+        },
+        inplace=True,
+    )
+
+    # nitazene rollup
+    names = [
+        "etodesnitazene",
+        "isotonitazene",
+        "metonitazene",
+        "protonitazene",
+        "flunitazene",
+        "utonitazene",
+    ]
+    fields1 = [f"{x}_primary" for x in names]
+    fields2 = [f"{x}_secondary" for x in names]
+    fields = fields1 + fields2
+    limited_fields = [f for f in fields if f in df_merged.columns]
+    df_merged["nitazene"] = df_merged.apply(
+        lambda row: rollup(row, limited_fields), axis=1
+    )
+
     df_merged.to_csv("./extracted_drugs_merged.csv", index=False)
     df_merged.to_csv("./merged_results.csv", index=False)
 
