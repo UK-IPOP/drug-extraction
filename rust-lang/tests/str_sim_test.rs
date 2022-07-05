@@ -11,7 +11,9 @@ fn test_jaro_winkler() {
     let s1 = "alcohol";
     let s2 = "acloholism";
     let d = strsim::jaro_winkler(s1, s2);
-    assert_eq!(d, 0.867142857142857);
+    // 10,000 for four decimals
+    let val = (10000.0 * d).round() / 100.0;
+    assert_eq!(val, 0.8671);
 }
 
 #[test]
