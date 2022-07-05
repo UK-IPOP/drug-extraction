@@ -22,7 +22,7 @@ docker cp python-benchmarks:/python-app/logs/bench_hist.svg ./data/python_hist.s
 docker rm python-benchmarks
 
 echo "Running fast-python benchmarks..."
-docker run --rm --name fast-python-benchmarks fast-python-benchmarks
+docker run --name fast-python-benchmarks fast-python-benchmarks
 docker cp fast-python-benchmarks:/fast-python-app/logs/bench_hist.svg ./data/fast_python_hist.svg
 docker rm fast-python-benchmarks
 
