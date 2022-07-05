@@ -2,9 +2,9 @@
 
 ## Performance Analysis
 
-This branch exists for performance analysis comparing Python, Golang, and Rust performance on string similarity metrics.
+This branch exists for performance analysis comparing Python, R, Python (w/ C libs), Golang, and Rust performance on string similarity metrics.
 
-Each directory (`python-lang`, `go-lang`, `rust-lang`) contains various benchmarks and tests for algorithms that overlapped in the three packages selected.
+Each directory (`python-lang`, `go-lang`, `rust-lang`, `fast-python-lang` and `r-lang`) contains various benchmarks and tests for algorithms that overlapped in the three packages selected.
 
 ### Built With
 
@@ -12,11 +12,19 @@ Each directory (`python-lang`, `go-lang`, `rust-lang`) contains various benchmar
 - [rust](https://www.rust-lang.org)
 - [go](https://go.dev)
 - [python](https://www.python.org)
+- [R](https://www.r-project.org)
 - [pytest](https://github.com/pytest-dev/pytest)
 - [pytest-benchmark](https://github.com/ionelmc/pytest-benchmark/)
-- [go-edlib](https://github.com/hbollon/go-edlib)
+- [r benchmark](https://cran.r-project.org/web/packages/rbenchmark/rbenchmark.pdf)
 - [criterion](https://github.com/bheisler/criterion.rs)
 - [cargo-criterion](https://github.com/bheisler/cargo-criterion)
+- [python-Levenshtein](https://github.com/ztane/python-Levenshtein/)
+- [python-damerau-Levenshtein](https://github.com/robertgr991/fastDamerauLevenshtein)
+- [python string-sim](https://github.com/luozhouyang/python-string-similarity)
+- [r string dist](https://github.com/markvanderloo/stringdist)
+- [go-edlib](https://github.com/hbollon/go-edlib)
+- [rust string sim](https://github.com/dguo/strsim-rs)
+
 
 ## Getting Started
 
@@ -59,7 +67,7 @@ Then use the corresponding make command (either `bench` or `bench-save`).
 
 The results from save runs (`<LANGUAGE-FOLDER>/logs/bench_results.log`) are appended each benchmarking run and are manually examined and entered into a [spreadsheet](data/bench_results.csv) for easy analysis and cross-language comparison.
 
-> The time recorded is _averaged_ (~100,000 iterations) for each algorithm/comparison run.
+> The time recorded is _averaged_ (~1,000,000 iterations) for each algorithm/comparison run.
 
 For example: `make bench` (inside the python directory) to run all the benchmarks and print output (no save). This variation requires you to have all the dependencies for that language installed.
 
@@ -67,7 +75,7 @@ Alternatively, you can simply `docker build` and then `docker run` inside the la
 
 #### Benchmark Results
 
-![file](data/benchmarks_chart.png)
+![file](data/results-chart.png)
 
 ## Contributing
 
@@ -88,7 +96,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 ## Contact
 
-Nick Anthony - [@Nanthony95](https://twitter.com/Nanthony95) - nanthony@gmail.com
+Nick Anthony - [@nanthony95](https://twitter.com/Nanthony95) - nanthony@gmail.com
 
 ## Acknowledgments
 
