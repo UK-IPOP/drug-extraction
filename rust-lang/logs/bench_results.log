@@ -1,0 +1,72 @@
+Tue Jul 5 13:42:48 EDT 2022
+    Finished bench [optimized] target(s) in 0.02s
+  Executable benches/bench_str_sim.rs (target/release/deps/bench_str_sim-a4cc12c9a8df76a9)
+Benchmarking Algorithms/Levenshtein
+Benchmarking Algorithms/Levenshtein: Warming up for 3.0000 s
+Benchmarking Algorithms/Levenshtein: Collecting 100000 samples in estimated 5.0046 s (43200000 iterations)
+Benchmarking Algorithms/Levenshtein: Analyzing
+Algorithms/Levenshtein  time:   [116.02 ns 116.04 ns 116.06 ns]
+                        change: [-2.5939% -2.4611% -2.3609%] (p = 0.00 < 0.01)
+                        Performance has improved.
+Found 2510 outliers among 100000 measurements (2.51%)
+  1409 (1.41%) high mild
+  1101 (1.10%) high severe
+mean   [116.02 ns 116.06 ns] std. dev.      [2.9297 ns 3.5354 ns]
+median [115.16 ns 115.26 ns] med. abs. dev. [1.4311 ns 1.5718 ns]
+Benchmarking Algorithms/Jaro-Winkler
+Benchmarking Algorithms/Jaro-Winkler: Warming up for 3.0000 s
+Benchmarking Algorithms/Jaro-Winkler: Collecting 100000 samples in estimated 5.0070 s (66900000 iterations)
+Benchmarking Algorithms/Jaro-Winkler: Analyzing
+Algorithms/Jaro-Winkler time:   [74.673 ns 74.685 ns 74.698 ns]
+                        change: [-0.8453% -0.8103% -0.7773%] (p = 0.00 < 0.01)
+                        Change within noise threshold.
+Found 12220 outliers among 100000 measurements (12.22%)
+  5583 (5.58%) high mild
+  6637 (6.64%) high severe
+mean   [74.673 ns 74.698 ns] std. dev.      [1.7861 ns 2.2534 ns]
+median [74.365 ns 74.365 ns] med. abs. dev. [277.02 ps 277.02 ps]
+Benchmarking Algorithms/Damerau-Levenshtein
+Benchmarking Algorithms/Damerau-Levenshtein: Warming up for 3.0000 s
+Benchmarking Algorithms/Damerau-Levenshtein: Collecting 100000 samples in estimated 5.0467 s (3500000 iterations)
+Benchmarking Algorithms/Damerau-Levenshtein: Analyzing
+Algorithms/Damerau-Levenshtein
+                        time:   [1.4411 us 1.4414 us 1.4417 us]
+                        change: [-2.4710% -2.4391% -2.4061%] (p = 0.00 < 0.01)
+                        Performance has improved.
+Found 6993 outliers among 100000 measurements (6.99%)
+  140 (0.14%) low severe
+  1822 (1.82%) low mild
+  1557 (1.56%) high mild
+  3474 (3.47%) high severe
+mean   [1.4411 us 1.4417 us] std. dev.      [43.253 ns 63.254 ns]
+median [1.4381 us 1.4381 us] med. abs. dev. [14.106 ns 14.106 ns]
+Benchmarking Algorithms/Sorensen-Dice
+Benchmarking Algorithms/Sorensen-Dice: Warming up for 3.0000 s
+Benchmarking Algorithms/Sorensen-Dice: Collecting 100000 samples in estimated 5.0430 s (9100000 iterations)
+Benchmarking Algorithms/Sorensen-Dice: Analyzing
+Algorithms/Sorensen-Dice
+                        time:   [531.76 ns 531.93 ns 532.10 ns]
+                        change: [-1.5512% -1.4716% -1.4010%] (p = 0.00 < 0.01)
+                        Performance has improved.
+Found 850 outliers among 100000 measurements (0.85%)
+  82 (0.08%) low mild
+  578 (0.58%) high mild
+  190 (0.19%) high severe
+mean   [531.76 ns 532.10 ns] std. dev.      [26.334 ns 28.333 ns]
+median [531.13 ns 531.59 ns] med. abs. dev. [25.106 ns 25.123 ns]
+Benchmarking Algorithms/Optimal String Alignment
+Benchmarking Algorithms/Optimal String Alignment: Warming up for 3.0000 s
+Benchmarking Algorithms/Optimal String Alignment: Collecting 100000 samples in estimated 5.0096 s (17300000 iterations)
+Benchmarking Algorithms/Optimal String Alignment: Analyzing
+Algorithms/Optimal String Alignment
+                        time:   [294.66 ns 295.73 ns 297.03 ns]
+                        change: [+0.9409% +1.3352% +1.8278%] (p = 0.00 < 0.01)
+                        Change within noise threshold.
+Found 7513 outliers among 100000 measurements (7.51%)
+  39 (0.04%) low mild
+  4831 (4.83%) high mild
+  2643 (2.64%) high severe
+mean   [294.66 ns 297.03 ns] std. dev.      [104.84 ns 266.08 ns]
+median [288.77 ns 289.02 ns] med. abs. dev. [2.5024 ns 2.5024 ns]
+
+==========================================================

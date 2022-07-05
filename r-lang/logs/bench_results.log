@@ -1,0 +1,26 @@
+Tue Jul 5 13:50:20 EDT 2022
+
+The downloaded binary packages are in
+	/var/folders/34/qyvldg9940z327l3q1np7tl80000gn/T//RtmppUelfl/downloaded_packages
+
+The downloaded binary packages are in
+	/var/folders/34/qyvldg9940z327l3q1np7tl80000gn/T//RtmppUelfl/downloaded_packages
+
+The downloaded binary packages are in
+	/var/folders/34/qyvldg9940z327l3q1np7tl80000gn/T//RtmppUelfl/downloaded_packages
+
+══ [1mTesting test-stringdist.R[22m ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+[ FAIL 0 | WARN 0 | SKIP 0 | [32mPASS[39m 0 ][ FAIL 0 | WARN 0 | SKIP 0 | [32mPASS[39m 1 ][ FAIL 0 | WARN 0 | SKIP 0 | [32mPASS[39m 2 ][ FAIL 0 | WARN 0 | SKIP 0 | [32mPASS[39m 3 ][ FAIL 0 | WARN 0 | SKIP 0 | [32mPASS[39m 4 ][ FAIL 0 | WARN 0 | SKIP 0 | [32mPASS[39m 5 ][1m Done![22m
+                       test elapsed replications average_ns
+2       damerau_levenshtein  17.908      1000000      17908
+6       damerau_levenshtein  17.943      1000000      17943
+10      damerau_levenshtein  17.793      1000000      17793
+4              jaro_winkler  17.845      1000000      17845
+8              jaro_winkler  17.643      1000000      17643
+12             jaro_winkler  17.737      1000000      17737
+1               levenshtein  18.132      1000000      18132
+5               levenshtein  18.005      1000000      18005
+9               levenshtein  17.903      1000000      17903
+3  optimal_string_alignment  18.125      1000000      18125
+7  optimal_string_alignment  18.073      1000000      18073
+11 optimal_string_alignment  17.907      1000000      17907

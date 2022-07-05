@@ -1,0 +1,23 @@
+Tue Jul 5 13:50:23 EDT 2022
+============================= test session starts ==============================
+platform darwin -- Python 3.10.5, pytest-7.0.1, pluggy-1.0.0
+benchmark: 3.4.1 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/nick/Projects/Kentucky/drug-extraction/perf-comp/fast-python-lang, configfile: pyproject.toml, testpaths: tests
+plugins: benchmark-3.4.1
+collected 6 items
+
+tests/test_string_sim.py ......                                          [100%]
+
+
+---------------------------------------------------------------------------------------------- benchmark: 3 tests ----------------------------------------------------------------------------------------------
+Name (time in ns)                            Min                 Max                Mean            StdDev              Median               IQR            Outliers  OPS (Mops/s)            Rounds  Iterations
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_benchmark_jarowinkler_distance     157.1343 (1.0)      157.1343 (1.0)      157.1343 (1.0)      0.0000 (1.0)      157.1343 (1.0)      0.0000 (1.0)           0;0        6.3640 (1.0)           1     1000000
+test_benchmark_levenshtein_distance     190.9738 (1.22)     190.9738 (1.22)     190.9738 (1.22)     0.0000 (1.0)      190.9738 (1.22)     0.0000 (1.0)           0;0        5.2363 (0.82)          1     1000000
+test_benchmark_damerau_distance         771.3372 (4.91)     771.3372 (4.91)     771.3372 (4.91)     0.0000 (1.0)      771.3372 (4.91)     0.0000 (1.0)           0;0        1.2964 (0.20)          1     1000000
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Legend:
+  Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
+  OPS: Operations Per Second, computed as 1 / Mean
+============================== 6 passed in 1.18s ===============================

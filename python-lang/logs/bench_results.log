@@ -1,0 +1,25 @@
+Tue Jul 5 13:50:21 EDT 2022
+============================= test session starts ==============================
+platform darwin -- Python 3.10.5, pytest-7.0.1, pluggy-1.0.0
+benchmark: 3.4.1 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/nick/Projects/Kentucky/drug-extraction/perf-comp/python-lang, configfile: pyproject.toml, testpaths: tests
+plugins: benchmark-3.4.1
+collected 10 items
+
+tests/test_str_sim.py ..........                                         [100%]
+
+
+--------------------------------------------------------------------------------------------------- benchmark: 5 tests --------------------------------------------------------------------------------------------------
+Name (time in us)                                        Min                Max               Mean            StdDev             Median               IQR            Outliers  OPS (Kops/s)            Rounds  Iterations
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_benchmark_sorensen_dice_distance                 3.8176 (1.0)       3.8176 (1.0)       3.8176 (1.0)      0.0000 (1.0)       3.8176 (1.0)      0.0000 (1.0)           0;0      261.9453 (1.0)           1     1000000
+test_benchmark_jarowinkler_distance                   5.2953 (1.39)      5.2953 (1.39)      5.2953 (1.39)     0.0000 (1.0)       5.2953 (1.39)     0.0000 (1.0)           0;0      188.8477 (0.72)          1     1000000
+test_benchmark_levenshtein_distance                  14.2912 (3.74)     14.2912 (3.74)     14.2912 (3.74)     0.0000 (1.0)      14.2912 (3.74)     0.0000 (1.0)           0;0       69.9729 (0.27)          1     1000000
+test_benchmark_optimal_string_alignment_distance     24.0048 (6.29)     24.0048 (6.29)     24.0048 (6.29)     0.0000 (1.0)      24.0048 (6.29)     0.0000 (1.0)           0;0       41.6584 (0.16)          1     1000000
+test_benchmark_damerau_distance                      35.0994 (9.19)     35.0994 (9.19)     35.0994 (9.19)     0.0000 (1.0)      35.0994 (9.19)     0.0000 (1.0)           0;0       28.4905 (0.11)          1     1000000
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Legend:
+  Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
+  OPS: Operations Per Second, computed as 1 / Mean
+======================== 10 passed in 82.58s (0:01:22) =========================

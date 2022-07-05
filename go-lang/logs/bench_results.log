@@ -1,0 +1,12 @@
+Tue Jul 5 13:50:22 EDT 2022
+goos: darwin
+goarch: arm64
+pkg: perf-comp
+BenchmarkLevenshtein-10               	  100000	       273.3 ns/op
+BenchmarkDamerau-10                   	  100000	       973.7 ns/op
+BenchmarkOptimalStringAlignment-10    	  100000	       494.5 ns/op
+BenchmarkJaroWinkler-10               	  100000	       124.7 ns/op
+BenchmarkSorensonDice-10              	  100000	       817.9 ns/op
+PASS
+ok  	perf-comp	0.428s
+==========================
