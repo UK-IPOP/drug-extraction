@@ -2,8 +2,6 @@
 .idea/
 .vscode/
 
-python-lang/logs/bench_hist.svg
-
 de-workflow/
 target/
 web/
