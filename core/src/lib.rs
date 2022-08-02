@@ -335,13 +335,13 @@ impl Search for SimpleSearch {
         state: &mut Option<HashMap<(String, String), f64>>,
     ) -> Vec<SearchOutput> {
         let clean = text
-            .replace(&['(', ')', ',', '\"', '.', ';', ':', ']', '['][..], "")
+            .replace(&['(', ')', ',', '\"', '.', ';', ':', ']', '['][..], " ")
             .to_uppercase();
         let words = clean.split_whitespace();
         let mut results: Vec<SimpleResult> = Vec::new();
         for word in words {
             for target in &self.targets {
-                let mut word_pair = vec![word.to_string(), target.to_string()];
+                let mut word_pair = vec![word.trim().to_uppercase(), target.trim().to_uppercase()];
                 word_pair.sort();
                 let d = self.manage_state(state, &word_pair[0], &word_pair[1]);
                 let res = SimpleResult {
@@ -494,14 +494,14 @@ impl Search for DrugSearch {
         state: &mut Option<HashMap<(String, String), f64>>,
     ) -> Vec<SearchOutput> {
         let clean = text
-            .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], "")
+            .replace(&['(', ')', ',', '\"', '.', ';', ':'][..], " ")
             .to_uppercase();
         let words = clean.split_whitespace();
         let mut results: Vec<DrugResult> = Vec::new();
         for word in words {
             for target in &self.targets {
                 for t in target.name.split('/') {
-                    let mut word_pair = vec![word.to_string(), t.to_uppercase()];
+                    let mut word_pair = vec![word.trim().to_uppercase(), t.trim().to_uppercase()];
                     word_pair.sort();
                     let d = self.manage_state(state, &word_pair[0], &word_pair[1]);
                     let res = DrugResult {
@@ -745,4 +745,25 @@ pub fn analyze(
         ));
     }
     Ok(results)
+}
+
+// test section
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parens() {
+        let test_str = "Mixed Drug Toxicity(Fentanyl, Cocaine, Xylazine and Gabapentin)";
+        let search = SimpleSearch::new(
+            Algorithm::LEVENSHTEIN,
+            my_leven,
+            Some(1),
+            None,
+            &["Fentanyl".to_uppercase(), "cocaine".to_uppercase()],
+        );
+        let results = search.scan(test_str, None, &mut None);
+        println!("{:?}", results);
+        assert_eq!(results.len(), 2);
+    }
 }
