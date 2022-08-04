@@ -437,7 +437,10 @@ fn run_simple_searcher(ssi: SsInput) -> Result<(), Box<dyn Error>> {
     };
     let mut out_file = initialize_output_file(ssi.format, false)?;
 
-    let line_count = BufReader::new(File::open(&ssi.fpath)?).lines().count();
+    let line_count = csv::Reader::from_reader(File::open(&ssi.fpath)?)
+        .records()
+        .count();
+
     let searcher = drug_core::initialize_searcher(
         ssi.algorithm,
         distance,
@@ -540,7 +543,10 @@ fn run_drug_searcher(dsi: DsInput) -> Result<(), Box<dyn Error>> {
     };
     let mut out_file = initialize_output_file(dsi.format, true)?;
 
-    let line_count = BufReader::new(File::open(&dsi.fpath)?).lines().count();
+    let line_count = csv::Reader::from_reader(File::open(&dsi.fpath)?)
+        .records()
+        .count();
+
     let searcher = drug_core::initialize_searcher(
         dsi.algorithm,
         distance,
