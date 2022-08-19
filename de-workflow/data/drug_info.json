@@ -179,6 +179,7 @@
     "etodesnitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "fentanyl": [
@@ -195,6 +196,7 @@
     "flunitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "fluorobutyryl": [
@@ -264,21 +266,25 @@
     "isotonitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "etodesnitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "protonitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "butonitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "etonitazepyne": [
@@ -377,11 +383,13 @@
     "metodesnitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "metonitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "mitragynine": [
@@ -477,6 +485,7 @@
     "protonitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "quazepam": [
@@ -533,6 +542,7 @@
     "utonitazene": [
         "drug",
         "nonfentanyl_opioid",
+        "nitazene",
         "opiate"
     ],
     "valeryl": [
