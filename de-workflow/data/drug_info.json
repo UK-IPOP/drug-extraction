@@ -176,12 +176,6 @@
         "drug",
         "eth_alc"
     ],
-    "etodesnitazene": [
-        "drug",
-        "nonfentanyl_opioid",
-        "nitazene",
-        "opiate"
-    ],
     "fentanyl": [
         "drug",
         "fentanyl",
@@ -270,12 +264,6 @@
         "opiate"
     ],
     "etodesnitazene": [
-        "drug",
-        "nonfentanyl_opioid",
-        "nitazene",
-        "opiate"
-    ],
-    "protonitazene": [
         "drug",
         "nonfentanyl_opioid",
         "nitazene",
