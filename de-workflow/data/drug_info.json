@@ -77,7 +77,19 @@
         "opiate"
     ],
     "cannabis": [
-        "cannabis",
+        "cannabinoids",
+        "drug"
+    ],
+    "delta-9 THC": [
+        "cannabinoids",
+        "drug"
+    ],
+    "1-hydroxy-delta-9 THC": [
+        "cannabinoids",
+        "drug"
+    ],
+    "11-carboxy-delta-9 THC": [
+        "cannabinoids",
         "drug"
     ],
     "carfentanil": [
@@ -110,6 +122,14 @@
         "sedative"
     ],
     "cocaine": [
+        "drug",
+        "stimulant"
+    ],
+    "benzoylecgonine": [
+        "drug",
+        "stimulant"
+    ],
+    "cocaethylene": [
         "drug",
         "stimulant"
     ],
@@ -539,5 +559,33 @@
     "xylazine": [
         "drug",
         "sedative"
+    ],
+    "trazodone": [
+        "drug",
+        "anti-depressant"
+    ],
+    "citalopram": [
+        "drug",
+        "anti-depressant"
+    ],
+    "escitalopram": [
+        "drug",
+        "anti-depressant"
+    ],
+    "fluoxetine": [
+        "drug",
+        "anti-depressant"
+    ],
+    "norfluoxetine": [
+        "drug",
+        "anti-depressant"
+    ],
+    "bupropion": [
+        "drug",
+        "anti-depressant"
+    ],
+    "hydroxybupropion": [
+        "drug",
+        "anti-depressant"
     ]
 }
