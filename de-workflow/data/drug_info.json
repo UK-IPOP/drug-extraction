@@ -327,6 +327,18 @@
         "drug",
         "hallucinogen"
     ],
+    "cbd": [
+        "cannabis",
+        "drug"
+    ],
+    "hemp": [
+        "cannabis",
+        "drug"
+    ],
+    "indica": [
+        "cannabis",
+        "drug"
+    ],
     "marijuana": [
         "cannabis",
         "drug"
