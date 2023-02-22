@@ -10,17 +10,22 @@ keywords = ["drug", "extraction", "nlp", "text"]
 categories = ["parsing", "command-line-interface"]
 readme = "README.md"
 
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [[bin]]
 name = "extract-drugs"
 path = "src/main.rs"
 
+# TODO: loosen to minor versions
 [dependencies]
-anyhow = "1.0.69"
 atty = "0.2.14"
 clap = { version = "4.1.4", features = ["derive"] }
+color-eyre = { version = "0.6.2", default-features = false }
 csv = "1.1.6"
+dialoguer = { version = "0.10.3", default-features = false, features = ["fuzzy-select"] }
+indicatif = { version = "0.17.3", features = ["rayon"] }
 itertools = "0.10.5"
+rayon = "1.6.1"
 serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.93" 
 strsim = "0.10.0"
+

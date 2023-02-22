@@ -1,40 +1,35 @@
-//! Primary application for drug extraction
-//!
-//!
-//!
 //!
 //!
 
-// TODO: remove 'expect' statements
-// TODO: replace most `?` with handled errors
-
-// TODO: remove itertools dependency and just use
-// nested for loops
-
-// eventually i want to:
-//  use rayon parallel iterators
-// color_eyre for better error reporting
-//
-
-// TODO: pick a style for these imports and follow it
 // TODO: use doctests for examples and testing
+// TODO: document --> check rust book for pub/private functions
+// be sure to document lib well
 
-use anyhow::Result;
+// TODO: document things REALLY well, we won't be re-publishing on crates.io
+// for now, but we will be publishing on PyPI so we need a good user guide
+// and documentation
+// Also need to mark old crates.io versions as deprecated (but don't yank them)
+
+use color_eyre::{eyre::WrapErr, Report, Result};
 
 use clap::{Parser, Subcommand};
+use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect, Input, MultiSelect, Select};
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressIterator};
 use itertools::Itertools;
-// use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::{
-    collections::{HashMap, HashSet},
-    env,
-    fs::File,
-    io::{self, Read},
-    path::PathBuf,
-};
+use rayon::prelude::*;
+use serde::Serialize;
+use std::{fs::File, path::PathBuf, str::FromStr};
 use strsim::jaro_winkler;
 
+use drug_extraction_cli as lib;
+
 #[derive(Parser, Debug)]
+#[command(
+    author,
+    about,
+    version,
+    long_about = "A fuzzy search tool for extracting data from large datasets."
+)]
 struct Cli {
     #[clap(subcommand)]
     command: Commands,
@@ -42,291 +37,182 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    Standard(StandardCli),
-    Pipe(PipeCli),
-    Interactive,
+    Standard(StandardOptions),
+    Pipe(PipeOptions),
+    Interactive(InteractiveOptions),
 }
 
 #[derive(Parser, Debug)]
-struct InteractiveCli {}
-
-#[derive(Parser, Debug)]
-struct StandardCli {
-    /// The search terms file.
-    ///
-    /// This file should contain a column named "term"
-    /// and a column named "metadata"
-    ///
-    /// The metadata column can be empty or contain any
-    /// additional information you want to associate with
-    /// the search term.
-    ///
-    /// The term column should contain the search term.
-    ///
-    /// The term column must come before the metadata column.
-    /// Thus: term, metadata
-    /// Example: "cocaine", "drug"
-    #[arg(long, default_value = "search_terms.csv")]
-    pub terms_file: PathBuf,
-
-    /// The dataset file.
-    /// This file is the one we will be searching.
-    /// It has no requirements other than being correctly
-    /// formatted csv.
-    #[arg(long)]
-    pub data_file: PathBuf,
-
-    /// The column in the dataset file that contains the text
-    /// we will be searching.
-    /// This column must be a string column.
-    #[arg(long)]
-    pub search_col: String,
-
-    /// The column in the dataset file that contains the identifier
-    /// for each row to re-join later to the original.
-    #[arg(long)]
-    pub id_col: Option<String>,
-
-    /// threshold
-    /// This is the threshold for the similarity score
-    /// between the search term and the text in the dataset.
-    /// The default is 0.95 which is quite strong.
-    /// If you want to be more lenient you can lower this.
-    ///
-    /// The similarity score is a number between 0 and 1.
-    /// 0 means no similarity and 1 means perfect similarity.
-    ///
-    /// This score will be returned in the output file so you can
-    /// filter on it later.
-    #[arg(long, default_value_t = 0.95)]
-    pub threshold: f64,
-}
-
-#[derive(Parser, Debug)]
-struct PipeCli {
+#[command(about = "File based IO")]
+struct StandardOptions {
+    /// The file with your search terms
     #[arg(short = 'f', long, default_value = "search_terms.csv")]
     terms_file: PathBuf,
 
+    /// The dataset file to search
+    #[arg(short, long)]
+    data_file: PathBuf,
+
+    /// The column name(s) in the dataset to search
+    #[arg(short, long, num_args = 1)]
+    search_cols: Vec<String>,
+
+    /// The column name in the dataset to keep as identifier
+    #[arg(short, long)]
+    id_col: Option<String>,
+
+    /// Minimum similarity for match (0.0 - 1.0)
     #[arg(short, long, default_value_t = 0.95)]
-    pub threshold: f64,
+    threshold: f64,
+
+    /// Output file type, Options: csv, jsonl
+    #[arg(short, long, default_value = "csv")]
+    output_type: OutputFileType,
 }
 
-#[derive(Deserialize, Debug)]
-struct SearchTerm {
-    word: String,
-    metadata: Option<String>,
+#[derive(Parser, Debug)]
+#[command(about = "Pipe based IO")]
+struct PipeOptions {
+    /// File with your search terms
+    #[arg(short = 'f', long, default_value = "search_terms.csv")]
+    terms_file: PathBuf,
+
+    /// Minimum similarity for match (0.0 - 1.0)
+    #[arg(short, long, default_value_t = 0.95)]
+    threshold: f64,
 }
 
-#[derive(Debug, Serialize)]
-struct StandardOutput {
-    #[serde(rename = "Similarity Score")]
-    sim: f64,
-    #[serde(rename = "Search Term")]
-    target: String,
-    #[serde(rename = "Matched Term")]
-    match_: String,
-    #[serde(rename = "Metadata")]
-    metadata: Option<String>,
-}
+#[derive(Parser, Debug)]
+#[command(about = "Interactive Wizard")]
+struct InteractiveOptions {}
 
-#[derive(Debug, Serialize)]
-struct IdentifiedOutput {
-    #[serde(rename = "Row ID")]
-    row_id: String,
-    #[serde(rename = "Similarity Score")]
-    sim: f64,
-    #[serde(rename = "Search Term")]
-    target: String,
-    #[serde(rename = "Matched Term")]
-    match_: String,
-    #[serde(rename = "Metadata")]
-    metadata: Option<String>,
-}
-
-fn find_column_index(header: &csv::StringRecord, col_name: &str) -> usize {
-    let upper_col = col_name.to_uppercase();
-    match header.iter().position(|c| c.to_uppercase() == upper_col) {
-        Some(i) => i,
-        None => {
-            println!("Could not find column named {}", col_name);
-            println!("Available columns: {:?}", header);
-            println!("Please check the spelling of the column name and try again.");
-            std::process::exit(1);
+fn greet(std_err: bool) {
+    match std_err {
+        true => {
+            eprintln!();
+            eprintln!("Welcome to the UK IPOP Fuzzy Drug Searcher!");
+            eprintln!("===========================================");
+            eprintln!();
+            eprintln!("This program will search a datafile for matches to a list of terms. For more information, please consult the User Guide: https://github.com/UK-IPOP/drug-extraction or the `--help` menu.");
+        }
+        false => {
+            println!();
+            println!("Welcome to the UK IPOP Fuzzy Drug Searcher!");
+            println!("===========================================");
+            println!();
+            println!("This program will search a datafile for matches to a list of terms. For more information, please consult the User Guide: https://github.com/UK-IPOP/drug-extraction or the `--help` menu.");
         }
     }
 }
 
-fn remove_symbols_except_dash(s: &str) -> String {
-    let ss: String = s
-        .chars()
-        .map(|c| {
-            if c.is_alphanumeric() || c == '-' {
-                c
-            } else {
-                ' '
-            }
-        })
-        .collect();
-    ss.to_ascii_uppercase()
+#[derive(Debug, Clone, Default)]
+enum OutputFileType {
+    #[default]
+    Csv,
+    Jsonl,
 }
 
-fn validate_terms_headers(header: &csv::StringRecord) -> usize {
-    match header.len() {
-        usize::MIN..=0 => {
-            println!("The search terms file must have at least 1 column");
-            std::process::exit(1);
-        }
-        1..=2 => header.len(), // this is good, return length so we know how many columns to expect
-        3..=usize::MAX => {
-            println!(
-                "The search terms file must have 1-2 columns, detected {} columns",
-                header.len()
-            );
-            std::process::exit(1);
-        }
-        _ => {
-            println!("Unexpected number of columns detected. Expected 1-2 columns in the search term file.");
-            std::process::exit(1);
+impl FromStr for OutputFileType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "csv" => Ok(OutputFileType::Csv),
+            "jsonl" => Ok(OutputFileType::Jsonl),
+            _ => Err(format!("{} is not a valid output file type", s)),
         }
     }
 }
 
-fn read_terms_only(reader: &mut csv::Reader<File>) -> Vec<SearchTerm> {
-    reader
-        .records()
-        .into_iter()
-        .map(|result| match result {
-            Ok(row) => SearchTerm {
-                word: row
-                    .get(0)
-                    .expect("No data found in column 1")
-                    .to_uppercase(),
-                metadata: None,
-            },
-            Err(e) => {
-                println!("Error reading row: {}", e);
-                std::process::exit(1);
-            }
-        })
-        .collect()
+fn write_csv<O: Serialize>(output: &[O]) -> Result<(), Report> {
+    let mut wtr =
+        csv::Writer::from_path("output.csv").wrap_err("Unable to create CSV output file.")?;
+    for row in output
+        .iter()
+        .progress_with(ProgressBar::new_spinner().with_message("Writing CSV..."))
+    {
+        wtr.serialize(row).wrap_err("Unable to serialize output")?;
+    }
+    wtr.flush().wrap_err("Unable to flush output")?;
+    Ok(())
 }
 
-fn read_terms_with_tags(reader: &mut csv::Reader<File>) -> Vec<SearchTerm> {
-    reader
-        .records()
-        .into_iter()
-        .map(|result| match result {
-            Ok(row) => SearchTerm {
-                word: row
-                    .get(0)
-                    .expect("No data found in column 1")
-                    .to_uppercase(),
-                metadata: Some(
-                    row.get(1)
-                        .expect("No data found in column 2")
-                        .to_uppercase(),
-                ),
-            },
-            Err(e) => {
-                println!("Error reading row: {}", e);
-                std::process::exit(1);
-            }
-        })
-        .collect()
+fn write_jsonl<O: Serialize>(output: &[O]) -> Result<(), Report> {
+    use std::io::{BufWriter, Write};
+
+    let mut wtr = BufWriter::new(File::create("output.jsonl")?);
+
+    for row in output
+        .iter()
+        .progress_with(ProgressBar::new_spinner().with_message("Writing JSONL..."))
+    {
+        let json = serde_json::to_string(row).wrap_err("Unable to serialize output")?;
+        wtr.write_all(json.as_bytes())
+            .wrap_err("Unable to write serialized json bytes to file")?;
+        wtr.write_all(b"\n")
+            .wrap_err("Unable to write newline to file")?;
+    }
+    Ok(())
 }
 
-fn load_search_terms(filename: &PathBuf) -> Result<Vec<SearchTerm>> {
-    let fpath = env::current_dir()?.join(filename);
-    let mut rdr = csv::Reader::from_path(fpath)?;
+fn write_output<O: Serialize>(output: &[O], file_type: &OutputFileType) -> Result<(), Report> {
+    match file_type {
+        OutputFileType::Csv => write_csv(output),
+        OutputFileType::Jsonl => write_jsonl(output),
+    }
+}
 
-    let num_cols = validate_terms_headers(rdr.headers()?);
-    let terms = match num_cols {
-        1 => read_terms_only(&mut rdr),
-        2 => read_terms_with_tags(&mut rdr),
-        _ => {
-            println!("Unexpected number of columns returned from validator. Expected 2 columns in the search term file.");
-            println!("Please check the format of the search term file.");
-            std::process::exit(1);
-        }
+fn run_standard_program(args: &StandardOptions) -> Result<(), Report> {
+    let search_terms = lib::load_search_terms(&args.terms_file)?;
+    let pb_style = if let Ok(style) = lib::initialize_progress_with_style("bar") {
+        style
+    } else {
+        // this shouldn't happen but if it does, we'll just use the default spinner
+        ProgressBar::new_spinner().style()
     };
-    Ok(terms)
-}
-
-fn load_dataset_words_only(cli: &StandardCli) -> Result<HashSet<String>> {
-    let fpath = env::current_dir()?.join(&cli.data_file);
-    let file = File::open(fpath)?;
-    let mut rdr = csv::Reader::from_reader(file);
-
-    let target_col_index = find_column_index(rdr.headers()?, &cli.search_col);
-
-    let words: HashSet<String> = rdr
-        .records()
-        .into_iter()
-        .flat_map(|result| match result {
-            Ok(row) => {
-                let text = row
-                    .get(target_col_index)
-                    .expect("No data found in column 1");
-                // clean text, uppercase
-                let clean_text = remove_symbols_except_dash(text);
-                clean_text
-                    .split_whitespace()
-                    .map(|s| s.to_string())
-                    .collect::<HashSet<String>>()
-            }
-            Err(e) => {
-                println!("Error reading row: {}", e);
-                std::process::exit(1);
-            }
-        })
-        .unique()
-        .collect();
-
-    Ok(words)
-}
-
-fn load_dataset_words_identified(cli: &StandardCli) -> Result<HashMap<String, HashSet<String>>> {
-    let fpath = env::current_dir()?.join(&cli.data_file);
-    let file = File::open(fpath)?;
-    let mut rdr = csv::Reader::from_reader(file);
-
-    // safe to unwrap because calling function validates `cli.id_col` is Some
-    // some weird clone/unwrap here?
-    let id_col_index = find_column_index(rdr.headers()?, &cli.id_col.clone().unwrap());
-    let target_col_index = find_column_index(rdr.headers()?, &cli.search_col);
-
-    // now here we need to build a map of words to IDs
-    let mut words_map: HashMap<String, HashSet<String>> = HashMap::new();
-    rdr.records().into_iter().for_each(|result| match result {
-        Ok(row) => {
-            let id = row.get(id_col_index).expect("No data found in ID column");
-            let text = row
-                .get(target_col_index)
-                .expect("No data found in column 1");
-            // clean text, uppercase
-            let clean_text = remove_symbols_except_dash(text);
-            clean_text.split_whitespace().into_iter().for_each(|w| {
-                let word = w.to_string();
-                let map_entry = words_map.entry(word).or_insert(HashSet::new());
-                map_entry.insert(id.to_string());
-            })
+    match &args.id_col {
+        Some(id_col) => {
+            let identified_words =
+                lib::load_dataset_identified(&args.data_file, &args.search_cols, id_col)?;
+            let matches = lib::find_matches(
+                &search_terms,
+                identified_words.keys(),
+                args.threshold,
+                &pb_style,
+            );
+            let outputs = lib::assemble_identified_output(&matches, &identified_words);
+            write_output(&outputs, &args.output_type)?;
+            Ok(())
         }
-        Err(e) => {
-            println!("Error reading row: {}", e);
-            std::process::exit(1);
+        None => {
+            if args.search_cols.len() > 1 {
+                println!(
+                    "Warning: You have specified more than one search column, but no ID column."
+                );
+                println!("This means that the output will not be able to be linked back to the original dataset.");
+                let resume = Confirm::with_theme(&ColorfulTheme::default())
+                    .with_prompt("Continue?")
+                    .default(false)
+                    .interact()
+                    .wrap_err("Unable to confirm")?;
+                if !resume {
+                    eprintln!("Stopping...");
+                    std::process::exit(1);
+                }
+            };
+            let words = lib::load_dataset_words_only(&args.data_file, args.search_cols.as_slice())?;
+            let matches = lib::find_matches(&search_terms, words.iter(), args.threshold, &pb_style);
+            let outputs = lib::assemble_standard_output(&matches, &pb_style);
+            write_output(&outputs, &args.output_type)?;
+            Ok(())
         }
-    });
-
-    Ok(words_map)
+    }
 }
 
-fn read_stdin_to_string() -> String {
-    let mut buffer = String::new();
-    io::stdin().read_to_string(&mut buffer).unwrap();
-    buffer
-}
+fn run_pipe_program(args: &PipeOptions) -> Result<(), Report> {
+    // greet on std err to not interfere with piping
+    greet(true);
 
-fn run_pipe_program(args: &PipeCli) -> Result<()> {
     if atty::is(atty::Stream::Stdin) {
         println!("No data found on standard input. Please pipe data to this program.");
         println!("For example: `cat datafile.txt | extract-drugs pipe");
@@ -335,115 +221,138 @@ fn run_pipe_program(args: &PipeCli) -> Result<()> {
     } else {
         // we have data on standard input
         // but we load the search terms before reading standard input
-        // this helps with debugging in configuration problems in
+        // this helps with debugging configuration problems in
         // search terms file and/or CLI arguments before reading all of standard input
-        let search_terms = load_search_terms(&args.terms_file)?;
-
-        let std_input = read_stdin_to_string();
-        let clean_text = remove_symbols_except_dash(std_input.as_str());
-        let words = clean_text.split_whitespace().collect::<HashSet<&str>>();
-
-        // around here we will want to create our progress bar
-
-        // print the header
-        println!("Search Term,Matched Term,Similarity");
-        search_terms
-            .iter()
-            // comparable to nested for loop
-            .cartesian_product(words.iter())
-            .for_each(|(term, word)| {
-                let sim = jaro_winkler(&term.word, word);
-                if sim > args.threshold {
-                    println!("{},{},{}", term.word, word, sim);
-                }
-            });
+        // which could be very large
+        let search_terms = lib::load_search_terms(&args.terms_file)?;
+        let words = lib::load_stdin_words()?;
+        // this needs to be checked and if an error, print and loop without
+        // progress style
+        let pb_style = lib::initialize_progress_with_style("spinner");
+        match pb_style.is_err() {
+            false => {
+                // progress stuff
+                // print the header
+                println!("Search Term,Matched Term,Similarity");
+                search_terms
+                    .iter()
+                    .cartesian_product(words.iter())
+                    .collect_vec()
+                    .par_iter()
+                    .progress_with_style(pb_style.unwrap()) // safe unwrap
+                    .for_each(|(term, word)| {
+                        let sim = jaro_winkler(&term.word, word);
+                        if sim > args.threshold {
+                            println!("{},{},{}", term.word, word, sim);
+                        }
+                    });
+            }
+            true => {
+                // no progress looping
+                eprintln!("Unable to initialize progress bar. Continuing without progress bar.");
+                // print the header
+                println!("Search Term,Matched Term,Similarity");
+                search_terms
+                    .iter()
+                    .cartesian_product(words.iter())
+                    .collect_vec()
+                    .par_iter()
+                    .for_each(|(term, word)| {
+                        let sim = jaro_winkler(&term.word, word);
+                        if sim > args.threshold {
+                            println!("{},{},{}", term.word, word, sim);
+                        }
+                    });
+            }
+        }
     }
     Ok(())
 }
 
-fn run_standard_program(args: &StandardCli) -> Result<()> {
-    let search_terms = load_search_terms(&args.terms_file)?;
+fn interactive_wizard() -> Result<(), Report> {
+    greet(false);
 
-    match args.id_col {
-        Some(_) => {
-            println!("ID column provided.");
-            println!("Loading dataset words and IDs.");
-            let identified_words = load_dataset_words_identified(args)?;
+    let theme = ColorfulTheme::default();
 
-            let mut wtr =
-                csv::Writer::from_path(env::current_dir()?.join("identified_output.csv"))?;
+    let terms_file: PathBuf = Input::<String>::with_theme(&theme)
+        .with_prompt("What is the path to the search terms file?")
+        .default("search_terms.csv".to_string())
+        .interact_text()?
+        .into();
 
-            // pb starts here
-            search_terms
-                .iter()
-                // comparable to nested for loop
-                .cartesian_product(identified_words.keys())
-                .for_each(|(term, word)| {
-                    let sim = jaro_winkler(&term.word, word);
-                    if sim > args.threshold {
-                        // identified output
-                        // make multiple times for each ID
-                        identified_words
-                            .get(word)
-                            .unwrap() // ok because comes from `keys()`
-                            .iter()
-                            .for_each(|id| {
-                                let output = IdentifiedOutput {
-                                    row_id: id.to_string(),
-                                    target: term.word.to_owned(),
-                                    match_: word.to_string(),
-                                    sim,
-                                    metadata: term.metadata.to_owned(),
-                                };
-                                wtr.serialize(output).unwrap();
-                            });
-                    }
-                });
-            Ok(())
-        }
-        None => {
-            println!("No ID column provided.");
-            println!("Loading dataset words only.");
-            let words = load_dataset_words_only(args)?;
+    let data_file: PathBuf = Input::<String>::with_theme(&theme)
+        .with_prompt("What is the path to the data file?")
+        .interact_text()?
+        .into();
 
-            let mut wtr = csv::Writer::from_path(env::current_dir()?.join("standard_ output.csv"))?;
+    let headers = lib::read_headers(&data_file)?;
 
-            // pb starts here
-            search_terms
-                .iter()
-                // comparable to nested for loop
-                .cartesian_product(&words)
-                .for_each(|(term, word)| {
-                    let sim = jaro_winkler(&term.word, word);
-                    if sim > args.threshold {
-                        // standard output
-                        let output = StandardOutput {
-                            target: term.word.to_owned(),
-                            match_: word.to_string(),
-                            sim,
-                            metadata: term.metadata.to_owned(),
-                        };
-                        wtr.serialize(output).unwrap();
-                    }
-                });
+    let search_cols = MultiSelect::with_theme(&theme)
+        .with_prompt("Which column(s) do you want to search? (multi-select with Space)")
+        .items(&headers)
+        .interact()?;
 
-            Ok(())
-        }
+    if search_cols.is_empty() {
+        println!("You must select at least one column to search.");
+        println!("Use the arrow keys to select the columns you want to search.");
+        println!("Press `Space` to select and unselect columns and `Enter` to continue.");
+        std::process::exit(1);
     }
+    let search_cols = search_cols
+        .iter()
+        .map(|&x| headers[x].to_string())
+        .collect::<Vec<String>>();
+
+    let has_id_col = Confirm::with_theme(&theme)
+        .with_prompt("Do you want to use an ID column?")
+        .default(false)
+        .interact()?;
+
+    let id_col = if has_id_col {
+        let id_col_index = FuzzySelect::with_theme(&theme)
+            .with_prompt("Which column do you want to use as the ID column?")
+            .items(&headers)
+            .interact()?;
+        Some(&headers[id_col_index])
+    } else {
+        None
+    };
+
+    let threshold = Input::<f64>::with_theme(&theme)
+        .with_prompt("What is the threshold for matches?")
+        .default(0.95)
+        .interact()?;
+
+    let output_type = Select::with_theme(&theme)
+        .with_prompt("What type of output do you want?")
+        .items(&["CSV", "JSONL"])
+        .default(0)
+        .interact()?;
+    let output_type = OutputFileType::from_str(["csv", "jsonl"][output_type]).unwrap();
+
+    let args = StandardOptions {
+        terms_file,
+        data_file,
+        id_col: id_col.cloned(),
+        search_cols,
+        threshold,
+        output_type,
+    };
+
+    run_standard_program(&args)?;
+
+    Ok(())
 }
 
-fn run_interactive_program() -> Result<()> {
-    todo!("interactive mode")
-}
+fn main() -> Result<(), Report> {
+    color_eyre::install()?;
 
-fn main() -> Result<()> {
     let cli = Cli::parse();
-    dbg!(&cli);
 
     match cli.command {
-        Commands::Interactive => run_interactive_program()?,
-        Commands::Pipe(args) => run_pipe_program(&args)?,
         Commands::Standard(args) => run_standard_program(&args)?,
+        Commands::Pipe(args) => run_pipe_program(&args)?,
+        Commands::Interactive(_) => interactive_wizard()?,
     }
 
     Ok(())
@@ -451,21 +360,4 @@ fn main() -> Result<()> {
 
 // tests module
 #[cfg(test)]
-mod tests {
-    use itertools::Itertools;
-
-    #[test]
-    fn test_double_iter() {
-        let a = vec![1, 2, 3, 4, 5];
-        let b = vec![1, 2, 3, 4, 5, 7, 8];
-        // for aa in &a {
-        //     for bb in &b {
-        //         println!("{}, {}", aa, bb);
-        //     }
-        // }
-        let c = a.iter().cartesian_product(b.iter());
-        for (aa, bb) in c {
-            println!("{}, {}", aa, bb);
-        }
-    }
-}
+mod tests {}
