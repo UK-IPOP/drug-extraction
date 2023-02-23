@@ -6,23 +6,18 @@ authors = ["Nick Anthony <nanthony007@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.11.0"
-pandas = "^1.4.2"
-requests = "^2.27.1"
-datapane = "^0.14.0"
-plotly = "^5.7.0"
-rich = "^12.3.0"
-click = "^8.1.3"
+python = ">=3.10,<3.11"
+rich = "^13.3.1"
+plotly = "^5.13.0"
+datapane = "^0.15.7"
+polars = "^0.16.8"
 
-[tool.poetry.dev-dependencies]
-black = "^22.3.0"
-flake8 = "^4.0.1"
-isort = "^5.10.1"
-pytest = "^7.1.2"
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
+ruff = "^0.0.252"
 
 [tool.poetry.scripts]
-de-workflow = "de_workflow.main:app"
-
+de-workflow = "de_workflow.app:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

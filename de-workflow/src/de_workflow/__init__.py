@@ -1,3 +1,3 @@
-__version__ = '0.1.0'
+from de_workflow import app
 
-
+__version__ = app.version
