@@ -1,0 +1,18 @@
+update readme
+
+improve naming conventions
+
+remove borrows to see when not needed
+    - helps w/ dropping/freeing
+
+find "best" cache crate
+
+update docs for functions
+
+add examples
+
+add tests
+
+add meta-examples (i.e. integrating with python for jsonlines)
+
+add benchmarks

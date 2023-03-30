@@ -1,0 +1,491 @@
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" width="1200" height="470" onload="init(evt)" viewBox="0 0 1200 470" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:fg="http://github.com/jonhoo/inferno"><!--Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples.--><!--NOTES: --><defs><linearGradient id="background" y1="0" y2="1" x1="0" x2="0"><stop stop-color="#eeeeee" offset="5%"/><stop stop-color="#eeeeb0" offset="95%"/></linearGradient></defs><style type="text/css">
+text { font-family:monospace; font-size:12px }
+#title { text-anchor:middle; font-size:17px; }
+#matched { text-anchor:end; }
+#search { text-anchor:end; opacity:0.1; cursor:pointer; }
+#search:hover, #search.show { opacity:1; }
+#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+#unzoom { cursor:pointer; }
+#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+.hide { display:none; }
+.parent { opacity:0.5; }
+</style><script type="text/ecmascript"><![CDATA[
+        var nametype = 'Function:';
+        var fontsize = 12;
+        var fontwidth = 0.59;
+        var xpad = 10;
+        var inverted = false;
+        var searchcolor = 'rgb(230,0,230)';
+        var fluiddrawing = true;
+        var truncate_text_right = false;
+    ]]><![CDATA["use strict";
+var details, searchbtn, unzoombtn, matchedtxt, svg, searching, frames, known_font_width;
+function init(evt) {
+    details = document.getElementById("details").firstChild;
+    searchbtn = document.getElementById("search");
+    unzoombtn = document.getElementById("unzoom");
+    matchedtxt = document.getElementById("matched");
+    svg = document.getElementsByTagName("svg")[0];
+    frames = document.getElementById("frames");
+    known_font_width = get_monospace_width(frames);
+    total_samples = parseInt(frames.attributes.total_samples.value);
+    searching = 0;
+
+    // Use GET parameters to restore a flamegraph's state.
+    var restore_state = function() {
+        var params = get_params();
+        if (params.x && params.y)
+            zoom(find_group(document.querySelector('[*|x="' + params.x + '"][y="' + params.y + '"]')));
+        if (params.s)
+            search(params.s);
+    };
+
+    if (fluiddrawing) {
+        // Make width dynamic so the SVG fits its parent's width.
+        svg.removeAttribute("width");
+        // Edge requires us to have a viewBox that gets updated with size changes.
+        var isEdge = /Edge\/\d./i.test(navigator.userAgent);
+        if (!isEdge) {
+            svg.removeAttribute("viewBox");
+        }
+        var update_for_width_change = function() {
+            if (isEdge) {
+                svg.attributes.viewBox.value = "0 0 " + svg.width.baseVal.value + " " + svg.height.baseVal.value;
+            }
+
+            // Keep consistent padding on left and right of frames container.
+            frames.attributes.width.value = svg.width.baseVal.value - xpad * 2;
+
+            // Text truncation needs to be adjusted for the current width.
+            update_text_for_elements(frames.children);
+
+            // Keep search elements at a fixed distance from right edge.
+            var svgWidth = svg.width.baseVal.value;
+            searchbtn.attributes.x.value = svgWidth - xpad;
+            matchedtxt.attributes.x.value = svgWidth - xpad;
+        };
+        window.addEventListener('resize', function() {
+            update_for_width_change();
+        });
+        // This needs to be done asynchronously for Safari to work.
+        setTimeout(function() {
+            unzoom();
+            update_for_width_change();
+            restore_state();
+        }, 0);
+    } else {
+        restore_state();
+    }
+}
+// event listeners
+window.addEventListener("click", function(e) {
+    var target = find_group(e.target);
+    if (target) {
+        if (target.nodeName == "a") {
+            if (e.ctrlKey === false) return;
+            e.preventDefault();
+        }
+        if (target.classList.contains("parent")) unzoom();
+        zoom(target);
+
+        // set parameters for zoom state
+        var el = target.querySelector("rect");
+        if (el && el.attributes && el.attributes.y && el.attributes["fg:x"]) {
+            var params = get_params()
+            params.x = el.attributes["fg:x"].value;
+            params.y = el.attributes.y.value;
+            history.replaceState(null, null, parse_params(params));
+        }
+    }
+    else if (e.target.id == "unzoom") {
+        unzoom();
+
+        // remove zoom state
+        var params = get_params();
+        if (params.x) delete params.x;
+        if (params.y) delete params.y;
+        history.replaceState(null, null, parse_params(params));
+    }
+    else if (e.target.id == "search") search_prompt();
+}, false)
+// mouse-over for info
+// show
+window.addEventListener("mouseover", function(e) {
+    var target = find_group(e.target);
+    if (target) details.nodeValue = nametype + " " + g_to_text(target);
+}, false)
+// clear
+window.addEventListener("mouseout", function(e) {
+    var target = find_group(e.target);
+    if (target) details.nodeValue = ' ';
+}, false)
+// ctrl-F for search
+window.addEventListener("keydown",function (e) {
+    if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+        e.preventDefault();
+        search_prompt();
+    }
+}, false)
+// functions
+function get_params() {
+    var params = {};
+    var paramsarr = window.location.search.substr(1).split('&');
+    for (var i = 0; i < paramsarr.length; ++i) {
+        var tmp = paramsarr[i].split("=");
+        if (!tmp[0] || !tmp[1]) continue;
+        params[tmp[0]]  = decodeURIComponent(tmp[1]);
+    }
+    return params;
+}
+function parse_params(params) {
+    var uri = "?";
+    for (var key in params) {
+        uri += key + '=' + encodeURIComponent(params[key]) + '&';
+    }
+    if (uri.slice(-1) == "&")
+        uri = uri.substring(0, uri.length - 1);
+    if (uri == '?')
+        uri = window.location.href.split('?')[0];
+    return uri;
+}
+function find_child(node, selector) {
+    var children = node.querySelectorAll(selector);
+    if (children.length) return children[0];
+    return;
+}
+function find_group(node) {
+    var parent = node.parentElement;
+    if (!parent) return;
+    if (parent.id == "frames") return node;
+    return find_group(parent);
+}
+function orig_save(e, attr, val) {
+    if (e.attributes["fg:orig_" + attr] != undefined) return;
+    if (e.attributes[attr] == undefined) return;
+    if (val == undefined) val = e.attributes[attr].value;
+    e.setAttribute("fg:orig_" + attr, val);
+}
+function orig_load(e, attr) {
+    if (e.attributes["fg:orig_"+attr] == undefined) return;
+    e.attributes[attr].value = e.attributes["fg:orig_" + attr].value;
+    e.removeAttribute("fg:orig_" + attr);
+}
+function g_to_text(e) {
+    var text = find_child(e, "title").firstChild.nodeValue;
+    return (text)
+}
+function g_to_func(e) {
+    var func = g_to_text(e);
+    // if there's any manipulation we want to do to the function
+    // name before it's searched, do it here before returning.
+    return (func);
+}
+function get_monospace_width(frames) {
+    // Given the id="frames" element, return the width of text characters if
+    // this is a monospace font, otherwise return 0.
+    text = find_child(frames.children[0], "text");
+    originalContent = text.textContent;
+    text.textContent = "!";
+    bangWidth = text.getComputedTextLength();
+    text.textContent = "W";
+    wWidth = text.getComputedTextLength();
+    text.textContent = originalContent;
+    if (bangWidth === wWidth) {
+        return bangWidth;
+    } else {
+        return 0;
+    }
+}
+function update_text_for_elements(elements) {
+    // In order to render quickly in the browser, you want to do one pass of
+    // reading attributes, and one pass of mutating attributes. See
+    // https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/ for details.
+
+    // Fall back to inefficient calculation, if we're variable-width font.
+    // TODO This should be optimized somehow too.
+    if (known_font_width === 0) {
+        for (var i = 0; i < elements.length; i++) {
+            update_text(elements[i]);
+        }
+        return;
+    }
+
+    var textElemNewAttributes = [];
+    for (var i = 0; i < elements.length; i++) {
+        var e = elements[i];
+        var r = find_child(e, "rect");
+        var t = find_child(e, "text");
+        var w = parseFloat(r.attributes.width.value) * frames.attributes.width.value / 100 - 3;
+        var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+        var newX = format_percent((parseFloat(r.attributes.x.value) + (100 * 3 / frames.attributes.width.value)));
+
+        // Smaller than this size won't fit anything
+        if (w < 2 * known_font_width) {
+            textElemNewAttributes.push([newX, ""]);
+            continue;
+        }
+
+        // Fit in full text width
+        if (txt.length * known_font_width < w) {
+            textElemNewAttributes.push([newX, txt]);
+            continue;
+        }
+
+        var substringLength = Math.floor(w / known_font_width) - 2;
+        if (truncate_text_right) {
+            // Truncate the right side of the text.
+            textElemNewAttributes.push([newX, txt.substring(0, substringLength) + ".."]);
+            continue;
+        } else {
+            // Truncate the left side of the text.
+            textElemNewAttributes.push([newX, ".." + txt.substring(txt.length - substringLength, txt.length)]);
+            continue;
+        }
+    }
+
+    console.assert(textElemNewAttributes.length === elements.length, "Resize failed, please file a bug at https://github.com/jonhoo/inferno/");
+
+    // Now that we know new textContent, set it all in one go so we don't refresh a bazillion times.
+    for (var i = 0; i < elements.length; i++) {
+        var e = elements[i];
+        var values = textElemNewAttributes[i];
+        var t = find_child(e, "text");
+        t.attributes.x.value = values[0];
+        t.textContent = values[1];
+    }
+}
+
+function update_text(e) {
+    var r = find_child(e, "rect");
+    var t = find_child(e, "text");
+    var w = parseFloat(r.attributes.width.value) * frames.attributes.width.value / 100 - 3;
+    var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+    t.attributes.x.value = format_percent((parseFloat(r.attributes.x.value) + (100 * 3 / frames.attributes.width.value)));
+
+    // Smaller than this size won't fit anything
+    if (w < 2 * fontsize * fontwidth) {
+        t.textContent = "";
+        return;
+    }
+    t.textContent = txt;
+    // Fit in full text width
+    if (t.getComputedTextLength() < w)
+        return;
+    if (truncate_text_right) {
+        // Truncate the right side of the text.
+        for (var x = txt.length - 2; x > 0; x--) {
+            if (t.getSubStringLength(0, x + 2) <= w) {
+                t.textContent = txt.substring(0, x) + "..";
+                return;
+            }
+        }
+    } else {
+        // Truncate the left side of the text.
+        for (var x = 2; x < txt.length; x++) {
+            if (t.getSubStringLength(x - 2, txt.length) <= w) {
+                t.textContent = ".." + txt.substring(x, txt.length);
+                return;
+            }
+        }
+    }
+    t.textContent = "";
+}
+// zoom
+function zoom_reset(e) {
+    if (e.tagName == "rect") {
+        e.attributes.x.value = format_percent(100 * parseInt(e.attributes["fg:x"].value) / total_samples);
+        e.attributes.width.value = format_percent(100 * parseInt(e.attributes["fg:w"].value) / total_samples);
+    }
+    if (e.childNodes == undefined) return;
+    for(var i = 0, c = e.childNodes; i < c.length; i++) {
+        zoom_reset(c[i]);
+    }
+}
+function zoom_child(e, x, zoomed_width_samples) {
+    if (e.tagName == "text") {
+        var parent_x = parseFloat(find_child(e.parentNode, "rect[x]").attributes.x.value);
+        e.attributes.x.value = format_percent(parent_x + (100 * 3 / frames.attributes.width.value));
+    } else if (e.tagName == "rect") {
+        e.attributes.x.value = format_percent(100 * (parseInt(e.attributes["fg:x"].value) - x) / zoomed_width_samples);
+        e.attributes.width.value = format_percent(100 * parseInt(e.attributes["fg:w"].value) / zoomed_width_samples);
+    }
+    if (e.childNodes == undefined) return;
+    for(var i = 0, c = e.childNodes; i < c.length; i++) {
+        zoom_child(c[i], x, zoomed_width_samples);
+    }
+}
+function zoom_parent(e) {
+    if (e.attributes) {
+        if (e.attributes.x != undefined) {
+            e.attributes.x.value = "0.0%";
+        }
+        if (e.attributes.width != undefined) {
+            e.attributes.width.value = "100.0%";
+        }
+    }
+    if (e.childNodes == undefined) return;
+    for(var i = 0, c = e.childNodes; i < c.length; i++) {
+        zoom_parent(c[i]);
+    }
+}
+function zoom(node) {
+    var attr = find_child(node, "rect").attributes;
+    var width = parseInt(attr["fg:w"].value);
+    var xmin = parseInt(attr["fg:x"].value);
+    var xmax = xmin + width;
+    var ymin = parseFloat(attr.y.value);
+    unzoombtn.classList.remove("hide");
+    var el = frames.children;
+    var to_update_text = [];
+    for (var i = 0; i < el.length; i++) {
+        var e = el[i];
+        var a = find_child(e, "rect").attributes;
+        var ex = parseInt(a["fg:x"].value);
+        var ew = parseInt(a["fg:w"].value);
+        // Is it an ancestor
+        if (!inverted) {
+            var upstack = parseFloat(a.y.value) > ymin;
+        } else {
+            var upstack = parseFloat(a.y.value) < ymin;
+        }
+        if (upstack) {
+            // Direct ancestor
+            if (ex <= xmin && (ex+ew) >= xmax) {
+                e.classList.add("parent");
+                zoom_parent(e);
+                to_update_text.push(e);
+            }
+            // not in current path
+            else
+                e.classList.add("hide");
+        }
+        // Children maybe
+        else {
+            // no common path
+            if (ex < xmin || ex >= xmax) {
+                e.classList.add("hide");
+            }
+            else {
+                zoom_child(e, xmin, width);
+                to_update_text.push(e);
+            }
+        }
+    }
+    update_text_for_elements(to_update_text);
+}
+function unzoom() {
+    unzoombtn.classList.add("hide");
+    var el = frames.children;
+    for(var i = 0; i < el.length; i++) {
+        el[i].classList.remove("parent");
+        el[i].classList.remove("hide");
+        zoom_reset(el[i]);
+    }
+    update_text_for_elements(el);
+}
+// search
+function reset_search() {
+    var el = document.querySelectorAll("#frames rect");
+    for (var i = 0; i < el.length; i++) {
+        orig_load(el[i], "fill")
+    }
+    var params = get_params();
+    delete params.s;
+    history.replaceState(null, null, parse_params(params));
+}
+function search_prompt() {
+    if (!searching) {
+        var term = prompt("Enter a search term (regexp " +
+            "allowed, eg: ^ext4_)", "");
+        if (term != null) {
+            search(term)
+        }
+    } else {
+        reset_search();
+        searching = 0;
+        searchbtn.classList.remove("show");
+        searchbtn.firstChild.nodeValue = "Search"
+        matchedtxt.classList.add("hide");
+        matchedtxt.firstChild.nodeValue = ""
+    }
+}
+function search(term) {
+    var re = new RegExp(term);
+    var el = frames.children;
+    var matches = new Object();
+    var maxwidth = 0;
+    for (var i = 0; i < el.length; i++) {
+        var e = el[i];
+        // Skip over frames which are either not visible, or below the zoomed-to frame
+        if (e.classList.contains("hide") || e.classList.contains("parent")) {
+            continue;
+        }
+        var func = g_to_func(e);
+        var rect = find_child(e, "rect");
+        if (func == null || rect == null)
+            continue;
+        // Save max width. Only works as we have a root frame
+        var w = parseInt(rect.attributes["fg:w"].value);
+        if (w > maxwidth)
+            maxwidth = w;
+        if (func.match(re)) {
+            // highlight
+            var x = parseInt(rect.attributes["fg:x"].value);
+            orig_save(rect, "fill");
+            rect.attributes.fill.value = searchcolor;
+            // remember matches
+            if (matches[x] == undefined) {
+                matches[x] = w;
+            } else {
+                if (w > matches[x]) {
+                    // overwrite with parent
+                    matches[x] = w;
+                }
+            }
+            searching = 1;
+        }
+    }
+    if (!searching)
+        return;
+    var params = get_params();
+    params.s = term;
+    history.replaceState(null, null, parse_params(params));
+
+    searchbtn.classList.add("show");
+    searchbtn.firstChild.nodeValue = "Reset Search";
+    // calculate percent matched, excluding vertical overlap
+    var count = 0;
+    var lastx = -1;
+    var lastw = 0;
+    var keys = Array();
+    for (k in matches) {
+        if (matches.hasOwnProperty(k))
+            keys.push(k);
+    }
+    // sort the matched frames by their x location
+    // ascending, then width descending
+    keys.sort(function(a, b){
+        return a - b;
+    });
+    // Step through frames saving only the biggest bottom-up frames
+    // thanks to the sort order. This relies on the tree property
+    // where children are always smaller than their parents.
+    for (var k in keys) {
+        var x = parseInt(keys[k]);
+        var w = matches[keys[k]];
+        if (x >= lastx + lastw) {
+            count += w;
+            lastx = x;
+            lastw = w;
+        }
+    }
+    // display matched percent
+    matchedtxt.classList.remove("hide");
+    var pct = 100 * count / maxwidth;
+    if (pct != 100) pct = pct.toFixed(1);
+    matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+}
+function format_percent(n) {
+    return n.toFixed(4) + "%";
+}
+]]></script><rect x="0" y="0" width="100%" height="470" fill="url(#background)"/><text id="title" fill="rgb(0,0,0)" x="50.0000%" y="24.00">Flame Graph</text><text id="details" fill="rgb(0,0,0)" x="10" y="453.00"> </text><text id="unzoom" class="hide" fill="rgb(0,0,0)" x="10" y="24.00">Reset Zoom</text><text id="search" fill="rgb(0,0,0)" x="1190" y="24.00">Search</text><text id="matched" fill="rgb(0,0,0)" x="1190" y="453.00"> </text><svg id="frames" x="10" width="1180" total_samples="694"><g><title>dyld`start (1 samples, 0.14%)</title><rect x="0.0000%" y="405" width="0.1441%" height="15" fill="rgb(227,0,7)" fg:x="0" fg:w="1"/><text x="0.2500%" y="415.50"></text></g><g><title>extract_drugs-d090f007e475e17f`main (1 samples, 0.14%)</title><rect x="0.0000%" y="389" width="0.1441%" height="15" fill="rgb(217,0,24)" fg:x="0" fg:w="1"/><text x="0.2500%" y="399.50"></text></g><g><title>extract_drugs-d090f007e475e17f`std::rt::lang_start_internal (1 samples, 0.14%)</title><rect x="0.0000%" y="373" width="0.1441%" height="15" fill="rgb(221,193,54)" fg:x="0" fg:w="1"/><text x="0.2500%" y="383.50"></text></g><g><title>extract_drugs-d090f007e475e17f`std::rt::lang_start::_{{closure}} (1 samples, 0.14%)</title><rect x="0.0000%" y="357" width="0.1441%" height="15" fill="rgb(248,212,6)" fg:x="0" fg:w="1"/><text x="0.2500%" y="367.50"></text></g><g><title>extract_drugs-d090f007e475e17f`std::sys_common::backtrace::__rust_begin_short_backtrace (1 samples, 0.14%)</title><rect x="0.0000%" y="341" width="0.1441%" height="15" fill="rgb(208,68,35)" fg:x="0" fg:w="1"/><text x="0.2500%" y="351.50"></text></g><g><title>extract_drugs-d090f007e475e17f`test::test_main_static (1 samples, 0.14%)</title><rect x="0.0000%" y="325" width="0.1441%" height="15" fill="rgb(232,128,0)" fg:x="0" fg:w="1"/><text x="0.2500%" y="335.50"></text></g><g><title>extract_drugs-d090f007e475e17f`test::test_main (1 samples, 0.14%)</title><rect x="0.0000%" y="309" width="0.1441%" height="15" fill="rgb(207,160,47)" fg:x="0" fg:w="1"/><text x="0.2500%" y="319.50"></text></g><g><title>extract_drugs-d090f007e475e17f`test::term::stdout (1 samples, 0.14%)</title><rect x="0.0000%" y="293" width="0.1441%" height="15" fill="rgb(228,23,34)" fg:x="0" fg:w="1"/><text x="0.2500%" y="303.50"></text></g><g><title>extract_drugs-d090f007e475e17f`rayon_core::registry::ThreadBuilder::run (2 samples, 0.29%)</title><rect x="0.1441%" y="325" width="0.2882%" height="15" fill="rgb(218,30,26)" fg:x="1" fg:w="2"/><text x="0.3941%" y="335.50"></text></g><g><title>extract_drugs-d090f007e475e17f`rayon_core::registry::WorkerThread::wait_until_cold (2 samples, 0.29%)</title><rect x="0.1441%" y="309" width="0.2882%" height="15" fill="rgb(220,122,19)" fg:x="1" fg:w="2"/><text x="0.3941%" y="319.50"></text></g><g><title>libsystem_kernel.dylib`swtch_pri (2 samples, 0.29%)</title><rect x="0.1441%" y="293" width="0.2882%" height="15" fill="rgb(250,228,42)" fg:x="1" fg:w="2"/><text x="0.3941%" y="303.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;alloc::vec::Vec&lt;T&gt; as alloc::vec::spec_from_iter::SpecFromIter&lt;T,I&gt;&gt;::from_iter (3 samples, 0.43%)</title><rect x="0.4323%" y="277" width="0.4323%" height="15" fill="rgb(240,193,28)" fg:x="3" fg:w="3"/><text x="0.6823%" y="287.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;cached::stores::sized::SizedCache&lt;K,V&gt; as cached::Cached&lt;K,V&gt;&gt;::cache_get (2 samples, 0.29%)</title><rect x="0.8646%" y="277" width="0.2882%" height="15" fill="rgb(216,20,37)" fg:x="6" fg:w="2"/><text x="1.1146%" y="287.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$free (1 samples, 0.14%)</title><rect x="1.1527%" y="277" width="0.1441%" height="15" fill="rgb(206,188,39)" fg:x="8" fg:w="1"/><text x="1.4027%" y="287.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$malloc (1 samples, 0.14%)</title><rect x="1.2968%" y="277" width="0.1441%" height="15" fill="rgb(217,207,13)" fg:x="9" fg:w="1"/><text x="1.5468%" y="287.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$pthread_mutex_lock (2 samples, 0.29%)</title><rect x="1.4409%" y="277" width="0.2882%" height="15" fill="rgb(231,73,38)" fg:x="10" fg:w="2"/><text x="1.6909%" y="287.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$pthread_mutex_unlock (1 samples, 0.14%)</title><rect x="1.7291%" y="277" width="0.1441%" height="15" fill="rgb(225,20,46)" fg:x="12" fg:w="1"/><text x="1.9791%" y="287.50"></text></g><g><title>extract_drugs-d090f007e475e17f`__rdl_alloc (1 samples, 0.14%)</title><rect x="1.8732%" y="277" width="0.1441%" height="15" fill="rgb(210,31,41)" fg:x="13" fg:w="1"/><text x="2.1232%" y="287.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::fmt::format::format_inner (1 samples, 0.14%)</title><rect x="2.0173%" y="277" width="0.1441%" height="15" fill="rgb(221,200,47)" fg:x="14" fg:w="1"/><text x="2.2673%" y="287.50"></text></g><g><title>extract_drugs-d090f007e475e17f`drug_extraction_cli::remove_symbols_except_dash (3 samples, 0.43%)</title><rect x="2.1614%" y="277" width="0.4323%" height="15" fill="rgb(226,26,5)" fg:x="15" fg:w="3"/><text x="2.4114%" y="287.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;core::iter::adapters::map::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::next (23 samples, 3.31%)</title><rect x="10.2305%" y="245" width="3.3141%" height="15" fill="rgb(249,33,26)" fg:x="71" fg:w="23"/><text x="10.4805%" y="255.50">ext..</text></g><g><title>extract_drugs-d090f007e475e17f`&lt;alloc::string::String as core::clone::Clone&gt;::clone (1 samples, 0.14%)</title><rect x="14.1210%" y="229" width="0.1441%" height="15" fill="rgb(235,183,28)" fg:x="98" fg:w="1"/><text x="14.3710%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$malloc (1 samples, 0.14%)</title><rect x="14.2651%" y="229" width="0.1441%" height="15" fill="rgb(221,5,38)" fg:x="99" fg:w="1"/><text x="14.5151%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$memcpy (2 samples, 0.29%)</title><rect x="14.4092%" y="229" width="0.2882%" height="15" fill="rgb(247,18,42)" fg:x="100" fg:w="2"/><text x="14.6592%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::str::join_generic_copy (3 samples, 0.43%)</title><rect x="14.6974%" y="229" width="0.4323%" height="15" fill="rgb(241,131,45)" fg:x="102" fg:w="3"/><text x="14.9474%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;core::hash::sip::Hasher&lt;S&gt; as core::hash::Hasher&gt;::write (6 samples, 0.86%)</title><rect x="15.8501%" y="213" width="0.8646%" height="15" fill="rgb(249,31,29)" fg:x="110" fg:w="6"/><text x="16.1001%" y="223.50"></text></g><g><title>extract_drugs-d090f007e475e17f`core::hash::BuildHasher::hash_one (7 samples, 1.01%)</title><rect x="16.7147%" y="213" width="1.0086%" height="15" fill="rgb(225,111,53)" fg:x="116" fg:w="7"/><text x="16.9647%" y="223.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;core::hash::sip::Hasher&lt;S&gt; as core::hash::Hasher&gt;::write (4 samples, 0.58%)</title><rect x="18.4438%" y="197" width="0.5764%" height="15" fill="rgb(238,160,17)" fg:x="128" fg:w="4"/><text x="18.6938%" y="207.50"></text></g><g><title>extract_drugs-d090f007e475e17f`core::hash::BuildHasher::hash_one (6 samples, 0.86%)</title><rect x="19.0202%" y="197" width="0.8646%" height="15" fill="rgb(214,148,48)" fg:x="132" fg:w="6"/><text x="19.2702%" y="207.50"></text></g><g><title>libsystem_malloc.dylib`_nanov2_free (1 samples, 0.14%)</title><rect x="19.8847%" y="197" width="0.1441%" height="15" fill="rgb(232,36,49)" fg:x="138" fg:w="1"/><text x="20.1347%" y="207.50"></text></g><g><title>extract_drugs-d090f007e475e17f`hashbrown::raw::RawTable&lt;T,A&gt;::reserve_rehash (18 samples, 2.59%)</title><rect x="17.7233%" y="213" width="2.5937%" height="15" fill="rgb(209,103,24)" fg:x="123" fg:w="18"/><text x="17.9733%" y="223.50">ex..</text></g><g><title>libsystem_malloc.dylib`szone_malloc_should_clear (2 samples, 0.29%)</title><rect x="20.0288%" y="197" width="0.2882%" height="15" fill="rgb(229,88,8)" fg:x="139" fg:w="2"/><text x="20.2788%" y="207.50"></text></g><g><title>libsystem_malloc.dylib`tiny_malloc_should_clear (2 samples, 0.29%)</title><rect x="20.0288%" y="181" width="0.2882%" height="15" fill="rgb(213,181,19)" fg:x="139" fg:w="2"/><text x="20.2788%" y="191.50"></text></g><g><title>libsystem_malloc.dylib`free (1 samples, 0.14%)</title><rect x="20.3170%" y="213" width="0.1441%" height="15" fill="rgb(254,191,54)" fg:x="141" fg:w="1"/><text x="20.5670%" y="223.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (2 samples, 0.29%)</title><rect x="20.4611%" y="213" width="0.2882%" height="15" fill="rgb(241,83,37)" fg:x="142" fg:w="2"/><text x="20.7111%" y="223.50"></text></g><g><title>extract_drugs-d090f007e475e17f`hashbrown::rustc_entry::_&lt;impl hashbrown::map::HashMap&lt;K,V,S,A&gt;&gt;::rustc_entry (40 samples, 5.76%)</title><rect x="15.1297%" y="229" width="5.7637%" height="15" fill="rgb(233,36,39)" fg:x="105" fg:w="40"/><text x="15.3797%" y="239.50">extract..</text></g><g><title>libsystem_platform.dylib`_platform_memset (1 samples, 0.14%)</title><rect x="20.7493%" y="213" width="0.1441%" height="15" fill="rgb(226,3,54)" fg:x="144" fg:w="1"/><text x="20.9993%" y="223.50"></text></g><g><title>libsystem_malloc.dylib`_malloc_zone_malloc (4 samples, 0.58%)</title><rect x="20.8934%" y="229" width="0.5764%" height="15" fill="rgb(245,192,40)" fg:x="145" fg:w="4"/><text x="21.1434%" y="239.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (4 samples, 0.58%)</title><rect x="21.4697%" y="229" width="0.5764%" height="15" fill="rgb(238,167,29)" fg:x="149" fg:w="4"/><text x="21.7197%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;itertools::unique_impl::Unique&lt;I&gt; as core::iter::traits::iterator::Iterator&gt;::next (74 samples, 10.66%)</title><rect x="13.5447%" y="245" width="10.6628%" height="15" fill="rgb(232,182,51)" fg:x="94" fg:w="74"/><text x="13.7947%" y="255.50">extract_drugs-d0..</text></g><g><title>libsystem_platform.dylib`_platform_memmove (15 samples, 2.16%)</title><rect x="22.0461%" y="229" width="2.1614%" height="15" fill="rgb(231,60,39)" fg:x="153" fg:w="15"/><text x="22.2961%" y="239.50">l..</text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$malloc (3 samples, 0.43%)</title><rect x="24.2075%" y="245" width="0.4323%" height="15" fill="rgb(208,69,12)" fg:x="168" fg:w="3"/><text x="24.4575%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`__rdl_alloc (1 samples, 0.14%)</title><rect x="24.6398%" y="245" width="0.1441%" height="15" fill="rgb(235,93,37)" fg:x="171" fg:w="1"/><text x="24.8898%" y="255.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_size (1 samples, 0.14%)</title><rect x="25.0720%" y="213" width="0.1441%" height="15" fill="rgb(213,116,39)" fg:x="174" fg:w="1"/><text x="25.3220%" y="223.50"></text></g><g><title>libsystem_malloc.dylib`_nanov2_free (1 samples, 0.14%)</title><rect x="25.3602%" y="181" width="0.1441%" height="15" fill="rgb(222,207,29)" fg:x="176" fg:w="1"/><text x="25.6102%" y="191.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (1 samples, 0.14%)</title><rect x="25.5043%" y="181" width="0.1441%" height="15" fill="rgb(206,96,30)" fg:x="177" fg:w="1"/><text x="25.7543%" y="191.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_pointer_size (2 samples, 0.29%)</title><rect x="25.6484%" y="181" width="0.2882%" height="15" fill="rgb(218,138,4)" fg:x="178" fg:w="2"/><text x="25.8984%" y="191.50"></text></g><g><title>libsystem_malloc.dylib`malloc_zone_realloc (5 samples, 0.72%)</title><rect x="25.3602%" y="197" width="0.7205%" height="15" fill="rgb(250,191,14)" fg:x="176" fg:w="5"/><text x="25.6102%" y="207.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_realloc (1 samples, 0.14%)</title><rect x="25.9366%" y="181" width="0.1441%" height="15" fill="rgb(239,60,40)" fg:x="180" fg:w="1"/><text x="26.1866%" y="191.50"></text></g><g><title>libsystem_malloc.dylib`szone_malloc_should_clear (1 samples, 0.14%)</title><rect x="25.9366%" y="165" width="0.1441%" height="15" fill="rgb(206,27,48)" fg:x="180" fg:w="1"/><text x="26.1866%" y="175.50"></text></g><g><title>libsystem_malloc.dylib`tiny_malloc_should_clear (1 samples, 0.14%)</title><rect x="25.9366%" y="149" width="0.1441%" height="15" fill="rgb(225,35,8)" fg:x="180" fg:w="1"/><text x="26.1866%" y="159.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::finish_grow (10 samples, 1.44%)</title><rect x="24.7839%" y="229" width="1.4409%" height="15" fill="rgb(250,213,24)" fg:x="172" fg:w="10"/><text x="25.0339%" y="239.50"></text></g><g><title>libsystem_malloc.dylib`realloc (7 samples, 1.01%)</title><rect x="25.2161%" y="213" width="1.0086%" height="15" fill="rgb(247,123,22)" fg:x="175" fg:w="7"/><text x="25.4661%" y="223.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_realloc (1 samples, 0.14%)</title><rect x="26.0807%" y="197" width="0.1441%" height="15" fill="rgb(231,138,38)" fg:x="181" fg:w="1"/><text x="26.3307%" y="207.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::RawVec&lt;T,A&gt;::reserve::do_reserve_and_handle (11 samples, 1.59%)</title><rect x="24.7839%" y="245" width="1.5850%" height="15" fill="rgb(231,145,46)" fg:x="172" fg:w="11"/><text x="25.0339%" y="255.50"></text></g><g><title>libsystem_malloc.dylib`realloc (1 samples, 0.14%)</title><rect x="26.2248%" y="229" width="0.1441%" height="15" fill="rgb(251,118,11)" fg:x="182" fg:w="1"/><text x="26.4748%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::str::join_generic_copy (1 samples, 0.14%)</title><rect x="26.3689%" y="245" width="0.1441%" height="15" fill="rgb(217,147,25)" fg:x="183" fg:w="1"/><text x="26.6189%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`hashbrown::rustc_entry::_&lt;impl hashbrown::map::HashMap&lt;K,V,S,A&gt;&gt;::rustc_entry (1 samples, 0.14%)</title><rect x="26.5130%" y="245" width="0.1441%" height="15" fill="rgb(247,81,37)" fg:x="184" fg:w="1"/><text x="26.7630%" y="255.50"></text></g><g><title>libsystem_malloc.dylib`_malloc_zone_malloc (4 samples, 0.58%)</title><rect x="26.6571%" y="245" width="0.5764%" height="15" fill="rgb(209,12,38)" fg:x="185" fg:w="4"/><text x="26.9071%" y="255.50"></text></g><g><title>libsystem_malloc.dylib`_nanov2_free (10 samples, 1.44%)</title><rect x="27.2334%" y="245" width="1.4409%" height="15" fill="rgb(227,1,9)" fg:x="189" fg:w="10"/><text x="27.4834%" y="255.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (11 samples, 1.59%)</title><rect x="28.6744%" y="245" width="1.5850%" height="15" fill="rgb(248,47,43)" fg:x="199" fg:w="11"/><text x="28.9244%" y="255.50"></text></g><g><title>libsystem_platform.dylib`_platform_memmove (4 samples, 0.58%)</title><rect x="30.2594%" y="245" width="0.5764%" height="15" fill="rgb(221,10,30)" fg:x="210" fg:w="4"/><text x="30.5094%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;alloc::vec::Vec&lt;T&gt; as alloc::vec::spec_from_iter::SpecFromIter&lt;T,I&gt;&gt;::from_iter (167 samples, 24.06%)</title><rect x="7.0605%" y="261" width="24.0634%" height="15" fill="rgb(210,229,1)" fg:x="49" fg:w="167"/><text x="7.3105%" y="271.50">extract_drugs-d090f007e475e17f`&lt;alloc:..</text></g><g><title>libsystem_platform.dylib`_platform_memset (2 samples, 0.29%)</title><rect x="30.8357%" y="245" width="0.2882%" height="15" fill="rgb(222,148,37)" fg:x="214" fg:w="2"/><text x="31.0857%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;cached::stores::sized::SizedCache&lt;K,V&gt; as cached::Cached&lt;K,V&gt;&gt;::cache_get (19 samples, 2.74%)</title><rect x="31.1239%" y="261" width="2.7378%" height="15" fill="rgb(234,67,33)" fg:x="216" fg:w="19"/><text x="31.3739%" y="271.50">ex..</text></g><g><title>extract_drugs-d090f007e475e17f`cached::lru_list::LRUList&lt;T&gt;::move_to_front (2 samples, 0.29%)</title><rect x="33.5735%" y="245" width="0.2882%" height="15" fill="rgb(247,98,35)" fg:x="233" fg:w="2"/><text x="33.8235%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`cached::lru_list::LRUList&lt;T&gt;::push_front (1 samples, 0.14%)</title><rect x="35.7349%" y="245" width="0.1441%" height="15" fill="rgb(247,138,52)" fg:x="248" fg:w="1"/><text x="35.9849%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`cached::lru_list::LRUList&lt;T&gt;::remove (2 samples, 0.29%)</title><rect x="35.8790%" y="245" width="0.2882%" height="15" fill="rgb(213,79,30)" fg:x="249" fg:w="2"/><text x="36.1290%" y="255.50"></text></g><g><title>libsystem_malloc.dylib`DYLD-STUB$$_platform_bzero (1 samples, 0.14%)</title><rect x="36.1671%" y="245" width="0.1441%" height="15" fill="rgb(246,177,23)" fg:x="251" fg:w="1"/><text x="36.4171%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;cached::stores::sized::SizedCache&lt;K,V&gt; as cached::Cached&lt;K,V&gt;&gt;::cache_set (18 samples, 2.59%)</title><rect x="33.8617%" y="261" width="2.5937%" height="15" fill="rgb(230,62,27)" fg:x="235" fg:w="18"/><text x="34.1117%" y="271.50">ex..</text></g><g><title>libsystem_malloc.dylib`_nanov2_free (1 samples, 0.14%)</title><rect x="36.3112%" y="245" width="0.1441%" height="15" fill="rgb(216,154,8)" fg:x="252" fg:w="1"/><text x="36.5612%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;core::hash::sip::Hasher&lt;S&gt; as core::hash::Hasher&gt;::write (20 samples, 2.88%)</title><rect x="36.4553%" y="261" width="2.8818%" height="15" fill="rgb(244,35,45)" fg:x="253" fg:w="20"/><text x="36.7053%" y="271.50">ex..</text></g><g><title>extract_drugs-d090f007e475e17f`&lt;core::iter::adapters::map::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::next (1 samples, 0.14%)</title><rect x="39.3372%" y="261" width="0.1441%" height="15" fill="rgb(251,115,12)" fg:x="273" fg:w="1"/><text x="39.5872%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`csv::byte_record::ByteRecord::validate (1 samples, 0.14%)</title><rect x="39.6254%" y="245" width="0.1441%" height="15" fill="rgb(240,54,50)" fg:x="275" fg:w="1"/><text x="39.8754%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`csv_core::reader::Reader::read_record (10 samples, 1.44%)</title><rect x="39.7695%" y="245" width="1.4409%" height="15" fill="rgb(233,84,52)" fg:x="276" fg:w="10"/><text x="40.0195%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;csv::reader::StringRecordsIter&lt;R&gt; as core::iter::traits::iterator::Iterator&gt;::next (17 samples, 2.45%)</title><rect x="39.4813%" y="261" width="2.4496%" height="15" fill="rgb(207,117,47)" fg:x="274" fg:w="17"/><text x="39.7313%" y="271.50">ex..</text></g><g><title>libsystem_kernel.dylib`read (5 samples, 0.72%)</title><rect x="41.2104%" y="245" width="0.7205%" height="15" fill="rgb(249,43,39)" fg:x="286" fg:w="5"/><text x="41.4604%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;itertools::unique_impl::Unique&lt;I&gt; as core::iter::traits::iterator::Iterator&gt;::next (5 samples, 0.72%)</title><rect x="41.9308%" y="261" width="0.7205%" height="15" fill="rgb(209,38,44)" fg:x="291" fg:w="5"/><text x="42.1808%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$free (2 samples, 0.29%)</title><rect x="42.6513%" y="261" width="0.2882%" height="15" fill="rgb(236,212,23)" fg:x="296" fg:w="2"/><text x="42.9013%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$malloc (1 samples, 0.14%)</title><rect x="42.9395%" y="261" width="0.1441%" height="15" fill="rgb(242,79,21)" fg:x="298" fg:w="1"/><text x="43.1895%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$memcmp (1 samples, 0.14%)</title><rect x="43.0836%" y="261" width="0.1441%" height="15" fill="rgb(211,96,35)" fg:x="299" fg:w="1"/><text x="43.3336%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`__rdl_alloc (1 samples, 0.14%)</title><rect x="43.2277%" y="261" width="0.1441%" height="15" fill="rgb(253,215,40)" fg:x="300" fg:w="1"/><text x="43.4777%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;&amp;mut W as core::fmt::Write&gt;::write_str (1 samples, 0.14%)</title><rect x="44.0922%" y="245" width="0.1441%" height="15" fill="rgb(211,81,21)" fg:x="306" fg:w="1"/><text x="44.3422%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`core::fmt::Formatter::pad (2 samples, 0.29%)</title><rect x="44.2363%" y="245" width="0.2882%" height="15" fill="rgb(208,190,38)" fg:x="307" fg:w="2"/><text x="44.4863%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$malloc (1 samples, 0.14%)</title><rect x="46.5418%" y="197" width="0.1441%" height="15" fill="rgb(235,213,38)" fg:x="323" fg:w="1"/><text x="46.7918%" y="207.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$realloc (2 samples, 0.29%)</title><rect x="46.6859%" y="197" width="0.2882%" height="15" fill="rgb(237,122,38)" fg:x="324" fg:w="2"/><text x="46.9359%" y="207.50"></text></g><g><title>extract_drugs-d090f007e475e17f`__rdl_realloc (3 samples, 0.43%)</title><rect x="46.9741%" y="197" width="0.4323%" height="15" fill="rgb(244,218,35)" fg:x="326" fg:w="3"/><text x="47.2241%" y="207.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_size (5 samples, 0.72%)</title><rect x="47.8386%" y="181" width="0.7205%" height="15" fill="rgb(240,68,47)" fg:x="332" fg:w="5"/><text x="48.0886%" y="191.50"></text></g><g><title>libsystem_malloc.dylib`default_zone_realloc (1 samples, 0.14%)</title><rect x="49.4236%" y="165" width="0.1441%" height="15" fill="rgb(210,16,53)" fg:x="343" fg:w="1"/><text x="49.6736%" y="175.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (3 samples, 0.43%)</title><rect x="50.5764%" y="149" width="0.4323%" height="15" fill="rgb(235,124,12)" fg:x="351" fg:w="3"/><text x="50.8264%" y="159.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_pointer_size (1 samples, 0.14%)</title><rect x="51.0086%" y="149" width="0.1441%" height="15" fill="rgb(224,169,11)" fg:x="354" fg:w="1"/><text x="51.2586%" y="159.50"></text></g><g><title>libsystem_malloc.dylib`malloc_zone_realloc (19 samples, 2.74%)</title><rect x="49.5677%" y="165" width="2.7378%" height="15" fill="rgb(250,166,2)" fg:x="344" fg:w="19"/><text x="49.8177%" y="175.50">li..</text></g><g><title>libsystem_malloc.dylib`nanov2_realloc (8 samples, 1.15%)</title><rect x="51.1527%" y="149" width="1.1527%" height="15" fill="rgb(242,216,29)" fg:x="355" fg:w="8"/><text x="51.4027%" y="159.50"></text></g><g><title>libsystem_malloc.dylib`_nanov2_free (2 samples, 0.29%)</title><rect x="52.0173%" y="133" width="0.2882%" height="15" fill="rgb(230,116,27)" fg:x="361" fg:w="2"/><text x="52.2673%" y="143.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::finish_grow (35 samples, 5.04%)</title><rect x="47.4063%" y="197" width="5.0432%" height="15" fill="rgb(228,99,48)" fg:x="329" fg:w="35"/><text x="47.6563%" y="207.50">extrac..</text></g><g><title>libsystem_malloc.dylib`realloc (27 samples, 3.89%)</title><rect x="48.5591%" y="181" width="3.8905%" height="15" fill="rgb(253,11,6)" fg:x="337" fg:w="27"/><text x="48.8091%" y="191.50">libs..</text></g><g><title>libsystem_malloc.dylib`nanov2_realloc (1 samples, 0.14%)</title><rect x="52.3055%" y="165" width="0.1441%" height="15" fill="rgb(247,143,39)" fg:x="363" fg:w="1"/><text x="52.5555%" y="175.50"></text></g><g><title>libsystem_malloc.dylib`_malloc_zone_malloc (5 samples, 0.72%)</title><rect x="52.4496%" y="197" width="0.7205%" height="15" fill="rgb(236,97,10)" fg:x="364" fg:w="5"/><text x="52.6996%" y="207.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::RawVec&lt;T,A&gt;::reserve::do_reserve_and_handle (54 samples, 7.78%)</title><rect x="45.9654%" y="213" width="7.7810%" height="15" fill="rgb(233,208,19)" fg:x="319" fg:w="54"/><text x="46.2154%" y="223.50">extract_dru..</text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (4 samples, 0.58%)</title><rect x="53.1700%" y="197" width="0.5764%" height="15" fill="rgb(216,164,2)" fg:x="369" fg:w="4"/><text x="53.4200%" y="207.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;&amp;mut W as core::fmt::Write&gt;::write_str (60 samples, 8.65%)</title><rect x="45.2450%" y="229" width="8.6455%" height="15" fill="rgb(220,129,5)" fg:x="314" fg:w="60"/><text x="45.4950%" y="239.50">extract_drug..</text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::finish_grow (1 samples, 0.14%)</title><rect x="53.7464%" y="213" width="0.1441%" height="15" fill="rgb(242,17,10)" fg:x="373" fg:w="1"/><text x="53.9964%" y="223.50"></text></g><g><title>extract_drugs-d090f007e475e17f`DYLD-STUB$$memcpy (1 samples, 0.14%)</title><rect x="53.8905%" y="229" width="0.1441%" height="15" fill="rgb(242,107,0)" fg:x="374" fg:w="1"/><text x="54.1405%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::RawVec&lt;T,A&gt;::reserve::do_reserve_and_handle (3 samples, 0.43%)</title><rect x="54.0346%" y="229" width="0.4323%" height="15" fill="rgb(251,28,31)" fg:x="375" fg:w="3"/><text x="54.2846%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`core::fmt::Formatter::pad (3 samples, 0.43%)</title><rect x="54.4669%" y="229" width="0.4323%" height="15" fill="rgb(233,223,10)" fg:x="378" fg:w="3"/><text x="54.7169%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::fmt::format::format_inner (111 samples, 15.99%)</title><rect x="43.3718%" y="261" width="15.9942%" height="15" fill="rgb(215,21,27)" fg:x="301" fg:w="111"/><text x="43.6218%" y="271.50">extract_drugs-d090f007e47..</text></g><g><title>extract_drugs-d090f007e475e17f`core::fmt::write (103 samples, 14.84%)</title><rect x="44.5245%" y="245" width="14.8415%" height="15" fill="rgb(232,23,21)" fg:x="309" fg:w="103"/><text x="44.7745%" y="255.50">extract_drugs-d090f007e..</text></g><g><title>libsystem_platform.dylib`_platform_memmove (31 samples, 4.47%)</title><rect x="54.8991%" y="229" width="4.4669%" height="15" fill="rgb(244,5,23)" fg:x="381" fg:w="31"/><text x="55.1491%" y="239.50">libsy..</text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::RawVec&lt;T,A&gt;::reserve::do_reserve_and_handle (1 samples, 0.14%)</title><rect x="59.3660%" y="261" width="0.1441%" height="15" fill="rgb(226,81,46)" fg:x="412" fg:w="1"/><text x="59.6160%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`core::fmt::write (1 samples, 0.14%)</title><rect x="59.5101%" y="261" width="0.1441%" height="15" fill="rgb(247,70,30)" fg:x="413" fg:w="1"/><text x="59.7601%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`core::str::_&lt;impl str&gt;::trim_matches (3 samples, 0.43%)</title><rect x="59.6542%" y="261" width="0.4323%" height="15" fill="rgb(212,68,19)" fg:x="414" fg:w="3"/><text x="59.9042%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`drug_extraction_cli::load_search_terms (1 samples, 0.14%)</title><rect x="60.0865%" y="261" width="0.1441%" height="15" fill="rgb(240,187,13)" fg:x="417" fg:w="1"/><text x="60.3365%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`drug_extraction_cli::read_terms_only (1 samples, 0.14%)</title><rect x="60.0865%" y="245" width="0.1441%" height="15" fill="rgb(223,113,26)" fg:x="417" fg:w="1"/><text x="60.3365%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`rayon::result::_&lt;impl rayon::iter::FromParallelIterator&lt;core::result::Result&lt;T,E&gt;&gt; for core::result::Result&lt;C,E&gt;&gt;::from_par_iter (1 samples, 0.14%)</title><rect x="60.0865%" y="229" width="0.1441%" height="15" fill="rgb(206,192,2)" fg:x="417" fg:w="1"/><text x="60.3365%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`rayon::iter::extend::_&lt;impl rayon::iter::ParallelExtend&lt;T&gt; for alloc::vec::Vec&lt;T&gt;&gt;::par_extend (1 samples, 0.14%)</title><rect x="60.0865%" y="213" width="0.1441%" height="15" fill="rgb(241,108,4)" fg:x="417" fg:w="1"/><text x="60.3365%" y="223.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;rayon::iter::map::Map&lt;I,F&gt; as rayon::iter::ParallelIterator&gt;::drive_unindexed (1 samples, 0.14%)</title><rect x="60.0865%" y="197" width="0.1441%" height="15" fill="rgb(247,173,49)" fg:x="417" fg:w="1"/><text x="60.3365%" y="207.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;rayon::iter::par_bridge::IterBridge&lt;Iter&gt; as rayon::iter::ParallelIterator&gt;::drive_unindexed (1 samples, 0.14%)</title><rect x="60.0865%" y="181" width="0.1441%" height="15" fill="rgb(224,114,35)" fg:x="417" fg:w="1"/><text x="60.3365%" y="191.50"></text></g><g><title>extract_drugs-d090f007e475e17f`rayon_core::current_num_threads (1 samples, 0.14%)</title><rect x="60.0865%" y="165" width="0.1441%" height="15" fill="rgb(245,159,27)" fg:x="417" fg:w="1"/><text x="60.3365%" y="175.50"></text></g><g><title>extract_drugs-d090f007e475e17f`rayon_core::registry::global_registry (1 samples, 0.14%)</title><rect x="60.0865%" y="149" width="0.1441%" height="15" fill="rgb(245,172,44)" fg:x="417" fg:w="1"/><text x="60.3365%" y="159.50"></text></g><g><title>extract_drugs-d090f007e475e17f`std::sys_common::once::queue::Once::call (1 samples, 0.14%)</title><rect x="60.0865%" y="133" width="0.1441%" height="15" fill="rgb(236,23,11)" fg:x="417" fg:w="1"/><text x="60.3365%" y="143.50"></text></g><g><title>extract_drugs-d090f007e475e17f`std::sync::once::Once::call_once::_{{closure}} (1 samples, 0.14%)</title><rect x="60.0865%" y="117" width="0.1441%" height="15" fill="rgb(205,117,38)" fg:x="417" fg:w="1"/><text x="60.3365%" y="127.50"></text></g><g><title>extract_drugs-d090f007e475e17f`rayon_core::registry::Registry::new (1 samples, 0.14%)</title><rect x="60.0865%" y="101" width="0.1441%" height="15" fill="rgb(237,72,25)" fg:x="417" fg:w="1"/><text x="60.3365%" y="111.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn&gt;::spawn (1 samples, 0.14%)</title><rect x="60.0865%" y="85" width="0.1441%" height="15" fill="rgb(244,70,9)" fg:x="417" fg:w="1"/><text x="60.3365%" y="95.50"></text></g><g><title>extract_drugs-d090f007e475e17f`std::thread::Builder::spawn (1 samples, 0.14%)</title><rect x="60.0865%" y="69" width="0.1441%" height="15" fill="rgb(217,125,39)" fg:x="417" fg:w="1"/><text x="60.3365%" y="79.50"></text></g><g><title>extract_drugs-d090f007e475e17f`std::sys::unix::thread::Thread::new (1 samples, 0.14%)</title><rect x="60.0865%" y="53" width="0.1441%" height="15" fill="rgb(235,36,10)" fg:x="417" fg:w="1"/><text x="60.3365%" y="63.50"></text></g><g><title>libsystem_pthread.dylib`_pthread_create (1 samples, 0.14%)</title><rect x="60.0865%" y="37" width="0.1441%" height="15" fill="rgb(251,123,47)" fg:x="417" fg:w="1"/><text x="60.3365%" y="47.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_size (4 samples, 0.58%)</title><rect x="65.8501%" y="197" width="0.5764%" height="15" fill="rgb(221,13,13)" fg:x="457" fg:w="4"/><text x="66.1001%" y="207.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (1 samples, 0.14%)</title><rect x="66.5706%" y="165" width="0.1441%" height="15" fill="rgb(238,131,9)" fg:x="462" fg:w="1"/><text x="66.8206%" y="175.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_realloc (2 samples, 0.29%)</title><rect x="66.7147%" y="165" width="0.2882%" height="15" fill="rgb(211,50,8)" fg:x="463" fg:w="2"/><text x="66.9647%" y="175.50"></text></g><g><title>libsystem_malloc.dylib`_nanov2_free (2 samples, 0.29%)</title><rect x="66.7147%" y="149" width="0.2882%" height="15" fill="rgb(245,182,24)" fg:x="463" fg:w="2"/><text x="66.9647%" y="159.50"></text></g><g><title>libsystem_malloc.dylib`malloc_zone_realloc (7 samples, 1.01%)</title><rect x="66.5706%" y="181" width="1.0086%" height="15" fill="rgb(242,14,37)" fg:x="462" fg:w="7"/><text x="66.8206%" y="191.50"></text></g><g><title>libsystem_platform.dylib`_platform_memmove (4 samples, 0.58%)</title><rect x="67.0029%" y="165" width="0.5764%" height="15" fill="rgb(246,228,12)" fg:x="465" fg:w="4"/><text x="67.2529%" y="175.50"></text></g><g><title>extract_drugs-d090f007e475e17f`&lt;core::iter::adapters::map::Map&lt;I,F&gt; as core::iter::traits::iterator::Iterator&gt;::fold (46 samples, 6.63%)</title><rect x="61.0951%" y="245" width="6.6282%" height="15" fill="rgb(213,55,15)" fg:x="424" fg:w="46"/><text x="61.3451%" y="255.50">extract_d..</text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::RawVec&lt;T,A&gt;::reserve_for_push (16 samples, 2.31%)</title><rect x="65.4179%" y="229" width="2.3055%" height="15" fill="rgb(209,9,3)" fg:x="454" fg:w="16"/><text x="65.6679%" y="239.50">e..</text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::finish_grow (15 samples, 2.16%)</title><rect x="65.5620%" y="213" width="2.1614%" height="15" fill="rgb(230,59,30)" fg:x="455" fg:w="15"/><text x="65.8120%" y="223.50">e..</text></g><g><title>libsystem_malloc.dylib`realloc (9 samples, 1.30%)</title><rect x="66.4265%" y="197" width="1.2968%" height="15" fill="rgb(209,121,21)" fg:x="461" fg:w="9"/><text x="66.6765%" y="207.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_realloc (1 samples, 0.14%)</title><rect x="67.5793%" y="181" width="0.1441%" height="15" fill="rgb(220,109,13)" fg:x="469" fg:w="1"/><text x="67.8293%" y="191.50"></text></g><g><title>libsystem_malloc.dylib`_malloc_zone_malloc (1 samples, 0.14%)</title><rect x="68.0115%" y="229" width="0.1441%" height="15" fill="rgb(232,18,1)" fg:x="472" fg:w="1"/><text x="68.2615%" y="239.50"></text></g><g><title>extract_drugs-d090f007e475e17f`alloc::raw_vec::RawVec&lt;T,A&gt;::reserve::do_reserve_and_handle (5 samples, 0.72%)</title><rect x="67.7233%" y="245" width="0.7205%" height="15" fill="rgb(215,41,42)" fg:x="470" fg:w="5"/><text x="67.9733%" y="255.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (2 samples, 0.29%)</title><rect x="68.1556%" y="229" width="0.2882%" height="15" fill="rgb(224,123,36)" fg:x="473" fg:w="2"/><text x="68.4056%" y="239.50"></text></g><g><title>libsystem_malloc.dylib`_nanov2_free (2 samples, 0.29%)</title><rect x="68.4438%" y="245" width="0.2882%" height="15" fill="rgb(240,125,3)" fg:x="475" fg:w="2"/><text x="68.6938%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`drug_extraction_cli::remove_symbols_except_dash (60 samples, 8.65%)</title><rect x="60.2305%" y="261" width="8.6455%" height="15" fill="rgb(205,98,50)" fg:x="418" fg:w="60"/><text x="60.4805%" y="271.50">extract_drug..</text></g><g><title>libsystem_platform.dylib`_platform_memset (1 samples, 0.14%)</title><rect x="68.7320%" y="245" width="0.1441%" height="15" fill="rgb(205,185,37)" fg:x="477" fg:w="1"/><text x="68.9820%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`core::str::count::char_count_general_case (6 samples, 0.86%)</title><rect x="68.8761%" y="245" width="0.8646%" height="15" fill="rgb(238,207,15)" fg:x="478" fg:w="6"/><text x="69.1261%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`strsim::generic_jaro (89 samples, 12.82%)</title><rect x="69.7406%" y="245" width="12.8242%" height="15" fill="rgb(213,199,42)" fg:x="484" fg:w="89"/><text x="69.9906%" y="255.50">extract_drugs-d090f..</text></g><g><title>libsystem_malloc.dylib`_malloc_zone_malloc (2 samples, 0.29%)</title><rect x="82.5648%" y="245" width="0.2882%" height="15" fill="rgb(235,201,11)" fg:x="573" fg:w="2"/><text x="82.8148%" y="255.50"></text></g><g><title>libsystem_malloc.dylib`free (2 samples, 0.29%)</title><rect x="82.8530%" y="245" width="0.2882%" height="15" fill="rgb(207,46,11)" fg:x="575" fg:w="2"/><text x="83.1030%" y="255.50"></text></g><g><title>extract_drugs-d090f007e475e17f`strsim::jaro_winkler (100 samples, 14.41%)</title><rect x="68.8761%" y="261" width="14.4092%" height="15" fill="rgb(241,35,35)" fg:x="478" fg:w="100"/><text x="69.1261%" y="271.50">extract_drugs-d090f007..</text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (1 samples, 0.14%)</title><rect x="83.1412%" y="245" width="0.1441%" height="15" fill="rgb(243,32,47)" fg:x="577" fg:w="1"/><text x="83.3912%" y="255.50"></text></g><g><title>libsystem_malloc.dylib`DYLD-STUB$$_platform_bzero (3 samples, 0.43%)</title><rect x="83.2853%" y="261" width="0.4323%" height="15" fill="rgb(247,202,23)" fg:x="578" fg:w="3"/><text x="83.5353%" y="271.50"></text></g><g><title>libsystem_malloc.dylib`_malloc_zone_malloc (6 samples, 0.86%)</title><rect x="83.7176%" y="261" width="0.8646%" height="15" fill="rgb(219,102,11)" fg:x="581" fg:w="6"/><text x="83.9676%" y="271.50"></text></g><g><title>libsystem_malloc.dylib`_nanov2_free (29 samples, 4.18%)</title><rect x="84.5821%" y="261" width="4.1787%" height="15" fill="rgb(243,110,44)" fg:x="587" fg:w="29"/><text x="84.8321%" y="271.50">libsy..</text></g><g><title>libsystem_malloc.dylib`free (11 samples, 1.59%)</title><rect x="88.7608%" y="261" width="1.5850%" height="15" fill="rgb(222,74,54)" fg:x="616" fg:w="11"/><text x="89.0108%" y="271.50"></text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (8 samples, 1.15%)</title><rect x="90.3458%" y="261" width="1.1527%" height="15" fill="rgb(216,99,12)" fg:x="627" fg:w="8"/><text x="90.5958%" y="271.50"></text></g><g><title>libsystem_platform.dylib`_platform_memcmp (8 samples, 1.15%)</title><rect x="91.4986%" y="261" width="1.1527%" height="15" fill="rgb(226,22,26)" fg:x="635" fg:w="8"/><text x="91.7486%" y="271.50"></text></g><g><title>libsystem_platform.dylib`_platform_memmove (1 samples, 0.14%)</title><rect x="92.6513%" y="261" width="0.1441%" height="15" fill="rgb(217,163,10)" fg:x="643" fg:w="1"/><text x="92.9013%" y="271.50"></text></g><g><title>libsystem_platform.dylib`_platform_memset (9 samples, 1.30%)</title><rect x="92.7954%" y="261" width="1.2968%" height="15" fill="rgb(213,25,53)" fg:x="644" fg:w="9"/><text x="93.0454%" y="271.50"></text></g><g><title>libsystem_pthread.dylib`pthread_mutex_lock (6 samples, 0.86%)</title><rect x="94.0922%" y="261" width="0.8646%" height="15" fill="rgb(252,105,26)" fg:x="653" fg:w="6"/><text x="94.3422%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`extract_drugs::tests::test_program (645 samples, 92.94%)</title><rect x="2.5937%" y="277" width="92.9395%" height="15" fill="rgb(220,39,43)" fg:x="18" fg:w="645"/><text x="2.8437%" y="287.50">extract_drugs-d090f007e475e17f`extract_drugs::tests::test_program</text></g><g><title>libsystem_pthread.dylib`pthread_mutex_unlock (4 samples, 0.58%)</title><rect x="94.9568%" y="261" width="0.5764%" height="15" fill="rgb(229,68,48)" fg:x="659" fg:w="4"/><text x="95.2068%" y="271.50"></text></g><g><title>extract_drugs-d090f007e475e17f`strsim::jaro_winkler (3 samples, 0.43%)</title><rect x="95.5331%" y="277" width="0.4323%" height="15" fill="rgb(252,8,32)" fg:x="663" fg:w="3"/><text x="95.7831%" y="287.50"></text></g><g><title>libdyld.dylib`tlv_get_addr (2 samples, 0.29%)</title><rect x="95.9654%" y="277" width="0.2882%" height="15" fill="rgb(223,20,43)" fg:x="666" fg:w="2"/><text x="96.2154%" y="287.50"></text></g><g><title>libsystem_malloc.dylib`_malloc_zone_malloc (1 samples, 0.14%)</title><rect x="96.2536%" y="277" width="0.1441%" height="15" fill="rgb(229,81,49)" fg:x="668" fg:w="1"/><text x="96.5036%" y="287.50"></text></g><g><title>libsystem_malloc.dylib`_nanov2_free (3 samples, 0.43%)</title><rect x="96.3977%" y="277" width="0.4323%" height="15" fill="rgb(236,28,36)" fg:x="669" fg:w="3"/><text x="96.6477%" y="287.50"></text></g><g><title>libsystem_malloc.dylib`free (19 samples, 2.74%)</title><rect x="96.8300%" y="277" width="2.7378%" height="15" fill="rgb(249,185,26)" fg:x="672" fg:w="19"/><text x="97.0800%" y="287.50">li..</text></g><g><title>libsystem_malloc.dylib`nanov2_malloc (2 samples, 0.29%)</title><rect x="99.5677%" y="277" width="0.2882%" height="15" fill="rgb(249,174,33)" fg:x="691" fg:w="2"/><text x="99.8177%" y="287.50"></text></g><g><title>all (694 samples, 100%)</title><rect x="0.0000%" y="421" width="100.0000%" height="15" fill="rgb(233,201,37)" fg:x="0" fg:w="694"/><text x="0.2500%" y="431.50"></text></g><g><title>libsystem_pthread.dylib`thread_start (693 samples, 99.86%)</title><rect x="0.1441%" y="405" width="99.8559%" height="15" fill="rgb(221,78,26)" fg:x="1" fg:w="693"/><text x="0.3941%" y="415.50">libsystem_pthread.dylib`thread_start</text></g><g><title>libsystem_pthread.dylib`_pthread_start (693 samples, 99.86%)</title><rect x="0.1441%" y="389" width="99.8559%" height="15" fill="rgb(250,127,30)" fg:x="1" fg:w="693"/><text x="0.3941%" y="399.50">libsystem_pthread.dylib`_pthread_start</text></g><g><title>extract_drugs-d090f007e475e17f`std::sys::unix::thread::Thread::new::thread_start (693 samples, 99.86%)</title><rect x="0.1441%" y="373" width="99.8559%" height="15" fill="rgb(230,49,44)" fg:x="1" fg:w="693"/><text x="0.3941%" y="383.50">extract_drugs-d090f007e475e17f`std::sys::unix::thread::Thread::new::thread_start</text></g><g><title>extract_drugs-d090f007e475e17f`core::ops::function::FnOnce::call_once{{vtable.shim}} (693 samples, 99.86%)</title><rect x="0.1441%" y="357" width="99.8559%" height="15" fill="rgb(229,67,23)" fg:x="1" fg:w="693"/><text x="0.3941%" y="367.50">extract_drugs-d090f007e475e17f`core::ops::function::FnOnce::call_once{{vtable.shim}}</text></g><g><title>extract_drugs-d090f007e475e17f`std::sys_common::backtrace::__rust_begin_short_backtrace (693 samples, 99.86%)</title><rect x="0.1441%" y="341" width="99.8559%" height="15" fill="rgb(249,83,47)" fg:x="1" fg:w="693"/><text x="0.3941%" y="351.50">extract_drugs-d090f007e475e17f`std::sys_common::backtrace::__rust_begin_short_backtrace</text></g><g><title>extract_drugs-d090f007e475e17f`test::run_test::run_test_inner::_{{closure}} (691 samples, 99.57%)</title><rect x="0.4323%" y="325" width="99.5677%" height="15" fill="rgb(215,43,3)" fg:x="3" fg:w="691"/><text x="0.6823%" y="335.50">extract_drugs-d090f007e475e17f`test::run_test::run_test_inner::_{{closure}}</text></g><g><title>extract_drugs-d090f007e475e17f`test::__rust_begin_short_backtrace (691 samples, 99.57%)</title><rect x="0.4323%" y="309" width="99.5677%" height="15" fill="rgb(238,154,13)" fg:x="3" fg:w="691"/><text x="0.6823%" y="319.50">extract_drugs-d090f007e475e17f`test::__rust_begin_short_backtrace</text></g><g><title>extract_drugs-d090f007e475e17f`core::ops::function::FnOnce::call_once (691 samples, 99.57%)</title><rect x="0.4323%" y="293" width="99.5677%" height="15" fill="rgb(219,56,2)" fg:x="3" fg:w="691"/><text x="0.6823%" y="303.50">extract_drugs-d090f007e475e17f`core::ops::function::FnOnce::call_once</text></g><g><title>libsystem_pthread.dylib`pthread_mutex_unlock (1 samples, 0.14%)</title><rect x="99.8559%" y="277" width="0.1441%" height="15" fill="rgb(233,0,4)" fg:x="693" fg:w="1"/><text x="100.1059%" y="287.50"></text></g></svg></svg>

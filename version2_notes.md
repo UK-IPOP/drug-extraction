@@ -30,4 +30,7 @@ TODO: Improve python metadata in pyproject.toml
 - We should **validate** the search_terms file format as soon as it is provided in `interactive` mode
 - Word indexing is very slow and does not use full CPU...
   - flamegraph to check this?
-
+- use criterion to benchmark str-sim algorithms just for reference on the repo
+- n-gram support!
+- metadata is not required, but parsing search_terms file breaks when rows have different schema (i.e. diff cols)
+  - do we need to parse/validate row by row?

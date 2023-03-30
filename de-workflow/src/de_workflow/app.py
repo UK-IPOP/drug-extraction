@@ -5,6 +5,7 @@ from pathlib import Path
 
 from rich import print
 import polars as pl
+import random
 
 from de_workflow.report import generate_report
 
