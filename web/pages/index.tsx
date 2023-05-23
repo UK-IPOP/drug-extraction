@@ -2,15 +2,19 @@ import Head from "next/head";
 import { Container, Link, Text, Image, Spacer, Input, Button, PressEvent } from "@nextui-org/react";
 import { useState } from "react";
 var distance = require("jaro-winkler");
+var levenshtein = require("damerau-levenshtein");
 
 export default function Home() {
 	const [term1, setTerm1] = useState<string>("cocaine");
 	const [term2, setTerm2] = useState<string>("cociane");
 	const [similarity, setSimilarity] = useState<number>(0.967);
+	const [edits, setEdits] = useState<number>(1);
 
 	function compare(_: PressEvent) {
 		const sim: number = distance(term1, term2);
 		setSimilarity(sim);
+		const edits: number = levenshtein(term1, term2).steps;
+		setEdits(edits);
 	}
 
 	return (
@@ -67,7 +71,7 @@ export default function Home() {
 					<Text h5>
 						The terms are {(similarity * 100).toPrecision(3)}% similar
 						<br />
-						Exact similarity: {similarity.toPrecision(3)}
+						The terms are {edits} edits away
 					</Text>
 					<Spacer y={3} />
 					<Text h5>
