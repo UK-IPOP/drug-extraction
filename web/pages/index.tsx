@@ -9,12 +9,28 @@ export default function Home() {
 	const [term2, setTerm2] = useState<string>("cociane");
 	const [similarity, setSimilarity] = useState<number>(0.967);
 	const [edits, setEdits] = useState<number>(1);
+	const [is_match, setMatch] = useState<boolean>(true);
 
 	function compare(_: PressEvent) {
 		const sim: number = distance(term1, term2);
 		setSimilarity(sim);
 		const edits: number = levenshtein(term1, term2).steps;
 		setEdits(edits);
+		setMatch(check_match());
+	}
+
+	function check_match() {
+		if (edits === 0 || edits === 1) {
+			return true;
+		} else if (edits === 2) {
+			if (similarity >= 0.95) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 
 	return (
@@ -32,13 +48,29 @@ export default function Home() {
 					</Text>
 					<Spacer y={1} />
 					<Image src="/imgs/logo.png" alt="logo" width={300} height={300} objectFit="cover" />
-					<Text h5>
-						This tool allows you to compare two terms (drugs) and see how similar they are. It
-						ideally should be used as an explorative tool to identfiy a valid threshold for the
-						similarity score to use in a fuzzy search. Hopefully the fuzzy search would be our{" "}
-						<Link href="https://github.com/UK-IPOP/drug-extraction">drug extraction tool</Link>. For
-						more information, please see the User Guide at the above link.
-					</Text>
+					<Container display="flex" direction="row" justify="center" alignItems="center">
+						<Text>
+							This tool allows you to compare two terms (drugs) and see how similar they are. It
+							ideally should be used as an explorative tool to identify potential search terms to
+							use in fuzzy search matching. We show information on whether this would be considered
+							a match in our <a href="https://github.com/UK-IPOP/drug-extraction">CLI tool</a> using
+							the same algorithmic criteria:
+						</Text>
+						<ol>
+							<li>
+								0 or 1 edits: <strong>MATCH</strong>
+							</li>
+							<li>
+								2 edits and greater than or equal to 0.95 similarity: <strong>MATCH</strong>
+							</li>
+							<li>
+								2 edits and less than 0.95 similarity: <strong>NO MATCH</strong>
+							</li>
+							<li>
+								3 or more edits: <strong>NO MATCH</strong>
+							</li>
+						</ol>
+					</Container>
 					<Spacer y={1} />
 					<Container display="flex" direction="row" justify="center" alignItems="center">
 						<Input
@@ -73,7 +105,16 @@ export default function Home() {
 						<br />
 						The terms are {edits} edits away
 					</Text>
-					<Spacer y={3} />
+					{is_match ? (
+						<Text h5 color="green">
+							MATCH
+						</Text>
+					) : (
+						<Text h5 color="red">
+							NO MATCH
+						</Text>
+					)}
+					<Spacer y={2} />
 					<Text h5>
 						Maintained by{" "}
 						<Link href="https://pharmacy.uky.edu/office-research-operations/cornerstones/research-centers/ipop">
