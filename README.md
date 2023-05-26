@@ -5,7 +5,7 @@
 [![MIT License][license-shield]][license-url]
 
 <!-- PROJECT LOGO -->
-<br />
+<br />****
 <div align="center">
   <a href="https://github.com/UK-IPOP/drug-extraction">
     <img src="images/logo.png" alt="Logo">
@@ -17,38 +17,33 @@
     A suite of tools to extract drugs from text records.
     <br />
     <br />
-    <a href="https://github.com/uk-ipop/drug-extraction"><strong>Explore the docs >></strong></a>
+    <strong>Explore the docs >></strong>
+    <a href="https://github.com/UK-IPOP/drug-extraction/tree/main/cli">CLI</a>
+    |
+    <a href="https://github.com/UK-IPOP/drug-extraction/tree/main/web">Web</a>
     <br />
     <a href="https://github.com/UK-IPOP/drug-extraction/issues/new">Report Bug</a>
-    ·
+    |
     <a href="https://github.com/UK-IPOP/drug-extraction/issues/new">Request Feature</a>
-    <br />
-    <a href="https://github.com/UK-IPOP/drug-extraction/tree/main/cli">CLI</a>
-    ·
-    <a href="https://github.com/UK-IPOP/drug-extraction/tree/main/core">Core</a>
-    ·
-    <a href="https://github.com/UK-IPOP/drug-extraction/tree/main/web">Web</a>
   </p>
-</div>
-
-<div align="center">
 
 [![WEBSITE][play-shield]][play-url]
 
 </div>
 
-This project uses string similarity metrics to detect drugs inside text records.
 
-Researchers at the University of Kentucky had a need for a simple, fast, intuitive interface to extract drug mentions in text records. This project takes text records and detects drug mentions (including misspellings) and then extracts the drug and the corresponding record for analysis.
+This project uses string similarity metrics to detect drug mentions inside text records.
+
+Researchers at the University of Kentucky College of Pharmacy had a need for a simple, fast, intuitive interface to extract drug mentions in text records. This project takes text records and detects drug mentions (including misspellings) and then extracts the drug and the corresponding record for analysis.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Built With
 
 - [Rust](https://www.rust-lang.org) 🦀
-- [wasm-pack](https://github.com/rustwasm/wasm-pack)? 🕸
-- [Next.js](https://nextjs.org/)
-- [NextUI](https://nextui.org) / [MUI](https://mui.com)
+- [Maturin](https://www.maturin.rs) 🦀+🐍
+- [Python](https://www.python.org) 🐍
+- [Next.js](https://nextjs.org/) + [NextUI](https://nextui.org)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -60,7 +55,7 @@ What this project IS:
 
 - A suite of tools to extract drug mentions from text records
 - A string parsing tool
-- A website
+- An interactive playground website
 
 What this project is NOT:
 
@@ -68,20 +63,16 @@ What this project is NOT:
 - A business intelligence tool
 - A preprocessing tool
 
-We've chosen to utilize a mono-repo format for this project. This is our first implementation of the mono-repo structure when using Rust. If it causes more problems than benefits, we will switch to independent repositories for each project.
-
 This toolbox contains multiple projects:
 
 - A command line tool (available via cargo install)
-- A core Rust library for parsing strings and comparing them to common drugs
-  - This is also configurable for custom search options and integration with the popular [RxNorm](https://www.nlm.nih.gov/research/umls/rxnorm/index.html) library from the National Library of Medicine ([NLMS](https://www.nlm.nih.gov))
-- A website containing a smaller feature-set
+- An interactive website for exploring string similarity metrics
 
-> **The command-line application will always be given priority bug and feature support as it is the most versatile. The website will always come second as it is simply a thin interface-wrapper around the CLI/Core libraries for non-technical researchers. Core library development will be driven _strongly_ by the needs of the CLI and thus may introduce breaking changes so please be sure to pin your version.**
+> **In v1.0.0 we have dropped support for both the `de-workflow` CLI and the `drug-extraction-core` library. Both are still available on PyPI.org and crates.io respectively but are not considered to be maintained.**
 >
-> For more information, consult the corresponding tool's documentation [CLI](cli/README.md) -- [Core](core/README.md) -- [Web](web/README.md). 😃
+> For more information on the reasons for these significant changes, see the [CHANGELOG.md](CHANGELOG.md).
 
-We utilize string similarity algorithms as defined and implemented by [Danny Guo](https://github.com/dguo) in the [str-sim](https://github.com/dguo/strsim-rs) package. For more information on string similarity algorithms, please consult [this](https://en.wikipedia.org/wiki/String_metric) Wikipedia page for a **comparison/list** of algorithms and [this](https://en.wikipedia.org/wiki/Edit_distance) page for an explanation of string metrics more generally.
+We utilize string similarity algorithms as defined and implemented by [Danny Guo](https://github.com/dguo) in the [str-sim](https://github.com/dguo/strsim-rs) package. For more information on string similarity algorithms, please consult [this](https://en.wikipedia.org/wiki/String_metric) Wikipedia page for a comparison/list of algorithms and [this](https://en.wikipedia.org/wiki/Edit_distance) page for an explanation of string metrics more generally.
 
 The decision to use Rust was based on a series of performance comparison benchmarks and analysis which can be found on the `perf-comp` [branch](https://github.com/UK-IPOP/drug-extraction/tree/perf-comp) 📊.
 
@@ -92,12 +83,9 @@ Take a quick look 👀:
 
 ## RoadMap
 
-- [ ] Add tests
-- [x] Add CI/CD
-- [ ] Add Additional Examples
-- [ ] For more, see [Issues](https://github.com/uk-ipop/drug-extraction/issues)
+As of `v1.0.0` we are considered stable and will prioritize not breaking features. Most new releases will come via performance improvements or new features (without breaking existing UI).
 
-See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/UK-IPOP/drug-extraction/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -114,13 +102,13 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-We use `gh release create` to make new github releases and `cargo release` to release to crates.io.
+We use `gh release create` to make new github releases, `cargo release` to release to crates.io, and `maturin release` to release to PyPI.org.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -130,16 +118,6 @@ Nick Anthony - [@nanthony95](https://twitter.com/nanthony95) - nicholas.anthony@
 
 Project Link: [https://github.com/uk-ipop/drug-extraction](https://github.com/uk-ipop/drug-extraction)
 
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-## Acknowledgments
-
-- [Choose an Open Source License](https://choosealicense.com)
-- [Img Shields](https://shields.io)
-- [GitHub Pages](https://pages.github.com)
-- [RustBook](https://doc.rust-lang.org/book/)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
@@ -150,7 +128,4 @@ Project Link: [https://github.com/uk-ipop/drug-extraction](https://github.com/uk
 [license-shield]: https://img.shields.io/github/license/uk-ipop/drug-extraction.svg?style=for-the-badge
 [license-url]: https://github.com/uk-ipop/drug-extraction/blob/master/LICENSE.txt
 [play-shield]: https://img.shields.io/badge/Website-blue?style=for-the-badge
-
-<!-- TODO: switch to Github Pages / Vercel when published -->
-
 [play-url]: https://github.com/UK-IPOP/drug-extraction
