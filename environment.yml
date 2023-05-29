@@ -1,0 +1,15 @@
+name: drugs
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pandas
+  - plotly
+  - polars
+  - pyarrow
+  - ydata-profiling
+  - ipywidgets
+  - nbformat
+  - ipykernel
+prefix: /opt/homebrew/Caskroom/miniforge/base/envs/drugs
