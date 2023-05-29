@@ -30,6 +30,18 @@ fn initialize_spinner_style(msg: String) -> ProgressBar {
     .with_message(msg)
 }
 
+/// Initialize a progress bar with default style, takes a message and length
+fn initialize_progress_bar(msg: String, len: u64) -> ProgressBar {
+    let pb = ProgressBar::new(len);
+    pb.enable_steady_tick(Duration::from_millis(100));
+    pb.with_style(
+        ProgressStyle::default_bar()
+            .template("{spinner:.blue} {msg} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos:>7}/{len:7} ({eta})").unwrap()
+            .progress_chars("##-"),
+    )
+    .with_message(msg)
+}
+
 /// Struct to hold search term and metadata
 #[derive(Deserialize, Debug, Clone, Default, PartialEq)]
 pub struct SearchTerm {
@@ -103,6 +115,8 @@ pub fn clean_text(s: &str) -> String {
 pub struct DataSet {
     /// csv reader for the dataset
     pub reader: csv::Reader<File>,
+    /// rows in the dataset from first scan
+    pub rows: usize,
     /// indices of the columns to search in the dataset
     pub search_columns: Vec<ColumnInfo>,
     /// index of the column to use as an id
@@ -182,15 +196,17 @@ pub fn initialize_dataset<P: AsRef<Path>>(
     let header = rdr
         .headers()
         .wrap_err("Unable to parse csv headers")?
-        .into_iter()
+        .iter()
         .map(clean_text)
         .collect_vec();
-    let column_info = collect_column_info(&header, search_columns)
+    let search_columns = search_columns.iter().map(|s| clean_text(s)).collect_vec();
+    let column_info = collect_column_info(&header, &search_columns)
         .wrap_err("Unable to collect column indices")?;
     Ok(match id_column {
         Some(c) => DataSet {
             reader: csv::Reader::from_path(&data_file)
                 .wrap_err("Unable to initialize csv reader")?,
+            rows: rdr.records().count(),
             search_columns: column_info,
             id_column: Some(get_column_info(&header, &c)?),
             writer: csv::Writer::from_path("output.csv")?,
@@ -198,6 +214,7 @@ pub fn initialize_dataset<P: AsRef<Path>>(
         None => DataSet {
             reader: csv::Reader::from_path(&data_file)
                 .wrap_err("Unable to initialize csv reader")?,
+            rows: rdr.records().count(),
             search_columns: column_info,
             id_column: None,
             writer: csv::Writer::from_path("output.csv")?,
@@ -211,7 +228,8 @@ pub fn search(mut dataset: DataSet, search_terms: Vec<SearchTerm>) -> Result<()>
     let mut total_records = 0;
     let mut matched_terms: HashSet<&str> = HashSet::new();
 
-    let spinner = initialize_spinner_style("Searching for matches...".to_string());
+    let spinner =
+        initialize_progress_bar("Searching for matches...".to_string(), dataset.rows as u64);
     for (i, row) in dataset
         .reader
         .records()
@@ -262,7 +280,6 @@ pub fn search(mut dataset: DataSet, search_terms: Vec<SearchTerm>) -> Result<()>
                 };
                 for (search_term, comparison_term) in combos {
                     let edits = strsim::osa_distance(&search_term.term, &comparison_term);
-                    let sim = strsim::jaro_winkler(&search_term.term, &comparison_term);
                     match edits {
                         0 => {
                             dataset
@@ -272,7 +289,7 @@ pub fn search(mut dataset: DataSet, search_terms: Vec<SearchTerm>) -> Result<()>
                                     search_term: &search_term.term,
                                     matched_term: &comparison_term,
                                     edits,
-                                    similarity_score: sim,
+                                    similarity_score: 1.0,
                                     search_field: &column.name,
                                     metadata: &search_term.metadata,
                                 })
@@ -281,6 +298,7 @@ pub fn search(mut dataset: DataSet, search_terms: Vec<SearchTerm>) -> Result<()>
                             matched_terms.insert(&search_term.term);
                         }
                         1..=2 => {
+                            let sim = strsim::jaro_winkler(&search_term.term, &comparison_term);
                             if sim >= 0.97 {
                                 dataset
                                     .writer
@@ -410,5 +428,21 @@ mod tests {
                 }
             ]
         );
+    }
+
+    #[test]
+    fn test_collect_column_info_sample() -> Result<()> {
+        let header = csv::Reader::from_path("../data/search_terms.csv")?
+            .headers()?
+            .into_iter()
+            .map(clean_text)
+            .collect_vec();
+        let cols = vec!["term", "metadata"]
+            .iter()
+            .map(|c| clean_text(c))
+            .collect_vec();
+        let info = collect_column_info(&header, &cols)?;
+        assert_eq!(info.len(), 2);
+        Ok(())
     }
 }
