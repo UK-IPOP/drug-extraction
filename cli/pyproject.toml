@@ -3,14 +3,33 @@ requires = ["maturin>=0.12,<0.13"]
 build-backend = "maturin"
 
 [project]
-name = "fuzzy-drug-search"
-requires-python = ">=3.6"
+name = "extract-drugs"
+version = "1.0.0"
+description = "A CLI for extracting drugs from text records"
+license = {file = "../LICENSE.md"}
+requires-python = ">=3.7"
+authors = [
+    {name = "Nick Anthony", email = "<nicholas.anthony@uky.edu>"}
+]
+maintainers = [
+    {name = "Nick Anthony", email = "<nicholas.anthony@uky.edu>"}
+]
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    "Development Status :: 5 - Production/Stable",
+    "Natural Language :: English",
+    "Topic :: Text Processing",
 ]
 
+[project.urls]
+homepage = "https://github.com/UK-IPOP/drug-extraction"
+documentation = "https://github.com/UK-IPOP/drug-extraction"
+repository = "https://github.com/UK-IPOP/drug-extraction"
+changelog = "https://github.com/UK-IPOP/drug-extraction/releases"
 
 [tool.maturin]
 bindings = "bin"
+profile = "release"
+strip = true
