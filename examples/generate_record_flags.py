@@ -20,10 +20,10 @@
 
 
 import csv
+import subprocess
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-import subprocess
 
 
 # this matches the output of the search command
