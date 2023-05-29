@@ -12,24 +12,21 @@ export default function Home() {
 	const [is_match, setMatch] = useState<boolean>(true);
 
 	function compare(_: PressEvent) {
-		const sim: number = distance(term1, term2);
-		setSimilarity(sim);
-		const edits: number = levenshtein(term1, term2).steps;
-		setEdits(edits);
-		setMatch(check_match());
-	}
-
-	function check_match() {
+		const s: number = distance(term1, term2);
+		setSimilarity(s);
+		const e: number = levenshtein(term1, term2).steps;
+		setEdits(e);
+		console.log(edits, similarity);
 		if (edits === 0 || edits === 1) {
-			return true;
+			setMatch(true);
 		} else if (edits === 2) {
 			if (similarity >= 0.95) {
-				return true;
+				setMatch(true);
 			} else {
-				return false;
+				setMatch(false);
 			}
 		} else {
-			return false;
+			setMatch(false);
 		}
 	}
 
