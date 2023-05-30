@@ -75,8 +75,6 @@ pub struct SearchOutput<'a> {
 pub fn read_terms_from_file<P: AsRef<Path>>(p: P) -> Result<Vec<SearchTerm>> {
     let mut rdr = csv::Reader::from_path(p).wrap_err("Unable to read search terms file")?;
     let mut records: Vec<SearchTerm> = Vec::new();
-    // since this skips headers, the first row is 0 but that references line 1
-    // TODO: TEST THIS!
     for (i, row) in rdr
         .deserialize()
         .enumerate()
@@ -85,7 +83,7 @@ pub fn read_terms_from_file<P: AsRef<Path>>(p: P) -> Result<Vec<SearchTerm>> {
         ))
     {
         let mut record: SearchTerm =
-            row.wrap_err(format!("Could not load search term from line: {}", i + 1))?;
+            row.wrap_err(format!("Could not load search term from line: {}", i))?;
         record.term = clean_text(&record.term);
         records.push(record);
     }
@@ -118,9 +116,9 @@ pub struct DataSet {
     /// rows in the dataset from first scan
     pub rows: usize,
     /// indices of the columns to search in the dataset
-    pub search_columns: Vec<ColumnInfo>,
+    pub clean_search_columns: Vec<ColumnInfo>,
     /// index of the column to use as an id
-    pub id_column: Option<ColumnInfo>,
+    pub clean_id_column: Option<ColumnInfo>,
     /// csv writer for the output file
     pub writer: csv::Writer<File>,
 }
@@ -199,23 +197,26 @@ pub fn initialize_dataset<P: AsRef<Path>>(
         .iter()
         .map(clean_text)
         .collect_vec();
-    let column_info = collect_column_info(&header, search_columns)
+    // clean search cols and id col
+    let clean_search_cols = search_columns.iter().map(|c| clean_text(c)).collect_vec();
+    let clean_id_col = id_column.map(|c| clean_text(&c));
+    let column_info = collect_column_info(&header, &clean_search_cols)
         .wrap_err("Unable to collect column indices")?;
-    let ds = match id_column {
+    let ds = match clean_id_col {
         Some(c) => DataSet {
             reader: csv::Reader::from_path(&data_file)
                 .wrap_err("Unable to initialize csv reader")?,
             rows: rdr.records().count(),
-            search_columns: column_info,
-            id_column: Some(get_column_info(&header, &c)?),
+            clean_search_columns: column_info,
+            clean_id_column: Some(get_column_info(&header, &c)?),
             writer: csv::Writer::from_path("output.csv")?,
         },
         None => DataSet {
             reader: csv::Reader::from_path(&data_file)
                 .wrap_err("Unable to initialize csv reader")?,
             rows: rdr.records().count(),
-            search_columns: column_info,
-            id_column: None,
+            clean_search_columns: column_info,
+            clean_id_column: None,
             writer: csv::Writer::from_path("output.csv")?,
         },
     };
@@ -238,7 +239,7 @@ pub fn search(mut dataset: DataSet, search_terms: Vec<SearchTerm>) -> Result<()>
     {
         let record = row.wrap_err(format!("Unable to read record from line {}", i))?;
 
-        let id = match &dataset.id_column {
+        let id = match &dataset.clean_id_column {
             Some(c) => record
                 .get(c.index)
                 .wrap_err(format!(
@@ -250,7 +251,7 @@ pub fn search(mut dataset: DataSet, search_terms: Vec<SearchTerm>) -> Result<()>
         };
 
         let mut found_match = false;
-        for column in &dataset.search_columns {
+        for column in &dataset.clean_search_columns {
             let text = record.get(column.index).wrap_err(format!(
                 "Unable to read column {} from line {}",
                 column.name, i
@@ -371,9 +372,6 @@ pub fn run_searcher<P: AsRef<Path>>(
     id_column: Option<String>,
 ) -> Result<()> {
     let search_terms = read_terms_from_file(search_terms_file)?;
-    // clean search cols and id col
-    let search_columns = search_columns.iter().map(|c| clean_text(c)).collect_vec();
-    let id_column = id_column.map(|c| clean_text(&c));
     let dataset = initialize_dataset(data_file, &search_columns, id_column)?;
     search(dataset, search_terms)
 }
@@ -466,5 +464,12 @@ mod tests {
         let info = collect_column_info(&header, &cols)?;
         assert_eq!(info.len(), 2);
         Ok(())
+    }
+
+    #[test]
+    fn test_enumerated_reader() {
+        let mut reader = csv::Reader::from_path("../data/search_terms.csv").unwrap();
+        let (i, _) = reader.records().enumerate().next().unwrap();
+        assert!(i == 0);
     }
 }
