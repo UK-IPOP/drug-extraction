@@ -9,10 +9,10 @@ description = "A CLI for extracting drugs from text records"
 license = {file = "LICENSE.md"}
 requires-python = ">=3.7"
 authors = [
-    {name = "Nick Anthony", email = "<nicholas.anthony@uky.edu>"}
+    {name = "Nick Anthony", email = "nanthony007@gmail.com"}
 ]
 maintainers = [
-    {name = "Nick Anthony", email = "<nicholas.anthony@uky.edu>"}
+    {name = "Nick Anthony", email = "nanthony007@gmail.com"}
 ]
 classifiers = [
     "Programming Language :: Rust",
