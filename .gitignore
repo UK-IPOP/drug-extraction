@@ -6,3 +6,5 @@ target/*
 
 cli/target
 cli/vendor
+
+.DS_Store
