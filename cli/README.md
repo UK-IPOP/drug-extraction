@@ -18,10 +18,9 @@
   - [Contributing](#contributing)
   - [MIT License](#mit-license)
 
-
 ## Demo
 
-![demo-gif](../images/recording.gif)
+![demo-gif](../images/demo.gif)
 
 ## Description
 
@@ -62,6 +61,8 @@ cargo install drug-extraction-cli
 
 This application has two commands: `interactive` and `search`. Both of these commands have the same underlying functionality, the latter allows you to pass command-line arguments and is better suited to automated processing or advanced users while the former allows interactive declaration of the same configuration options and is better for new or first time users.
 
+API documentation for the library can be found on [docs.rs](https://docs.rs/crate/drug-extraction-cli/latest).
+
 ### Interactive
 
 This will present you with a series of prompts to help you select correct options. Highly recommended for new users or one-off runs.
@@ -82,15 +83,15 @@ This command is demoed in the GIF above.
 
 This tool will output an `output.csv` file with the following format:
 
-| Column Name | Description | Data Type | Limits/Ranges |
-| :--: | :--: | :--: | :--: |
-| row_id | Identifier from `--id-col` if provided, else line number of row in `--data-file` | String| None |
-| search_term | The search term, cleaned and normalized. This is the actual term that was compared. | String | None |
-| matched_term | The matched term, cleaned and normalized. This is the actual term that was compared. | String | None |
-| edits | The `osa` edit distance | Integer | 0-2 (top limit due to exclusion filter) |
-| similarity_score | The `jaro_winkler` similarity score | Float | 0.95-1.0  (bottom limit due to exclusion filter) |
-| search_field | The field that this match was found in, from `--search-cols` | String | None |
-| metadata | The attached metadata to `search_term` in the search_terms file | String or None | None |
+|   Column Name    |                                     Description                                      |   Data Type    |                  Limits/Ranges                   |
+| :--------------: | :----------------------------------------------------------------------------------: | :------------: | :----------------------------------------------: |
+|      row_id      |   Identifier from `--id-col` if provided, else line number of row in `--data-file`   |     String     |                       None                       |
+|   search_term    | The search term, cleaned and normalized. This is the actual term that was compared.  |     String     |                       None                       |
+|   matched_term   | The matched term, cleaned and normalized. This is the actual term that was compared. |     String     |                       None                       |
+|      edits       |                               The `osa` edit distance                                |    Integer     |     0-2 (top limit due to exclusion filter)      |
+| similarity_score |                         The `jaro_winkler` similarity score                          |     Float      | 0.95-1.0  (bottom limit due to exclusion filter) |
+|   search_field   |             The field that this match was found in, from `--search-cols`             |     String     |                       None                       |
+|     metadata     |           The attached metadata to `search_term` in the search_terms file            | String or None |                       None                       |
 
 ## Examples
 

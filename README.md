@@ -31,7 +31,6 @@
 
 </div>
 
-
 This project uses string similarity metrics to detect drug mentions inside text records.
 
 Researchers at the University of Kentucky College of Pharmacy had a need for a simple, fast, intuitive interface to extract drug mentions in text records. This project takes text records and detects drug mentions (including misspellings) and then extracts the drug and the corresponding record for analysis.
@@ -77,7 +76,7 @@ We utilize string similarity algorithms as defined and implemented by [Danny Guo
 The decision to use Rust was based on a series of performance comparison benchmarks and analysis which can be found on the `perf-comp` [branch](https://github.com/UK-IPOP/drug-extraction/tree/perf-comp) 📊.
 
 Take a quick look 👀:
-![screen recording](images/recording.gif)
+![screen recording](images/demo.gif)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
