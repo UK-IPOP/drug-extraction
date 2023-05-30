@@ -31,7 +31,8 @@ cocaethylene,drug|stimulant
 codeine,drug|nonfentanyl_opioid|opiate
 coronavirus,covid
 covid-19,covid
-corona,covid
+covid,covid
+novel corona,covid
 cyclobenzaprine,drug|toxic
 cyclopropyl,drug|fen_analog|fentanyl|opiate
 despropionyl,drug|fen_analog|fentanyl|opiate
