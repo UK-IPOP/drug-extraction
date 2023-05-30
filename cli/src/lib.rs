@@ -199,10 +199,9 @@ pub fn initialize_dataset<P: AsRef<Path>>(
         .iter()
         .map(clean_text)
         .collect_vec();
-    let search_columns = search_columns.iter().map(|s| clean_text(s)).collect_vec();
-    let column_info = collect_column_info(&header, &search_columns)
+    let column_info = collect_column_info(&header, search_columns)
         .wrap_err("Unable to collect column indices")?;
-    Ok(match id_column {
+    let ds = match id_column {
         Some(c) => DataSet {
             reader: csv::Reader::from_path(&data_file)
                 .wrap_err("Unable to initialize csv reader")?,
@@ -219,7 +218,8 @@ pub fn initialize_dataset<P: AsRef<Path>>(
             id_column: None,
             writer: csv::Writer::from_path("output.csv")?,
         },
-    })
+    };
+    Ok(ds)
 }
 
 /// Primary search function
@@ -297,7 +297,26 @@ pub fn search(mut dataset: DataSet, search_terms: Vec<SearchTerm>) -> Result<()>
                             found_match = true;
                             matched_terms.insert(&search_term.term);
                         }
-                        1..=2 => {
+                        1 => {
+                            let sim = strsim::jaro_winkler(&search_term.term, &comparison_term);
+                            if sim >= 0.95 {
+                                dataset
+                                    .writer
+                                    .serialize(SearchOutput {
+                                        row_id: &id,
+                                        search_term: &search_term.term,
+                                        matched_term: &comparison_term,
+                                        edits,
+                                        similarity_score: sim,
+                                        search_field: &column.name,
+                                        metadata: &search_term.metadata,
+                                    })
+                                    .wrap_err("Enable to serialize output")?;
+                                found_match = true;
+                                matched_terms.insert(&search_term.term);
+                            }
+                        }
+                        2 => {
                             let sim = strsim::jaro_winkler(&search_term.term, &comparison_term);
                             if sim >= 0.97 {
                                 dataset
@@ -352,6 +371,9 @@ pub fn run_searcher<P: AsRef<Path>>(
     id_column: Option<String>,
 ) -> Result<()> {
     let search_terms = read_terms_from_file(search_terms_file)?;
+    // clean search cols and id col
+    let search_columns = search_columns.iter().map(|c| clean_text(c)).collect_vec();
+    let id_column = id_column.map(|c| clean_text(&c));
     let dataset = initialize_dataset(data_file, &search_columns, id_column)?;
     search(dataset, search_terms)
 }
