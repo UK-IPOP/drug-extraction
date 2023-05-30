@@ -5,7 +5,7 @@
 [![MIT License][license-shield]][license-url]
 
 <!-- PROJECT LOGO -->
-<br />****
+<br />
 <div align="center">
   <a href="https://github.com/UK-IPOP/drug-extraction">
     <img src="images/logo.png" alt="Logo">

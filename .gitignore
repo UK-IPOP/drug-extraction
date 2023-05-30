@@ -1,2 +1,8 @@
 .vscode/
 */data/*
+
+vendor/*
+target/*
+
+cli/target
+cli/vendor
