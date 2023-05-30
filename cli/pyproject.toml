@@ -6,7 +6,7 @@ build-backend = "maturin"
 name = "extract-drugs"
 version = "1.0.0"
 description = "A CLI for extracting drugs from text records"
-license = {file = "../LICENSE.md"}
+license = {file = "LICENSE.md"}
 requires-python = ">=3.7"
 authors = [
     {name = "Nick Anthony", email = "<nicholas.anthony@uky.edu>"}
