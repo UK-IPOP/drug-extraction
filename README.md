@@ -37,15 +37,6 @@ Researchers at the University of Kentucky College of Pharmacy had a need for a s
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-### Built With
-
-- [Rust](https://www.rust-lang.org) 🦀
-- [Maturin](https://www.maturin.rs) 🦀+🐍
-- [Python](https://www.python.org) 🐍
-- [Next.js](https://nextjs.org/) + [NextUI](https://nextui.org)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
 ## Getting Started
 
 In order to set clear expectations for the development of the toolbox and to keep feature requests in scope it is good to set some guidelines.
