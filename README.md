@@ -55,7 +55,7 @@ What this project is NOT:
 
 This toolbox contains multiple projects:
 
-- A command line tool (available via cargo install)
+- A [command line tool](./cli) (available via pipx or cargo install)
 - An interactive website for exploring string similarity metrics
 
 > **In v1.0.0 we have dropped support for both the `de-workflow` CLI and the `drug-extraction-core` library. Both are still available on PyPI.org and crates.io respectively but are not considered to be maintained.**
