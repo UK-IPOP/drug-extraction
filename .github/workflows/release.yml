@@ -109,3 +109,4 @@ jobs:
           MATURIN_PYPI_TOKEN: ${{ secrets.MATURIN_API_KEY }}
         with:
           command: upload
+          args: --skip-existing *
