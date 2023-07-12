@@ -50,6 +50,7 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
+          working-directory: ${{ github.workspace }}/cli
           target: ${{ matrix.target }}
           args: --release --out dist
           sccache: "true"
@@ -69,6 +70,7 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
+          working-directory: ${{ github.workspace }}/cli
           target: ${{ matrix.target }}
           args: --release --out dist
           sccache: "true"
@@ -85,6 +87,7 @@ jobs:
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
+          working-directory: ${{ github.workspace }}/cli
           command: sdist
           args: --out dist
       - name: Upload sdist
