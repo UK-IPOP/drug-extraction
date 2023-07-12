@@ -1,6 +1,6 @@
 [package]
 name = "drug-extraction-cli"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 authors = ["Nick Anthony <nicholas.anthony@uky.edu>"]
 description = "A CLI for extracting drugs from text records"
