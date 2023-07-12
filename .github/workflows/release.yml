@@ -93,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: wheels
-          path: dist
+          path: ${{ github.workspace }}/cli/dist
 
   release:
     name: Release
