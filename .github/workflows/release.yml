@@ -31,9 +31,8 @@ jobs:
         with:
           working-directory: ${{ github.workspace }}/cli
           target: ${{ matrix.target }}
-          args: --release --out dist
+          args: --release --out dist --zig
           sccache: "true"
-          manylinux: auto
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
