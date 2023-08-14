@@ -13,18 +13,14 @@ export default function Home() {
 
 	function compare(_: PressEvent) {
 		const s: number = distance(term1, term2);
-		setSimilarity(s);
 		const e: number = levenshtein(term1, term2).steps;
+		setSimilarity(s);
 		setEdits(e);
 		console.log(edits, similarity);
-		if (edits === 0 || edits === 1) {
+		if (e === 0 || e === 1) {
 			setMatch(true);
-		} else if (edits === 2) {
-			if (similarity >= 0.95) {
-				setMatch(true);
-			} else {
-				setMatch(false);
-			}
+		} else if (e === 2 && s >= 0.97) {
+			setMatch(true);
 		} else {
 			setMatch(false);
 		}
@@ -58,10 +54,10 @@ export default function Home() {
 								0 or 1 edits: <strong>MATCH</strong>
 							</li>
 							<li>
-								2 edits and greater than or equal to 0.95 similarity: <strong>MATCH</strong>
+								2 edits and greater than or equal to 0.97 similarity: <strong>MATCH</strong>
 							</li>
 							<li>
-								2 edits and less than 0.95 similarity: <strong>NO MATCH</strong>
+								2 edits and less than 0.97 similarity: <strong>NO MATCH</strong>
 							</li>
 							<li>
 								3 or more edits: <strong>NO MATCH</strong>
