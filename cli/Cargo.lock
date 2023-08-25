@@ -219,7 +219,7 @@ dependencies = [
 
 [[package]]
 name = "drug-extraction-cli"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "clap",
  "color-eyre",
