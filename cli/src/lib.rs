@@ -100,10 +100,12 @@ pub fn read_terms_from_file<P: AsRef<Path>>(p: P) -> Result<Vec<SearchTerm>> {
 ///
 /// let s = "This is a test-string with 1234 and some punctuation!@#$%^&*()";
 /// let cleaned = clean_text(s);
-/// assert_eq!(cleaned, "THIS IS A TEST-STRING WITH 1234 AND SOME PUNCTUATION");
+/// assert_eq!(cleaned, "THIS IS A TEST STRING WITH 1234 AND SOME PUNCTUATION");
 /// ```
 pub fn clean_text(s: &str) -> String {
-    s.replace(|c: char| !c.is_ascii_alphanumeric() && c != '-', " ")
+    // TODO: remove hyphenation and fix doc-test
+    s.replace(|c: char| !c.is_ascii_alphanumeric(), " ")
+    // s.replace(|c: char| !c.is_ascii_alphanumeric() && c != '-', " ")
         .trim()
         .to_ascii_uppercase()
 }
@@ -398,7 +400,7 @@ mod tests {
     #[test]
     fn test_clean_text_symbols() {
         let s = "!@#$%^&*()_+-";
-        assert_eq!(clean_text(s), "-");
+        assert_eq!(clean_text(s), "");
     }
 
     #[test]
@@ -411,6 +413,21 @@ mod tests {
     fn test_clean_end_whitespace() {
         let s = "!! This is a test string.   ";
         assert_eq!(clean_text(s), "this is a test string".to_ascii_uppercase());
+    }
+
+    #[test]
+    fn test_clean_end_whitespace2() {
+        let s = "!! This is a test to test- - hyphenated string.   ";
+        assert_eq!(clean_text(s), "this is a test to test    hyphenated string".to_ascii_uppercase());
+    }
+
+    #[test]
+    fn test_whitespace_split() {
+        let s = "!! This is a test to test- - hyphenated string.   ";
+        assert_eq!(clean_text(s), "this is a test to test    hyphenated string".to_ascii_uppercase());
+        let c = clean_text(s);
+        let v = c.split_ascii_whitespace().collect_vec();
+        assert_eq!(v, vec!["THIS", "IS", "A", "TEST", "TO", "TEST", "HYPHENATED", "STRING"]);
     }
 
     #[test]
