@@ -1,6 +1,6 @@
 [package]
 name = "drug-extraction-cli"
-version = "1.1.1"
+version = "1.2.0"
 edition = "2021"
 authors = ["Nick Anthony <nicholas.anthony@uky.edu>"]
 description = "A CLI for extracting drugs from text records"
@@ -28,4 +28,4 @@ dialoguer = { version = "0.10.3", default-features = false  }
 indicatif = { version = "0.17.3"}
 itertools = "0.10.5"
 serde = { version = "1.0.152", features = ["derive"] }
-strsim = "0.10.0"
+strsim = "0.11.0"
