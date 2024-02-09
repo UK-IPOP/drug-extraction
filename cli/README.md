@@ -32,6 +32,7 @@ If you are wondering about specific use cases, check out the [Examples](../examp
 
 - [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) package manager (rust toolchain)
 - [just](https://github.com/casey/just) (optional dev-dependency if you clone this repo)
+- Valid UTF-8 encoded CSV data
 
 ## Installation
 
