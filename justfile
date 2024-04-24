@@ -9,8 +9,6 @@ default:
 clean-and-lint:
     cd cli && cargo fmt
     cd cli && cargo clippy
-    black examples
-    isort examples
     ruff examples
 
 
