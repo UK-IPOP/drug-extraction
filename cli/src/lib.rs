@@ -399,7 +399,7 @@ mod tests {
     #[test]
     fn test_clean_text_symbols() {
         let s = "!@#$%^&*()_+-";
-        assert_eq!(clean_text(s), "");
+        assert_eq!(clean_text(s), "-");
     }
 
     #[test]
@@ -419,7 +419,7 @@ mod tests {
         let s = "!! This is a test to test- - hyphenated string.   ";
         assert_eq!(
             clean_text(s),
-            "this is a test to test    hyphenated string".to_ascii_uppercase()
+            "this is a test to test- - hyphenated string".to_ascii_uppercase()
         );
     }
 
@@ -428,7 +428,7 @@ mod tests {
         let s = "!! This is a test to test- - hyphenated string.   ";
         assert_eq!(
             clean_text(s),
-            "this is a test to test    hyphenated string".to_ascii_uppercase()
+            "this is a test to test- - hyphenated string".to_ascii_uppercase()
         );
         let c = clean_text(s);
         let v = c.split_ascii_whitespace().collect_vec();
@@ -440,7 +440,8 @@ mod tests {
                 "A",
                 "TEST",
                 "TO",
-                "TEST",
+                "TEST-",
+                "-",
                 "HYPHENATED",
                 "STRING"
             ]
@@ -491,7 +492,7 @@ mod tests {
             .into_iter()
             .map(clean_text)
             .collect_vec();
-        let cols = vec!["term", "metadata"]
+        let cols = ["term", "metadata"]
             .iter()
             .map(|c| clean_text(c))
             .collect_vec();
