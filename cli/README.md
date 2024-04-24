@@ -26,6 +26,8 @@
 
 This application takes a CSV file and parses text records from another CSV file to detect and extract search term mentions using string similarity algorithms to account for common misspellings. It is named for the drug searching it does most commonly for us at IPOP but is flexible enough to accept any type search terms.
 
+> NOTE: In our text-preprocessing, we specifically *allow* hyphens ("-") to to their frequency in drug terminologies. If you want to see this functionality removed or put behind a feature flag, please file an Issue.
+
 If you are wondering about specific use cases, check out the [Examples](../examples/) folder!
 
 ## Requires
