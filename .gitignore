@@ -8,3 +8,4 @@ cli/target
 cli/vendor
 
 .DS_Store
+cli/.env
