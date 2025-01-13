@@ -108,7 +108,7 @@ polysubstance,drug|polysubstance
 propoxyphene,drug|nonfentanyl_opioid|opiate
 protonitazene,drug|nonfentanyl_opioid|nitazene|opiate
 quazepam,benzo|drug|sedative
-tarpentadol,drug|nonfentanyl_opioid|opiate
+tapentadol,drug|nonfentanyl_opioid|opiate
 temazepam,benzo|drug|sedative
 tizanidine,drug|toxic
 topiramate,drug|stimulant
