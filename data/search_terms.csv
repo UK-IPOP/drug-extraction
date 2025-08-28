@@ -127,3 +127,7 @@ fluoxetine,drug|anti-depressant
 norfluoxetine,drug|anti-depressant
 bupropion,drug|anti-depressant
 hydroxybupropion,drug|anti-depressant
+medetomidine,drug|sedative
+nitrite,drug|chemical
+nitazene,drug|nonfentanyl_opioid|nitazene|opiate
+bromazolam,drug|benzo|sedative
