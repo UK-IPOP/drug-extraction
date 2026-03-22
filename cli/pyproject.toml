@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "extract-drugs"
-version = "1.3.0"
+version = "1.4.0"
 summary = "A CLI for extracting drugs from text records"
 description = "A CLI for extracting drugs from text records"
 license = {file = "LICENSE.md"}
