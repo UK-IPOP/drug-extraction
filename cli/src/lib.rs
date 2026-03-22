@@ -281,6 +281,10 @@ pub fn search(mut dataset: DataSet, search_terms: Vec<SearchTerm>) -> Result<()>
                     )
                 };
                 for (search_term, comparison_term) in combos {
+                    // outside of window
+                    if search_term.term.len().abs_diff(comparison_term.len()) > 2 {
+                        continue;
+                    }
                     let edits = strsim::osa_distance(&search_term.term, &comparison_term);
                     match edits {
                         0 => {
