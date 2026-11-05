@@ -1,3 +1,7 @@
+# <img src="./imgs/3-foxes-logo.png" alt="logo" width=50 /> A 3-Foxes Maintained Project 
+
+As of 2026-11-1 this repository is maintained and operated by [3-Foxes](https://3-foxes.com) on behalf of UKY IPOP. Primary development work will shift to 3F with the sole purpose of improving the codebase and further supporting researchers both within IPOP and externally.
+
 <div id="top"></div>
 
 [![Stargazers][stars-shield]][stars-url]
