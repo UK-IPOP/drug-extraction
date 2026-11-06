@@ -133,3 +133,161 @@ nitazene,drug|nonfentanyl_opioid|nitazene|opiate
 bromazolam,drug|benzo|sedative
 cychlorphine,drug|nonfentanyl_opioid|opiate
 kratom,drug
+"3, 4 METHYLENEDIOXYMETHAMPHETAMINE",drug|ccmeo
+O_UNSPECIFIED_BARBITUATE,drug|ccmeo
+CARBAMAZEPINE,drug|ccmeo
+MDMB-4EN-PINACA,drug|ccmeo
+BACLOFEN,drug|ccmeo
+ZOPICLONE,drug|ccmeo
+ACETALDEHYDE,drug|ccmeo
+CLOBAZAM,drug|ccmeo
+COLCHICINE,drug|ccmeo
+RISPERIDONE,drug|ccmeo
+PARA-FLUORO FURANYL FENTANYL,drug|ccmeo
+PAROXETINE,drug|ccmeo
+DOXEPIN,drug|ccmeo
+PIVALOYL FENTANYL,drug|ccmeo
+CILOSTAZOL,drug|ccmeo
+OXCARBAZEPINE,drug|ccmeo
+METHOXYACETYL FENTANYL,drug|ccmeo
+EUTYLONE,drug|ccmeo
+CIS/TRANS-3-METHYLFENTANYL,drug|ccmeo
+LITHIUM,drug|ccmeo
+10-HYDROXYCARBAZEPINE,drug|ccmeo
+ACETAMINOPHEN,drug|ccmeo
+PRIMIDONE,drug|ccmeo
+DICHLOROMETHANE,drug|ccmeo
+DULOXETINE,drug|ccmeo
+OLANZAPINE,drug|ccmeo
+CHLORPROMAZINE,drug|ccmeo
+3-METHYLFENTANYL,drug|ccmeo
+NIFEDIPINE,drug|ccmeo
+TRENBOLONE,drug|ccmeo
+ESZOPICLONE,drug|ccmeo
+METFORMIN,drug|ccmeo
+FLUBROMAZEPAM,drug|ccmeo
+2-FURANYL FENTANYL,drug|ccmeo
+TAMSULOSIN,drug|ccmeo
+LIDOCAINE,drug|ccmeo
+LAMOTRIGINE,drug|ccmeo
+5F-ADB (5F-MDMB-PINACA),drug|ccmeo
+TENOCYCLIDINE,drug|ccmeo
+MIDAZOLAM,drug|ccmeo
+CLONAZOLAM,drug|ccmeo
+BENZODIAZEPINES,drug|ccmeo
+ISOPROPANOL,drug|ccmeo
+MECLIZINE,drug|ccmeo
+HYDROXYZINE,drug|ccmeo
+CLOZAPINE,drug|ccmeo
+OPIATES,drug|ccmeo
+HEROIN PROBABLE,drug|ccmeo
+O_OPIOID,drug|ccmeo
+PROPRANOLOL,drug|ccmeo
+LISINOPRIL,drug|ccmeo
+FLUORO FURANYL FENTANYL,drug|ccmeo
+FURANYL-FETANYL,drug|ccmeo
+ORPHENADRINE,drug|ccmeo
+VALERYL FENTANYL,drug|ccmeo
+N-DESTHYL ISOTONITAZENE,drug|ccmeo
+PROMETHAZINE,drug|ccmeo
+MEPROBOMATE,drug|ccmeo
+"1, 1-DIFLUOROETHANE",drug|ccmeo
+9-HYDROXYRISPERICONE,drug|ccmeo
+LISDEXAMFETAMINE,drug|ccmeo
+DICYCLOMINE,drug|ccmeo
+TRIHEXYPHENIDYL,drug|ccmeo
+ACETYL FENTANYL,drug|ccmeo
+ISOBUTYRYLFENTANYL,drug|ccmeo
+PENTOBARBITAL,drug|ccmeo
+PYRAZOLAM,drug|ccmeo
+ZALEPLON,drug|ccmeo
+PHENYLPROPANOLAMINE,drug|ccmeo
+CLONIDINE,drug|ccmeo
+LOPERAMIDE,drug|ccmeo
+DESPROPIONYL-FENTANYL (4-ANPP),drug|ccmeo
+AMLODIPINE,drug|ccmeo
+PHENOBARBITAL,drug|ccmeo
+CYCLOPROPYL FENTANYL,drug|ccmeo
+NARCOTIC,drug|ccmeo
+MIRTAZAPINE,drug|ccmeo
+NORTRIPTYLINE,drug|ccmeo
+PREGABALIN,drug|ccmeo
+O_UNSPECIFIED_OPIOID,drug|ccmeo
+ISOVALERYL FENTANYL,drug|ccmeo
+METOPROLOL,drug|ccmeo
+FLUOROISOBUTYRYL FENTANYL,drug|ccmeo
+BENZTROPINE,drug|ccmeo
+PSEUDOEPHEDRINE,drug|ccmeo
+PROPYLENE GLYCOL,drug|ccmeo
+FLUOROACETYL FENTANYL,drug|ccmeo
+AB-CHIMACA,drug|ccmeo
+FLUORO FENTANYL,drug|ccmeo
+CANNIBINOID,drug|ccmeo
+SALICYLATE,drug|ccmeo
+FLUBROMAZOLAM,drug|ccmeo
+N-ETHYL PENTYLONE,drug|ccmeo
+CLONOPIN,drug|ccmeo
+MEMANTINE,drug|ccmeo
+ETIZOLAM,drug|ccmeo
+OTHER DRUG,drug|ccmeo
+BUTYRYL FENTANYL,drug|ccmeo
+ETHYL ACETATE,drug|ccmeo
+FLUALPRAZOLAM,drug|ccmeo
+5-FLUORO-MDMB-PICA,drug|ccmeo
+PROPOFOL,drug|ccmeo
+SODIUM NITRITE,drug|ccmeo
+HYDROXYCHLOROQUINE,drug|ccmeo
+SODIUM HYDROXIDE,drug|ccmeo
+IMIPRAMINE,drug|ccmeo
+SERTRALINE,drug|ccmeo
+SOTALOL,drug|ccmeo
+BETA-HYDROXY FENTANYL,drug|ccmeo
+ALPHA-PYRROLIDINOVALEROPHENONE,drug|ccmeo
+BUSPIRONE,drug|ccmeo
+ETHYLENE GLYCOL,drug|ccmeo
+CHLOROPHENYLPIPERAZINE,drug|ccmeo
+MARIJUANA/MARIJUANA METABOLITES,drug|ccmeo
+DOXYLAMINE,drug|ccmeo
+VENLAFAXINE,drug|ccmeo
+ALFENTANIL,drug|ccmeo
+ETHYL ETHER,drug|ccmeo
+LYSERGIC ACID,drug|ccmeo
+CLOMIPRAMINE,drug|ccmeo
+METHYLENEDIOXYAMPHETAMINE (MDA),drug|ccmeo
+GABAPENTIN,drug|ccmeo
+FLUOREXETAMINE,drug|ccmeo
+HALOPERIDOL,drug|ccmeo
+DIBUTYLONE,drug|ccmeo
+LEVETIRACETAM,drug|ccmeo
+GAMMA-HYDROXYBUTYRIC ACID,drug|ccmeo
+AMITRIPTYLINE,drug|ccmeo
+3-METHYLENEDIOXYMETHAMPHETAMINE,drug|ccmeo
+DIPHENHYDRAMINE,drug|ccmeo
+ARIPIPRAZOLE,drug|ccmeo
+NON-SPECIFIED FENTANYL ANALOGUE(S),drug|ccmeo
+BUTALBITAL,drug|ccmeo
+ZOLPIDEM,drug|ccmeo
+METHANOL,drug|ccmeo
+FLECAINIDE,drug|ccmeo
+VALPROIC ACID,drug|ccmeo
+QUETIAPINE,drug|ccmeo
+CHLORPHENIRAMINE,drug|ccmeo
+NORDIAZEPAM,drug|ccmeo
+ETHYL CHLORIDE,drug|ccmeo
+CITRONELLA OIL,drug|ccmeo
+O_UNSPECIFIED_DRUG(S),drug|ccmeo
+O_FENTANYL_ANALOGUE,drug|ccmeo
+INSULIN,drug|ccmeo
+PHENYTOIN,drug|ccmeo
+METENOLONE,drug|ccmeo
+IBUPROFEN,drug|ccmeo
+5-FLUORO-MDMB-PINACA/5-FLUORO-EMB-PINACA,drug|ccmeo
+CHLOROFLUOROCARBON,drug|ccmeo
+ACRYLFENTANYL,drug|ccmeo
+PARA-FLUOROISOBUTYRYLFENTANYL,drug|ccmeo
+BENZYL FENTANYL,drug|ccmeo
+O_UNSPECIFIED_CAUSTIC SUBSTANCE,drug|ccmeo
+TOLUENE,drug|ccmeo
+2-METHYL-AP-237,drug|ccmeo
+PYRILAMINE,drug|ccmeo
+BENZONATATE,drug|ccmeo
